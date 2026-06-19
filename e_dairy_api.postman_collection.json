@@ -1,0 +1,279 @@
+{
+	"info": {
+		"_postman_id": "8b5f392b-8a8b-4a55-bfa3-9f58ea9c1a5d",
+		"name": "e-Dairy API",
+		"description": "REST API Endpoints for e-Dairy software project. Includes JWT authentication, registration, milk collections, active farmer listing, and real-time dashboard analytics aggregation.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Auth & Users",
+			"item": [
+				{
+					"name": "Register User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"agent_dev\",\n    \"password\": \"Password@123\",\n    \"email\": \"agent_dev@edairy.com\",\n    \"first_name\": \"Dairy\",\n    \"last_name\": \"Agent\",\n    \"role\": \"agent\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/register/",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"register",
+								""
+							]
+						},
+						"description": "Register a new user account as either an 'agent' or a 'farmer'."
+					},
+					"response": []
+				},
+				{
+					"name": "Login (Obtain JWT Token)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.access) {",
+									"        pm.collectionVariables.set(\"token\", jsonData.access);",
+									"        console.log(\"Access Token successfully stored in collection variable 'token'\");",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"agent_dev\",\n    \"password\": \"Password@123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/token/",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"token",
+								""
+							]
+						},
+						"description": "Authenticates user credentials and returns JWT access and refresh tokens. Stashes the access token automatically in the collection variable 'token'."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Current Profile",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/profile/",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"profile",
+								""
+							]
+						},
+						"description": "Returns current logged-in user profile details (JWT Protected)."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Farmers Directory",
+			"item": [
+				{
+					"name": "List Active Farmers",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/farmers/",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"farmers",
+								""
+							]
+						},
+						"description": "Returns a list of all active registered farmers to allow selection (JWT Protected)."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Milk Collection CRUD",
+			"item": [
+				{
+					"name": "Add Milk Record",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"farmer\": 2,\n    \"session\": \"morning\",\n    \"quantity\": \"42.50\",\n    \"fat\": \"4.80\",\n    \"snf\": \"8.50\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/collection/",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"collection",
+								""
+							]
+						},
+						"description": "Submits a new milk collection log for a farmer. The rate per litre and total amount calculations are computed automatically by the backend (JWT Protected)."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Collections Log",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/collection/",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"collection",
+								""
+							]
+						},
+						"description": "Lists milk records. If logged in as a Farmer, returns only their own logs; if an Agent, returns all logs (JWT Protected)."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Analytics & Dashboard",
+			"item": [
+				{
+					"name": "Fetch Dashboard Stats",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/dashboard/",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"dashboard",
+								""
+							]
+						},
+						"description": "Aggregates milk collection counts, fat averages, weekly chart timelines, and recent record lists dynamically (JWT Protected)."
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8002",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "",
+			"type": "string"
+		}
+	]
+}

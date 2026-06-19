@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- SEO Meta Tags -->
+  <title>e-Dairy - Next-Generation Dairy Management Software</title>
+  <meta name="description" content="A comprehensive digital dairy solution designed to streamline milk collection, quality record tracking, and automated digital payment systems from small farms to large plants.">
+  <meta name="keywords" content="e-dairy, dairy software, milk collection, milk fat records, dairy management, dairy automation, farm software">
+  
+  <!-- Favicon (using inline data uri representation of cow logo mark for cleanliness) -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%23523B8B'/><circle cx='50' cy='35' r='14' fill='%23FFB11A'/><rect x='40' y='42' width='20' height='30' rx='10' fill='%23FFB11A'/></svg>">
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Header Navigation -->
+  <header>
+    <div class="nav-container">
+      <a href="#home" class="logo-link" id="nav-logo">
+        <div class="logo-img-wrapper">
+          <!-- Inline recreation of the cow mark on transparent back -->
+          <img src="assets/logo.png" alt="e-Dairy Logo">
+        </div>
+        <span class="logo-text">e-<span>Dairy</span></span>
+      </a>
+
+      <nav>
+        <ul>
+          <li><a href="#home" class="active">Home</a></li>
+          <li><a href="#about">About Us</a></li>
+          <li><a href="#solutions">Solutions</a></li>
+          <li><a href="#contact">Contact Us</a></li>
+        </ul>
+      </nav>
+
+      <div class="nav-cta">
+        <a href="#login" class="btn btn-login" id="btn-header-login">Login</a>
+      </div>
+
+      <button class="menu-toggle" aria-label="Toggle navigation menu" id="hamburger-btn">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+      <div class="hero-container">
+        
+        <!-- Left Column: Content -->
+        <div class="hero-content">
+          <div class="badge-wrapper">
+            <div class="badge-text">
+              <span>🏆</span> Best Dairy Management Software
+            </div>
+          </div>
+          
+          <h1>From Small Farms<br>to Large Dairies <span>We've Got You Covered</span></h1>
+          
+          <p>From small family farms to large milk plants – manage your operations, verify milk quality fat contents, automate collection data, and process digital payouts with ease.</p>
+          
+          <div class="check-badges">
+    <div class="check-badge">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+        </svg>
+        Trusted by 5000+ Dairies
+    </div>
+
+    <div class="check-badge">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+        </svg>
+        Works Fully Offline
+    </div>
+</div>
+
+<div class="cta-group">
+    <a href="#login" class="btn-primary" id="heroLoginBtn">
+        Login
+    </a>
+
+    <a href="#signup" class="btn-store" id="heroSignupBtn">
+        <div>
+            <span class="btn-text-large">Sign Up</span>
+            <span class="btn-text-small">Don't Have an Account?</span>
+        </div>
+    </a>
+</div>
+
+<div class="cta-footer">
+    <span>✓ Secure Authentication</span>
+    <span>• 24/7 Support</span>
+</div>
+
+          
+
+            
+          
+          <div class="cta-footer">
+            <span>✓ No credit card required</span>
+            <span>• 24/7 support</span>
+          </div>
+        </div>
+        
+        <!-- Right Column: Visuals -->
+        <div class="hero-visual-wrapper">
+          <!-- Device Mockups -->
+          <div class="mockup-container">
+            <img src="assets/mockup.svg" alt="e-Dairy Desktop & Mobile Interface Dashboard" width="800" height="550">
+          </div>
+          
+          <!-- Floating interactive widgets -->
+          <div class="floating-card support">
+            <div class="icon-box">
+              <!-- Chat bubbles icon SVG -->
+              <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+              </svg>
+            </div>
+            <div class="card-text">
+              <h4>24/7 Customer Support</h4>
+              <p>Expert local assistance</p>
+            </div>
+          </div>
+
+          <div class="floating-card reporting">
+            <div class="icon-box">
+              <!-- Bar chart icon SVG -->
+              <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z" />
+              </svg>
+            </div>
+            <div class="card-text">
+              <h4>Real time Reporting</h4>
+              <p>Instant fat & weight insights</p>
+            </div>
+          </div>
+
+          <div class="floating-card sync">
+            <div class="icon-box">
+              <!-- Sync / Reload icon SVG -->
+              <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 7.89M9 11l3-3 3 3m0 0l-3 3-3-3" />
+              </svg>
+            </div>
+            <div class="card-text">
+              <h4>Auto Sync Data</h4>
+              <p>Local offline backup & sync</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Milk fluid waves container at the bottom -->
+      <div class="wave-container">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto">
+          <defs>
+            <path id="gentle-wave" d="M-160 44c30 0 58-18 88-18s58 18 88 18 58-18 88-18 58 18 88 18v44h-352z" />
+          </defs>
+          <g class="animated-waves">
+            <!-- Semi-transparent layering to resemble creamy milk waves -->
+            <use href="#gentle-wave" x="48" y="0" fill="rgba(255,255,255,0.7" />
+            <use href="#gentle-wave" x="48" y="3" fill="rgba(255,255,255,0.5)" />
+            <use href="#gentle-wave" x="48" y="5" fill="rgba(255,255,255,0.3)" />
+            <use href="#gentle-wave" x="48" y="7" fill="#ffffff" />
+          </g>
+        </svg>
+      </div>
+    </section>
+  </main>
+
+  <!-- Auth Modal (Login / Signup) -->
+  <div id="authModal" class="modal-overlay">
+    <div class="modal-card">
+      <button class="modal-close" id="modalCloseBtn" aria-label="Close modal">&times;</button>
+      
+      <!-- Login/Register Tabs -->
+      <div class="modal-tabs">
+        <button class="modal-tab-btn active" id="tabLoginBtn">Log In</button>
+        <button class="modal-tab-btn" id="tabRegisterBtn">Register</button>
+      </div>
+
+      <!-- Alert Box -->
+      <div id="modalAlert" class="modal-alert"></div>
+
+      <!-- Login Form -->
+      <form id="homeLoginForm" class="modal-form-content active">
+        <h3>Welcome Back</h3>
+        <p>Log in to access your e-Dairy analytics</p>
+        <div class="form-group">
+          <input type="text" id="loginUser" placeholder="Username" required>
+        </div>
+        <div class="form-group">
+          <input type="password" id="loginPass" placeholder="Password" required>
+        </div>
+        <button type="submit" class="modal-submit-btn">Sign In</button>
+        <div class="form-footer">
+          Don't have an account? <span id="switchToRegister">Register here</span>
+        </div>
+      </form>
+
+      <!-- Register Form -->
+      <form id="homeRegisterForm" class="modal-form-content">
+        <h3>Create Account</h3>
+        <p>Register as a farmer or dairy collection agent</p>
+        <div class="form-group-row">
+          <input type="text" id="regUser" placeholder="Username *" required>
+          <input type="password" id="regPass" placeholder="Password *" required>
+        </div>
+        <div class="form-group-row">
+          <input type="text" id="regFirst" placeholder="First Name">
+          <input type="text" id="regLast" placeholder="Last Name">
+        </div>
+        <div class="form-group">
+          <select id="regRole" required>
+            <option value="farmer">Register as Farmer (View dashboard)</option>
+            <option value="agent">Register as Collection Agent</option>
+          </select>
+        </div>
+        <div class="form-group" id="regCodeGroup">
+          <input type="text" id="regCode" placeholder="Farmer Code (e.g. F1005) *">
+        </div>
+        <div class="form-group">
+          <input type="text" id="regPhone" placeholder="Phone Number">
+        </div>
+        <div class="form-group">
+          <input type="text" id="regAddr" placeholder="Farm / Office Address">
+        </div>
+        <button type="submit" class="modal-submit-btn">Create Account</button>
+        <div class="form-footer">
+          Already have an account? <span id="switchToLogin">Log in here</span>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

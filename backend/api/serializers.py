@@ -1,0 +1,83 @@
+from rest_framework import serializers
+from django.contrib.auth.models import User
+from django.db import transaction
+from .models import Profile, MilkCollection
+
+class ProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Profile
+        fields = ('role', 'farmer_code', 'phone', 'address')
+
+class UserSerializer(serializers.ModelSerializer):
+    profile = ProfileSerializer(read_only=True)
+    
+    class Meta:
+        model = User
+        fields = ('id', 'username', 'email', 'first_name', 'last_name', 'profile')
+
+class UserRegisterSerializer(serializers.ModelSerializer):
+    role = serializers.ChoiceField(choices=Profile.ROLE_CHOICES, write_only=True)
+    farmer_code = serializers.CharField(max_length=20, required=False, allow_blank=True, write_only=True)
+    phone = serializers.CharField(max_length=15, required=False, allow_blank=True, write_only=True)
+    address = serializers.CharField(max_length=255, required=False, allow_blank=True, write_only=True)
+    password = serializers.CharField(write_only=True, style={'input_type': 'password'})
+
+    class Meta:
+        model = User
+        fields = ('username', 'password', 'email', 'first_name', 'last_name', 'role', 'farmer_code', 'phone', 'address')
+
+    def validate(self, attrs):
+        role = attrs.get('role')
+        farmer_code = attrs.get('farmer_code')
+        if role == 'farmer' and not farmer_code:
+            raise serializers.ValidationError({"farmer_code": "Farmer code is required for farmers."})
+        return attrs
+
+    def create(self, validated_data):
+        role = validated_data.pop('role')
+        farmer_code = validated_data.pop('farmer_code', None)
+        phone = validated_data.pop('phone', '')
+        address = validated_data.pop('address', '')
+        password = validated_data.pop('password')
+
+        with transaction.atomic():
+            user = User.objects.create_user(
+                username=validated_data['username'],
+                email=validated_data.get('email', ''),
+                first_name=validated_data.get('first_name', ''),
+                last_name=validated_data.get('last_name', ''),
+                password=password
+            )
+            # Create associated profile
+            Profile.objects.create(
+                user=user,
+                role=role,
+                farmer_code=farmer_code if role == 'farmer' else None,
+                phone=phone,
+                address=address
+            )
+        return user
+
+class MilkCollectionSerializer(serializers.ModelSerializer):
+    farmer_name = serializers.CharField(source='farmer.get_full_name', read_only=True)
+    farmer_username = serializers.CharField(source='farmer.username', read_only=True)
+    farmer_code = serializers.CharField(source='farmer.profile.farmer_code', read_only=True)
+    agent_name = serializers.CharField(source='collected_by.get_full_name', read_only=True)
+
+    class Meta:
+        model = MilkCollection
+        fields = (
+            'id', 'farmer', 'farmer_name', 'farmer_username', 'farmer_code',
+            'collected_by', 'agent_name', 'date', 'session',
+            'quantity', 'fat', 'snf', 'rate', 'amount', 'timestamp'
+        )
+        read_only_fields = ('id', 'collected_by', 'rate', 'amount', 'date', 'timestamp')
+
+    def validate_farmer(self, value):
+        # Ensure the selected user is indeed a farmer
+        try:
+            if value.profile.role != 'farmer':
+                raise serializers.ValidationError("Selected user is not registered as a Farmer.")
+        except Profile.DoesNotExist:
+            raise serializers.ValidationError("Selected user does not have a profile.")
+        return value
