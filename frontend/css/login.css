@@ -1,0 +1,380 @@
+/* login.css - Page-specific styles for e-Dairy Login */
+
+body, html {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background: var(--bg-gradient);
+}
+
+.login-wrapper {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+/* RIGHT PANEL (Card Form) */
+.login-right {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+  overflow-y: auto;
+  position: relative;
+}
+
+.mobile-logo-header {
+  display: none;
+  margin-bottom: 30px;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 450px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(82, 59, 139, 0.08);
+  border-radius: 24px;
+  padding: 40px;
+  box-shadow: var(--shadow-lg), 0 20px 40px rgba(82, 59, 139, 0.06);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* Card Tabs navigation */
+.card-tabs {
+  display: flex;
+  border-bottom: 2px solid rgba(82, 59, 139, 0.06);
+  margin-bottom: 30px;
+}
+
+.card-tab-btn {
+  flex: 1;
+  background: none;
+  border: none;
+  padding: 14px;
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: var(--transition);
+  position: relative;
+  text-align: center;
+}
+
+.card-tab-btn.active {
+  color: var(--primary);
+}
+
+.card-tab-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: var(--primary);
+}
+
+/* Access Role Selection */
+.role-selector-container {
+  margin-bottom: 24px;
+}
+
+.field-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 8px;
+}
+
+.role-selector {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.role-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1.5px solid rgba(82, 59, 139, 0.12);
+  background: var(--white);
+  color: var(--text-muted);
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.role-btn:hover {
+  border-color: rgba(82, 59, 139, 0.3);
+  color: var(--primary);
+  background: var(--primary-light);
+}
+
+.role-btn.active {
+  background: var(--primary-light);
+  border-color: var(--primary);
+  color: var(--primary);
+  box-shadow: 0 4px 10px rgba(82, 59, 139, 0.08);
+}
+
+.role-icon {
+  width: 18px;
+  height: 18px;
+}
+
+/* Forms */
+.auth-form {
+  display: none;
+  animation: formSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.auth-form.active {
+  display: block;
+}
+
+@keyframes formSlideUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.form-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--primary-dark);
+  margin-bottom: 4px;
+}
+
+.form-desc {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 24px;
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.auth-form input {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 1px solid rgba(82, 59, 139, 0.15);
+  background: var(--white);
+  color: var(--text);
+  font-size: 14px;
+  font-family: inherit;
+  transition: var(--transition);
+}
+
+.auth-form input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(82, 59, 139, 0.12);
+}
+
+.submit-btn {
+  width: 100%;
+  padding: 14px;
+  background: var(--primary);
+  color: var(--white);
+  border: none;
+  border-radius: 30px;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(82, 59, 139, 0.2);
+  transition: var(--transition);
+  margin-top: 10px;
+}
+
+.submit-btn:hover {
+  background: var(--primary-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(82, 59, 139, 0.35);
+}
+
+/* Alert Box */
+.modal-alert {
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  display: none;
+}
+
+.modal-alert.danger {
+  background: #FFEBEE;
+  color: #C62828;
+  border: 1px solid #FFCDD2;
+  display: block;
+}
+
+.modal-alert.success {
+  background: #E8F5E9;
+  color: #2E7D32;
+  border: 1px solid #C8E6C9;
+  display: block;
+}
+
+/* RESPONSIVE LAYOUT */
+@media (max-width: 992px) {
+  .login-left {
+    flex: 0 0 38%;
+    padding: 40px;
+  }
+  .left-content h1 {
+    font-size: 32px;
+  }
+}
+
+@media (max-width: 768px) {
+  body, html {
+    overflow-y: auto;
+  }
+  
+  .login-wrapper {
+    flex-direction: column;
+    height: auto;
+    min-height: 100vh;
+  }
+  
+  .login-left {
+    display: none;
+  }
+  
+  .login-right {
+    flex: 1;
+    width: 100%;
+    padding: 30px 20px;
+  }
+  
+  .mobile-logo-header {
+    display: block;
+  }
+  
+  .login-card {
+    padding: 24px;
+    box-shadow: none;
+    border: none;
+    background: transparent;
+  }
+}
+
+/* Back to Home Button */
+.back-home-btn {
+  position: absolute;
+  top: 30px;
+  right: 40px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--white);
+  border: 1px solid rgba(82, 59, 139, 0.12);
+  padding: 10px 18px;
+  border-radius: 30px;
+  box-shadow: var(--shadow-sm);
+  z-index: 100;
+  transition: var(--transition);
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.back-home-btn:hover {
+  color: var(--primary);
+  border-color: var(--primary);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.back-home-btn svg {
+  transition: var(--transition);
+}
+
+.back-home-btn:hover svg {
+  transform: translateX(-2px);
+}
+
+/* Inline Phone & OTP button */
+.phone-row {
+  grid-template-columns: 2.2fr 1.1fr !important;
+  gap: 8px !important;
+}
+
+.get-code-btn {
+  padding: 12px 8px;
+  background: transparent;
+  color: var(--primary);
+  border: 1.5px solid var(--primary);
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: var(--transition);
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.get-code-btn:hover:not(:disabled) {
+  background: var(--primary);
+  color: var(--white);
+}
+
+.get-code-btn:disabled {
+  border-color: rgba(82, 59, 139, 0.15);
+  color: var(--text-muted);
+  background: rgba(82, 59, 139, 0.05);
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .back-home-btn {
+    top: 20px;
+    right: 20px;
+    padding: 8px 14px;
+    font-size: 13px;
+  }
+}
+
+/* Role-specific field groups: smooth fade-in when shown */
+@keyframes fieldsFadeIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.role-fields {
+  animation: fieldsFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Smooth title & description transitions on role switch */
+.form-title,
+.form-desc {
+  transition: color 0.2s ease;
+}
+

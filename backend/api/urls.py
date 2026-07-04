@@ -9,7 +9,8 @@ from .views import (
     UserProfileView,
     FarmerListView,
     MilkCollectionViewSet,
-    DashboardStatsView
+    DashboardStatsView,
+    GenerateCodeView
 )
 
 router = DefaultRouter()
@@ -17,9 +18,10 @@ router.register(r'collection', MilkCollectionViewSet, basename='milk-collection'
 
 urlpatterns = [
     # Auth Endpoints
-    path('register/', RegisterView.as_view(), name='api-register'),
-    path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    # path('generate-code/', GenerateCodeView.as_view(), name='generate-code'),
+    # path('register/', RegisterView.as_view(), name='api-register'),
+    # path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    # path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     
     # User Profile & Directory
     path('profile/', UserProfileView.as_view(), name='user-profile'),

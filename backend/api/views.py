@@ -106,3 +106,24 @@ class DashboardStatsView(APIView):
             "chart_data": weekly_chart,
             "recent_records": recent_records_serializer.data
         }, status=status.HTTP_200_OK)
+
+
+import random
+
+class GenerateCodeView(APIView):
+    permission_classes = (AllowAny,)
+
+    def post(self, request):
+        phone = request.data.get('phone', '').strip()
+        if not phone:
+            return Response({"detail": "Phone number is required."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Generate a 6-digit verification code
+        code = str(random.randint(100000, 999999))
+        
+        return Response({
+            "status": "success",
+            "phone": phone,
+            "code": code,
+            "message": "Verification code generated successfully."
+        }, status=status.HTTP_200_OK)

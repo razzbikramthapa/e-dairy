@@ -6,7 +6,7 @@ from .models import Profile, MilkCollection
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
-        fields = ('role', 'farmer_code', 'phone', 'address')
+        fields = ('role', 'farmer_code', 'farm_name', 'phone', 'address')
 
 class UserSerializer(serializers.ModelSerializer):
     profile = ProfileSerializer(read_only=True)
@@ -18,24 +18,20 @@ class UserSerializer(serializers.ModelSerializer):
 class UserRegisterSerializer(serializers.ModelSerializer):
     role = serializers.ChoiceField(choices=Profile.ROLE_CHOICES, write_only=True)
     farmer_code = serializers.CharField(max_length=20, required=False, allow_blank=True, write_only=True)
+    farm_name = serializers.CharField(max_length=255, required=False, allow_blank=True, write_only=True)
     phone = serializers.CharField(max_length=15, required=False, allow_blank=True, write_only=True)
     address = serializers.CharField(max_length=255, required=False, allow_blank=True, write_only=True)
     password = serializers.CharField(write_only=True, style={'input_type': 'password'})
 
     class Meta:
         model = User
-        fields = ('username', 'password', 'email', 'first_name', 'last_name', 'role', 'farmer_code', 'phone', 'address')
+        fields = ('username', 'password', 'email', 'first_name', 'last_name', 'role', 'farmer_code', 'farm_name', 'phone', 'address')
 
-    def validate(self, attrs):
-        role = attrs.get('role')
-        farmer_code = attrs.get('farmer_code')
-        if role == 'farmer' and not farmer_code:
-            raise serializers.ValidationError({"farmer_code": "Farmer code is required for farmers."})
-        return attrs
 
     def create(self, validated_data):
         role = validated_data.pop('role')
         farmer_code = validated_data.pop('farmer_code', None)
+        farm_name = validated_data.pop('farm_name', '')
         phone = validated_data.pop('phone', '')
         address = validated_data.pop('address', '')
         password = validated_data.pop('password')
@@ -53,6 +49,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
                 user=user,
                 role=role,
                 farmer_code=farmer_code if role == 'farmer' else None,
+                farm_name=farm_name if role == 'farmer' else '',
                 phone=phone,
                 address=address
             )

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>e-Dairy - Login/Signup</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%23523B8B'/><circle cx='50' cy='35' r='14' fill='%23FFB11A'/><rect x='40' y='42' width='20' height='30' rx='10' fill='%23FFB11A'/></svg>">
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/index.css">
+  <link rel="stylesheet" href="css/login.css">
+</head>
+
+<body>
+
+  <!-- Floating Back to Home Button -->
+  <a href="index.html" class="back-home-btn">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="16" height="16">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+    </svg>
+    <span>Home</span>
+  </a>
+
+  <div class="login-wrapper">
+    <!-- Right Panel: Login Card -->
+    <div class="login-right">
+      <div class="mobile-logo-header">
+        <a href="index.html" class="logo-link">
+          <div class="logo-img-wrapper">
+            <img src="assets/logo.png" alt="e-Dairy Logo">
+          </div>
+          <span class="logo-text">e-<span>Dairy</span></span>
+        </a>
+      </div>
+
+      <div class="login-card">
+        <!-- Tab selector -->
+        <div class="card-tabs">
+          <button class="card-tab-btn active" id="tabLogin">Log In</button>
+          <button class="card-tab-btn" id="tabRegister">Sign Up</button>
+        </div>
+
+        <div class="card-body">
+          <!-- Role selector buttons -->
+          <div class="role-selector-container">
+            <label class="field-label">Access Level</label>
+            <div class="role-selector">
+              <button type="button" class="role-btn active" data-role="farmer">
+                <svg class="role-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                  stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                <span>Farmer</span>
+              </button>
+              <button type="button" class="role-btn" data-role="agent">
+                <svg class="role-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                  stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+                <span>Collection Centre</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Alert box -->
+          <div id="authAlert" class="modal-alert"></div>
+
+          <!-- LOGIN FORM -->
+          <form id="loginForm" class="auth-form active">
+            <h3 class="form-title" id="loginFormTitle">Farmer Sign In</h3>
+            <p class="form-desc" id="loginFormDesc">Access your milk yield, FAT analysis, and payments</p>
+
+            <div class="form-group">
+              <input type="text" id="loginUser" placeholder="Mobile Number" required>
+            </div>
+
+            <div class="form-group">
+              <input type="password" id="loginPass" placeholder="OTP" required>
+            </div>
+
+            <button type="submit" class="submit-btn">Sign In</button>
+          </form>
+
+          <!-- REGISTER FORM -->
+          <form id="registerForm" class="auth-form">
+            <h3 class="form-title" id="registerFormTitle">Farmer Registration</h3>
+            <p class="form-desc" id="registerFormDesc">Create a new farmer account on the e-Dairy network</p>
+
+            <!-- Farmer-only fields: First Name, Last Name, Farm Name -->
+            <div id="farmerFields" class="role-fields">
+              <div class="form-group-row">
+                <input type="text" id="regFirst" placeholder="First Name">
+                <input type="text" id="regLast" placeholder="Last Name">
+              </div>
+              <div class="form-group">
+                <input type="text" id="regFarmName" placeholder="Farm Name">
+              </div>
+            </div>
+
+            <!-- Agent-only fields: Collection Centre Name -->
+            <div id="agentFields" class="role-fields" style="display:none;">
+              <div class="form-group">
+                <input type="text" id="regCentreName" placeholder="Collection Centre Name">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <input type="text" id="regAddr" placeholder="Address">
+            </div>
+
+            <!-- Phone Number & Get Code Row -->
+            <div class="form-group-row phone-row">
+              <input type="tel" id="regPhone" placeholder="Phone Number *" required>
+              <button type="button" class="get-code-btn" id="btnGetCode">Get Code</button>
+            </div>
+
+            <!-- Verification Code Input -->
+            <div class="form-group">
+              <input type="password" id="regPass" placeholder="Verification Code (OTP) *" inputmode="numeric" pattern="[0-9]*" required>
+            </div>
+
+            <button type="submit" class="submit-btn">Register Account</button>
+          </form>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/login.js"></script>
+</body>
+
+</html>
