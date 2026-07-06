@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>e-Dairy - Farmer Dashboard</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%23523B8B'/><circle cx='50' cy='35' r='14' fill='%23FFB11A'/><rect x='40' y='42' width='20' height='30' rx='10' fill='%23FFB11A'/></svg>">
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/index.css">
+  <style>
+    body {
+      background: var(--bg-gradient);
+      min-height: 100vh;
+      color: var(--text);
+    }
+
+    /* Dashboard Header styling */
+    .dash-header {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(82, 59, 139, 0.08);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .dash-nav {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .profile-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--primary-light);
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 16px;
+      border: 2px solid var(--primary);
+    }
+
+    .profile-details h4 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--primary-dark);
+    }
+
+    .profile-details span {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 600;
+    }
+
+    .logout-btn {
+      padding: 8px 18px;
+      border-radius: 30px;
+      background: none;
+      border: 1px solid rgba(82, 59, 139, 0.15);
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      transition: var(--transition);
+      color: var(--text-muted);
+    }
+
+    .logout-btn:hover {
+      border-color: #E53935;
+      color: #E53935;
+      background: rgba(229, 57, 53, 0.05);
+    }
+
+    /* Main Container */
+    .dash-container {
+      max-width: 1200px;
+      margin: 32px auto;
+      padding: 0 24px;
+      display: grid;
+      gap: 32px;
+    }
+
+    .welcome-banner {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: var(--white);
+      border-radius: 20px;
+      padding: 32px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow-md);
+    }
+
+    .welcome-banner::after {
+      content: '';
+      position: absolute;
+      width: 300px;
+      height: 300px;
+      border-radius: 50%;
+      background: rgba(255, 177, 26, 0.1);
+      top: -100px;
+      right: -100px;
+      z-index: 1;
+    }
+
+    .welcome-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .welcome-content h2 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .welcome-content p {
+      opacity: 0.85;
+      font-size: 14px;
+      max-width: 600px;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+    }
+
+    .stats-card {
+      background: var(--white);
+      border-radius: 16px;
+      padding: 24px;
+      border: 1px solid rgba(82, 59, 139, 0.06);
+      box-shadow: var(--shadow-sm);
+      transition: var(--transition);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .stats-card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-md);
+      border-color: rgba(82, 59, 139, 0.15);
+    }
+
+    .card-label {
+      font-size: 13px;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+
+    .card-value {
+      font-family: 'Outfit', sans-serif;
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--primary-dark);
+      margin-bottom: 6px;
+    }
+
+    .card-footer-text {
+      font-size: 11px;
+      color: var(--success);
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .card-footer-text.neutral {
+      color: var(--text-muted);
+    }
+
+    /* Charts & Details section */
+    .dash-row {
+      display: grid;
+      grid-template-columns: 1.6fr 1fr;
+      gap: 32px;
+    }
+
+    @media (max-width: 992px) {
+      .dash-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .dash-panel {
+      background: var(--white);
+      border-radius: 20px;
+      padding: 28px;
+      border: 1px solid rgba(82, 59, 139, 0.06);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .panel-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--primary-dark);
+      margin-bottom: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(82, 59, 139, 0.06);
+      padding-pb: 12px;
+      padding-bottom: 12px;
+    }
+
+    /* Table styles */
+    .table-container {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    .dash-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 13px;
+    }
+
+    .dash-table th {
+      color: var(--text-muted);
+      font-weight: 700;
+      padding: 12px 16px;
+      border-bottom: 2px solid rgba(82, 59, 139, 0.06);
+      background: #FAF8FF;
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: 0.5px;
+    }
+
+    .dash-table td {
+      padding: 16px;
+      border-bottom: 1px solid rgba(82, 59, 139, 0.05);
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    .dash-table tr:hover {
+      background: var(--primary-light);
+    }
+
+    .badge-session {
+      padding: 4px 8px;
+      border-radius: 20px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .badge-session.morning {
+      background: rgba(255, 177, 26, 0.15);
+      color: var(--accent-hover);
+    }
+
+    .badge-session.evening {
+      background: rgba(82, 59, 139, 0.15);
+      color: var(--primary);
+    }
+
+    /* Alert Box */
+    .alert-box {
+      padding: 12px 18px;
+      border-radius: 10px;
+      margin-bottom: 24px;
+      display: none;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .alert-box.error {
+      background: #FFEBEE;
+      color: #C62828;
+      border: 1px solid #FFCDD2;
+      display: block;
+    }
+
+    /* Empty states */
+    .empty-state {
+      padding: 40px;
+      text-align: center;
+      color: var(--text-muted);
+    }
+    
+    .empty-state svg {
+      width: 48px;
+      height: 48px;
+      stroke: var(--text-muted);
+      margin-bottom: 12px;
+      opacity: 0.6;
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- Dashboard Header -->
+  <header class="dash-header">
+    <div class="dash-nav">
+      <a href="index.html" class="logo-link">
+        <div class="logo-img-wrapper">
+          <img src="assets/logo.png" alt="e-Dairy Logo">
+        </div>
+        <span class="logo-text">e-<span>Dairy</span></span>
+      </a>
+
+      <div class="profile-info">
+        <div class="avatar" id="userAvatar">F</div>
+        <div class="profile-details">
+          <h4 id="profileName">Loading User</h4>
+          <span>Farmer Portal</span>
+        </div>
+        <button class="logout-btn" id="btnLogout">Sign Out</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="dash-container">
+    
+    <!-- Welcome banner -->
+    <div class="welcome-banner">
+      <div class="welcome-content">
+        <h2 id="welcomeTitle">Welcome, Farmer!</h2>
+        <p>Monitor your daily milk contributions, analyze milk quality indicators (FAT/SNF), and keep track of automated payouts.</p>
+      </div>
+    </div>
+
+    <div id="dashAlert" class="alert-box"></div>
+
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+      <!-- Card 1 -->
+      <div class="stats-card">
+        <div class="card-label">Total Milk Contributed</div>
+        <div class="card-value" id="valTotalMilk">0.00 L</div>
+        <div class="card-footer-text" id="lblTotalMilkCount">0 Contributions</div>
+      </div>
+      <!-- Card 2 -->
+      <div class="stats-card">
+        <div class="card-label">Average Fat Content</div>
+        <div class="card-value" id="valAvgFat">0.00 %</div>
+        <div class="card-footer-text" id="lblAvgFatCompare">Quality grade: Standard</div>
+      </div>
+      <!-- Card 3 -->
+      <div class="stats-card">
+        <div class="card-label">Average SNF Content</div>
+        <div class="card-value" id="valAvgSnf">0.00 %</div>
+        <div class="card-footer-text neutral" id="lblAvgSnfSub">Solids-Not-Fat</div>
+      </div>
+      <!-- Card 4 -->
+      <div class="stats-card">
+        <div class="card-label">Total Estimated Earnings</div>
+        <div class="card-value" id="valTotalEarnings">Rs. 0.00</div>
+        <div class="card-footer-text" id="lblEarningsRate">Dynamic rate payout</div>
+      </div>
+    </div>
+
+    <!-- Charts & Tables Row -->
+    <div class="dash-row">
+      <!-- Left Panel: Chart -->
+      <div class="dash-panel">
+        <div class="panel-title">Supplied Milk Analytics (Last 7 Days)</div>
+        <div style="height: 320px; position: relative;">
+          <canvas id="yieldChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Right Panel: Overview -->
+      <div class="dash-panel">
+        <div class="panel-title">Dairy Profile Details</div>
+        <div class="profile-details-list" style="font-size: 13px;">
+          <div style="display:flex; justify-content:space-between; margin-bottom:14px; border-bottom:1px solid rgba(82,59,139,0.05); padding-bottom:8px;">
+            <strong style="color:var(--text-muted);">Farmer Code:</strong>
+            <span id="dtFarmerCode" style="font-weight:600;">-</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:14px; border-bottom:1px solid rgba(82,59,139,0.05); padding-bottom:8px;">
+            <strong style="color:var(--text-muted);">Farm Name:</strong>
+            <span id="dtFarmName" style="font-weight:600;">-</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:14px; border-bottom:1px solid rgba(82,59,139,0.05); padding-bottom:8px;">
+            <strong style="color:var(--text-muted);">Registered Phone:</strong>
+            <span id="dtPhone" style="font-weight:600;">-</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:14px; border-bottom:1px solid rgba(82,59,139,0.05); padding-bottom:8px;">
+            <strong style="color:var(--text-muted);">Address:</strong>
+            <span id="dtAddress" style="font-weight:600;">-</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:14px;">
+            <strong style="color:var(--text-muted);">System Username:</strong>
+            <span id="dtUsername" style="font-weight:600;">-</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Logs panel -->
+    <div class="dash-panel">
+      <div class="panel-title">Recent Milk Supply Contributions</div>
+      <div class="table-container">
+        <table class="dash-table" id="tableRecords">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Session</th>
+              <th>Quantity (L)</th>
+              <th>FAT (%)</th>
+              <th>SNF (%)</th>
+              <th>Rate / L</th>
+              <th>Amount</th>
+              <th>Collected By</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody">
+            <tr>
+              <td colspan="8" class="text-center py-4" style="color: var(--text-muted)">Loading recent logs...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Elements
+      const profileName = document.getElementById('profileName');
+      const welcomeTitle = document.getElementById('welcomeTitle');
+      const userAvatar = document.getElementById('userAvatar');
+      const btnLogout = document.getElementById('btnLogout');
+      const dashAlert = document.getElementById('dashAlert');
+
+      // Card elements
+      const valTotalMilk = document.getElementById('valTotalMilk');
+      const lblTotalMilkCount = document.getElementById('lblTotalMilkCount');
+      const valAvgFat = document.getElementById('valAvgFat');
+      const lblAvgFatCompare = document.getElementById('lblAvgFatCompare');
+      const valAvgSnf = document.getElementById('valAvgSnf');
+      const valTotalEarnings = document.getElementById('valTotalEarnings');
+
+      // Profile details
+      const dtFarmerCode = document.getElementById('dtFarmerCode');
+      const dtFarmName = document.getElementById('dtFarmName');
+      const dtPhone = document.getElementById('dtPhone');
+      const dtAddress = document.getElementById('dtAddress');
+      const dtUsername = document.getElementById('dtUsername');
+
+      // Tables
+      const tableBody = document.getElementById('tableBody');
+
+      // JWT Authentication check
+      const token = localStorage.getItem('e_dairy_token');
+      const role = localStorage.getItem('e_dairy_role');
+
+      if (!token || role !== 'farmer') {
+        // Not authorized, go back to login
+        localStorage.clear();
+        window.location.href = 'login.html';
+        return;
+      }
+
+      // Logout handler
+      btnLogout.addEventListener('click', () => {
+        localStorage.clear();
+        window.location.href = 'login.html';
+      });
+
+      // API Config
+      const API_BASE_URL = window.location.origin + '/api';
+
+      // Alert helper
+      function showError(msg) {
+        dashAlert.innerText = msg;
+        dashAlert.className = "alert-box error";
+        dashAlert.style.display = "block";
+      }
+
+      // Fetch dashboard details & profile details
+      async function loadDashboard() {
+        try {
+          // Fetch Profile
+          const profileResponse = await fetch(`${API_BASE_URL}/profile/`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (!profileResponse.ok) throw new Error("Authentication failed");
+          const profile = await profileResponse.json();
+
+          // Populate profile elements
+          const fullName = `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || profile.username;
+          profileName.innerText = fullName;
+          welcomeTitle.innerText = `Welcome, ${fullName}!`;
+          userAvatar.innerText = (profile.first_name || profile.username || 'F').charAt(0).toUpperCase();
+
+          dtFarmerCode.innerText = profile.profile?.farmer_code || 'N/A';
+          dtFarmName.innerText = profile.profile?.farm_name || 'N/A';
+          dtPhone.innerText = profile.profile?.phone || 'N/A';
+          dtAddress.innerText = profile.profile?.address || 'N/A';
+          dtUsername.innerText = profile.username;
+
+          // Fetch Dashboard statistics
+          const statsResponse = await fetch(`${API_BASE_URL}/dashboard/`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (!statsResponse.ok) throw new Error("Failed to load dashboard data");
+          const stats = await statsResponse.json();
+
+          // Populate Summary cards
+          valTotalMilk.innerText = `${stats.summary.total_milk.toFixed(2)} L`;
+          lblTotalMilkCount.innerText = `${stats.summary.total_collections} Contributions`;
+          valAvgFat.innerText = `${stats.summary.avg_fat.toFixed(2)} %`;
+
+          if (stats.summary.avg_fat >= 5.0) {
+            lblAvgFatCompare.innerText = "Quality grade: Excellent (High Yield)";
+          } else if (stats.summary.avg_fat >= 4.0) {
+            lblAvgFatCompare.innerText = "Quality grade: Good / Standard";
+          } else if (stats.summary.avg_fat > 0) {
+            lblAvgFatCompare.innerText = "Quality grade: Low FAT content";
+          } else {
+            lblAvgFatCompare.innerText = "Quality grade: No records";
+          }
+
+          // Populate recent records in table and calculate dynamic aggregates (e.g. SNF and Earnings)
+          const records = stats.recent_records || [];
+          let totalEarnings = 0;
+          let sumSnf = 0;
+          let validSnfCount = 0;
+
+          if (records.length === 0) {
+            tableBody.innerHTML = `
+              <tr>
+                <td colspan="8" class="text-center py-4">
+                  <div class="empty-state">
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    <p>No milk contributions recorded in your profile yet.</p>
+                  </div>
+                </td>
+              </tr>
+            `;
+            valAvgSnf.innerText = '0.00 %';
+            valTotalEarnings.innerText = 'Rs. 0.00';
+          } else {
+            let trHtml = '';
+            records.forEach(rec => {
+              const recAmt = parseFloat(rec.amount) || 0;
+              const recSnf = parseFloat(rec.snf) || 0;
+              totalEarnings += recAmt;
+
+              if (recSnf > 0) {
+                sumSnf += recSnf;
+                validSnfCount++;
+              }
+
+              // format timestamp
+              const recDate = rec.date || new Date(rec.timestamp).toLocaleDateString();
+
+              trHtml += `
+                <tr>
+                  <td>${recDate}</td>
+                  <td><span class="badge-session ${rec.session}">${rec.session}</span></td>
+                  <td>${parseFloat(rec.quantity).toFixed(2)} L</td>
+                  <td>${parseFloat(rec.fat).toFixed(2)} %</td>
+                  <td>${recSnf.toFixed(2)} %</td>
+                  <td>Rs. ${parseFloat(rec.rate).toFixed(2)}</td>
+                  <td style="color:var(--primary); font-weight:700;">Rs. ${recAmt.toFixed(2)}</td>
+                  <td>${rec.agent_name || rec.collected_by || 'System'}</td>
+                </tr>
+              `;
+            });
+            tableBody.innerHTML = trHtml;
+
+            // Average SNF calculation
+            const avgSnfVal = validSnfCount > 0 ? (sumSnf / validSnfCount) : 0;
+            valAvgSnf.innerText = `${avgSnfVal.toFixed(2)} %`;
+            valTotalEarnings.innerText = `Rs. ${totalEarnings.toFixed(2)}`;
+          }
+
+          // Build Chart
+          renderChart(stats.chart_data || []);
+
+        } catch (err) {
+          console.error(err);
+          showError("Error loading profile details: " + err.message);
+        }
+      }
+
+      // Chart.js initialization
+      let myChart = null;
+      function renderChart(chartData) {
+        const ctx = document.getElementById('yieldChart').getContext('2d');
+        const labels = chartData.map(d => d.day);
+        const data = chartData.map(d => d.total);
+
+        if (myChart) {
+          myChart.destroy();
+        }
+
+        myChart = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: 'Milk Yield (Litres)',
+              data: data,
+              borderColor: '#523B8B',
+              backgroundColor: 'rgba(82, 59, 139, 0.05)',
+              borderWidth: 3,
+              fill: true,
+              tension: 0.3,
+              pointBackgroundColor: '#FFB11A',
+              pointBorderColor: '#fff',
+              pointHoverRadius: 7
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: false
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                grid: {
+                  color: 'rgba(82, 59, 139, 0.05)'
+                },
+                ticks: {
+                  font: {
+                    family: 'Inter'
+                  }
+                }
+              },
+              x: {
+                grid: {
+                  display: false
+                },
+                ticks: {
+                  font: {
+                    family: 'Inter'
+                  }
+                }
+              }
+            }
+          }
+        });
+      }
+
+      // Initial load
+      loadDashboard();
+    });
+  </script>
+</body>
+</html>

@@ -378,3 +378,65 @@ body, html {
   transition: color 0.2s ease;
 }
 
+/* Forgot OTP Styles */
+.forgot-otp-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 6px;
+}
+
+.forgot-otp-btn {
+  background: none;
+  border: none;
+  color: var(--primary);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 0;
+  text-align: right;
+  transition: var(--transition);
+}
+
+.forgot-otp-btn:hover:not(:disabled) {
+  color: var(--primary-dark);
+  text-decoration: underline;
+}
+
+.forgot-otp-btn:disabled {
+  color: var(--text-muted);
+  cursor: not-allowed;
+}
+
+/* Password eye button toggles */
+.password-input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.password-input-wrapper input {
+  padding-right: 48px !important;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+  z-index: 10;
+}
+
+.toggle-password:hover {
+  color: var(--primary);
+}
+
+

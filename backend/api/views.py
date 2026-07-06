@@ -7,8 +7,15 @@ from django.db.models import Sum, Avg, Count
 from django.utils import timezone
 from datetime import timedelta
 from decimal import Decimal
+from rest_framework_simplejwt.views import TokenObtainPairView
 from .models import Profile, MilkCollection
-from .serializers import UserRegisterSerializer, UserSerializer, MilkCollectionSerializer
+from .serializers import (
+    UserRegisterSerializer, 
+    UserSerializer, 
+    MilkCollectionSerializer,
+    OTPTokenObtainPairSerializer
+)
+from .twilio_helper import send_otp
 
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
@@ -108,22 +115,42 @@ class DashboardStatsView(APIView):
         }, status=status.HTTP_200_OK)
 
 
-import random
-
 class GenerateCodeView(APIView):
     permission_classes = (AllowAny,)
 
     def post(self, request):
         phone = request.data.get('phone', '').strip()
+        purpose = request.data.get('purpose', 'register').strip()
+        
         if not phone:
             return Response({"detail": "Phone number is required."}, status=status.HTTP_400_BAD_REQUEST)
         
-        # Generate a 6-digit verification code
-        code = str(random.randint(100000, 999999))
+        user_exists = User.objects.filter(username=phone).exists()
         
-        return Response({
-            "status": "success",
-            "phone": phone,
-            "code": code,
-            "message": "Verification code generated successfully."
-        }, status=status.HTTP_200_OK)
+        if purpose == 'register':
+            if user_exists:
+                return Response({"detail": "This mobile number is already registered."}, status=status.HTTP_400_BAD_REQUEST)
+        elif purpose == 'login':
+            if not user_exists:
+                return Response({"detail": "This mobile number is not registered."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Trigger sending the SMS code via Twilio
+        try:
+            res = send_otp(phone)
+            # If Twilio is not configured, we return the simulated code in the response
+            # so the frontend alert can display it for ease of debugging/local testing.
+            response_data = {
+                "status": "success",
+                "phone": phone,
+                "message": res["message"]
+            }
+            if res.get("status") == "simulated":
+                response_data["code"] = res["code"]
+            
+            return Response(response_data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class OTPTokenObtainPairView(TokenObtainPairView):
+    serializer_class = OTPTokenObtainPairSerializer
+

@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const regPhoneInput = document.getElementById('regPhone');
   const regPassInput = document.getElementById('regPass');
   const btnGetCode = document.getElementById('btnGetCode');
+  const btnForgotOTP = document.getElementById('btnForgotOTP');
 
   // API Config
   const API_BASE_URL = window.location.origin + '/api';
@@ -95,6 +96,20 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
+    // Clear all registration and login inputs when switching roles
+    const fieldsToClear = [
+      'loginUser', 'loginPass', 'regFirst', 'regLast', 
+      'regFarmName', 'regCentreName', 'regAddr', 'regPhone', 'regPass'
+    ];
+    fieldsToClear.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+
+    // Reset temporary OTP states
+    lastGeneratedOTP = '';
+    targetOTPPhone = '';
+
     updateFormLabels();
   }
 
@@ -145,14 +160,18 @@ document.addEventListener('DOMContentLoaded', () => {
       const response = await fetch(`${API_BASE_URL}/generate-code/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone })
+        body: JSON.stringify({ phone, purpose: 'register' })
       });
       const data = await response.json();
 
-      if (response.ok && data.code) {
-        lastGeneratedOTP = data.code;
+      if (response.ok) {
+        lastGeneratedOTP = data.code || 'sent';
         targetOTPPhone = phone;
-        showAlert(`Verification code generated: ${data.code} (Enter this in the OTP input)`, 'success');
+        if (data.code) {
+          showAlert(`Verification code generated: ${data.code} (Enter this in the OTP input)`, 'success');
+        } else {
+          showAlert('Verification code sent successfully via SMS.', 'success');
+        }
         
         let counter = 15;
         const interval = setInterval(() => {
@@ -176,6 +195,59 @@ document.addEventListener('DOMContentLoaded', () => {
       showAlert('Failed to connect to verification server.');
     }
   });
+
+  // Handle "Forgot OTP" Button Click on Login Form
+  if (btnForgotOTP) {
+    btnForgotOTP.addEventListener('click', async () => {
+      clearAlert();
+      const phone = document.getElementById('loginUser').value.trim();
+      
+      if (!phone) {
+        showAlert('Please enter your mobile number first.');
+        return;
+      }
+
+      btnForgotOTP.disabled = true;
+      btnForgotOTP.innerText = 'Sending OTP...';
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/generate-code/`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone, purpose: 'login' })
+        });
+        const data = await response.json();
+
+        if (response.ok) {
+          if (data.code) {
+            showAlert(`Verification code generated: ${data.code} (Enter this in the OTP input)`, 'success');
+          } else {
+            showAlert('OTP sent successfully. Check your mobile phone.', 'success');
+          }
+          
+          let counter = 15;
+          const interval = setInterval(() => {
+            counter--;
+            if (counter > 0) {
+              btnForgotOTP.innerText = `Resend OTP (${counter}s)`;
+            } else {
+              clearInterval(interval);
+              btnForgotOTP.innerText = 'Forgot OTP? Send Code via SMS';
+              btnForgotOTP.disabled = false;
+            }
+          }, 1000);
+        } else {
+          btnForgotOTP.disabled = false;
+          btnForgotOTP.innerText = 'Forgot OTP? Send Code via SMS';
+          showAlert(data.detail || 'Failed to request verification code.');
+        }
+      } catch (err) {
+        btnForgotOTP.disabled = false;
+        btnForgotOTP.innerText = 'Forgot OTP? Send Code via SMS';
+        showAlert('Failed to connect to verification server.');
+      }
+    });
+  }
 
   // Handle Form Submission: LOGIN
   loginForm.addEventListener('submit', async (e) => {
@@ -226,7 +298,11 @@ document.addEventListener('DOMContentLoaded', () => {
           showAlert('Sign In successful! Redirecting...', 'success');
           
           setTimeout(() => {
-            window.location.href = 'api-test.html';
+            if (actualRole === 'farmer') {
+              window.location.href = 'farmer-dashboard.html';
+            } else {
+              window.location.href = 'agent-dashboard.html';
+            }
           }, 1000);
         } else {
           localStorage.clear();
@@ -268,9 +344,9 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // Verify OTP matches
-    if (!lastGeneratedOTP || enteredOTP !== lastGeneratedOTP || phone !== targetOTPPhone) {
-      showAlert('Invalid verification code (OTP). Please request a code and verify it.');
+    // Verify OTP requested
+    if (!lastGeneratedOTP || phone !== targetOTPPhone) {
+      showAlert('Please request a verification code first.');
       return;
     }
 
@@ -306,9 +382,19 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('loginUser').value = phone;
         document.getElementById('loginPass').value = enteredOTP;
       } else {
-        const errorMsg = data.username ? `Mobile Number: ${data.username[0]}` : 
-                         data.detail ? data.detail :
-                         'Registration failed. Please check your details.';
+        let errorMsg = 'Registration failed. Please check your details.';
+        if (data.username) {
+          errorMsg = `Mobile Number: ${data.username[0]}`;
+        } else if (data.password) {
+          errorMsg = `Verification Code: ${data.password[0]}`;
+        } else if (data.detail) {
+          errorMsg = data.detail;
+        } else if (typeof data === 'object') {
+          const keys = Object.keys(data);
+          if (keys.length > 0) {
+            errorMsg = `${keys[0]}: ${data[keys[0]][0]}`;
+          }
+        }
         showAlert(errorMsg);
       }
     } catch (err) {
@@ -330,7 +416,44 @@ document.addEventListener('DOMContentLoaded', () => {
     switchRole(existingRole);
     showAlert('You are already signed in. Redirecting...', 'success');
     setTimeout(() => {
-      window.location.href = 'api-test.html';
+      if (existingRole === 'farmer') {
+        window.location.href = 'farmer-dashboard.html';
+      } else {
+        window.location.href = 'agent-dashboard.html';
+      }
     }, 1500);
   }
+
+  // Password Visibility Toggle Utility
+  function setupPasswordToggle(inputId, toggleId) {
+    const input = document.getElementById(inputId);
+    const toggleBtn = document.getElementById(toggleId);
+    
+    if (input && toggleBtn) {
+      toggleBtn.addEventListener('click', () => {
+        const isPassword = input.type === 'password';
+        input.type = isPassword ? 'text' : 'password';
+        
+        // Update eye icon SVG dynamically (visible/hidden eye state)
+        if (isPassword) {
+          toggleBtn.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />
+            </svg>
+          `;
+        } else {
+          toggleBtn.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            </svg>
+          `;
+        }
+      });
+    }
+  }
+
+  // Setup password triggers
+  setupPasswordToggle('loginPass', 'toggleLoginPass');
+  setupPasswordToggle('regPass', 'toggleRegPass');
 });

@@ -51,8 +51,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!userNavCta) return;
 
     if (token) {
+      const userRole = localStorage.getItem('e_dairy_role') || 'farmer';
+      const panelUrl = userRole === 'farmer' ? 'farmer-dashboard.html' : 'agent-dashboard.html';
       userNavCta.innerHTML = `
-        <a href="api-test.html" class="btn btn-login" style="background:var(--accent); color:var(--white);" id="btn-header-dash">Open Panel</a>
+        <a href="${panelUrl}" class="btn btn-login" style="background:var(--accent); color:var(--white);" id="btn-header-dash">Open Panel</a>
         <button class="btn btn-outline-secondary" id="btn-header-logout" style="border-radius:30px; margin-left: 12px; padding: 8px 18px; font-size:14px; font-weight:600; cursor:pointer; background:none; border:1px solid rgba(82,59,139,0.15); transition:var(--transition); color: var(--text);">Logout</button>
       `;
       

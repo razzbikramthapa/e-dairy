@@ -1,7 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import (
-    TokenObtainPairView,
     TokenRefreshView,
 )
 from .views import (
@@ -10,7 +9,8 @@ from .views import (
     FarmerListView,
     MilkCollectionViewSet,
     DashboardStatsView,
-    GenerateCodeView
+    GenerateCodeView,
+    OTPTokenObtainPairView
 )
 
 router = DefaultRouter()
@@ -18,10 +18,10 @@ router.register(r'collection', MilkCollectionViewSet, basename='milk-collection'
 
 urlpatterns = [
     # Auth Endpoints
-    # path('generate-code/', GenerateCodeView.as_view(), name='generate-code'),
-    # path('register/', RegisterView.as_view(), name='api-register'),
-    # path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    # path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('generate-code/', GenerateCodeView.as_view(), name='generate-code'),
+    path('register/', RegisterView.as_view(), name='api-register'),
+    path('token/', OTPTokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     
     # User Profile & Directory
     path('profile/', UserProfileView.as_view(), name='user-profile'),
