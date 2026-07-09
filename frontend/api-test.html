@@ -110,15 +110,28 @@
             <button class="btn btn-sm btn-outline-danger" id="btnClearAuth">Logout / Clear Token</button>
           </div>
           <div class="card-body">
+            <!-- Generate Verification Code (OTP) Form -->
+            <form id="formGenerateCode" class="mb-4 pb-3 border-bottom">
+              <h6 class="text-secondary border-bottom pb-1">1. Request Verification Code (OTP)</h6>
+              <div class="row g-2 mb-2">
+                <div class="col-md-8">
+                  <input type="text" class="form-control form-control-sm" id="genCodePhone" placeholder="Mobile Number" required>
+                </div>
+                <div class="col-md-4">
+                  <button type="submit" class="btn btn-warning btn-sm w-100 text-white">Get Code</button>
+                </div>
+              </div>
+            </form>
+
             <!-- Login Form -->
             <form id="formLogin" class="mb-4">
-              <h6 class="text-secondary border-bottom pb-1">Obtain JWT Token (Login)</h6>
+              <h6 class="text-secondary border-bottom pb-1">2. Obtain JWT Token (Login)</h6>
               <div class="row g-2 mb-2">
                 <div class="col-md-6">
-                  <input type="text" class="form-control" id="loginUsername" placeholder="Username" required value="agent_dev">
+                  <input type="text" class="form-control" id="loginUsername" placeholder="Mobile Number / Username" required value="agent_dev">
                 </div>
                 <div class="col-md-6">
-                  <input type="password" class="form-control" id="loginPassword" placeholder="Password" required value="Password@123">
+                  <input type="password" class="form-control" id="loginPassword" placeholder="OTP / Password" required value="Password@123">
                 </div>
               </div>
               <button type="submit" class="btn btn-primary btn-sm w-100">Send Login Request (POST /api/token/)</button>
@@ -126,13 +139,13 @@
 
             <!-- Registration Form -->
             <form id="formRegister">
-              <h6 class="text-secondary border-bottom pb-1">Register New Account (Agent or Farmer)</h6>
+              <h6 class="text-secondary border-bottom pb-1">3. Register New Account (Agent or Farmer)</h6>
               <div class="row g-2 mb-2">
                 <div class="col-md-6">
-                  <input type="text" class="form-control form-control-sm" id="regUsername" placeholder="Username *" required>
+                  <input type="text" class="form-control form-control-sm" id="regUsername" placeholder="Mobile Number (Username) *" required>
                 </div>
                 <div class="col-md-6">
-                  <input type="password" class="form-control form-control-sm" id="regPassword" placeholder="Password *" required>
+                  <input type="password" class="form-control form-control-sm" id="regPassword" placeholder="OTP (Password) *" required>
                 </div>
               </div>
               <div class="row g-2 mb-2">
@@ -151,7 +164,7 @@
                   </select>
                 </div>
                 <div class="col-md-6">
-                  <input type="text" class="form-control form-control-sm" id="regFarmerCode" placeholder="Farmer Code (Optional)">
+                  <input type="text" class="form-control form-control-sm" id="regFarmerCode" placeholder="Farmer Code (Auto-generated if empty)">
                 </div>
               </div>
               <div class="row g-2 mb-2">
@@ -344,6 +357,22 @@ Logs and JSON responses will appear here...
         authStatusText.innerText = "Not Authenticated";
       }
     }
+
+    // Submit Generate Code
+    document.getElementById('formGenerateCode').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const phone = document.getElementById('genCodePhone').value.trim();
+      const res = await makeRequest('POST', '/generate-code/', { phone }, false);
+      if (res && res.code) {
+        logToConsole(`Verification Code for ${phone}: ${res.code}`, 'response');
+        // Pre-fill registration and login fields for testing convenience
+        document.getElementById('regPhone').value = phone;
+        document.getElementById('regUsername').value = phone;
+        document.getElementById('regPassword').value = res.code;
+        document.getElementById('loginUsername').value = phone;
+        document.getElementById('loginPassword').value = res.code;
+      }
+    });
 
     // Submit Registration
     document.getElementById('formRegister').addEventListener('submit', async (e) => {

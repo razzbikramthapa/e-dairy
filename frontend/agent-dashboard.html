@@ -3,114 +3,237 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>e-Dairy - Agent Dashboard</title>
+  <title>e-Dairy - Central Collection Centre Dashboard</title>
 
   <!-- Favicon -->
   <link rel="icon" type="image/svg+xml"
     href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%23523B8B'/><circle cx='50' cy='35' r='14' fill='%23FFB11A'/><rect x='40' y='42' width='20' height='30' rx='10' fill='%23FFB11A'/></svg>">
 
   <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
   
   <!-- Chart.js CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <!-- Stylesheets -->
   <link rel="stylesheet" href="css/index.css">
+  
   <style>
+    /* Premium Dashboard Sidebar Layout */
     body {
       background: var(--bg-gradient);
       min-height: 100vh;
       color: var(--text);
+      display: flex;
+      flex-direction: column;
     }
 
-    /* Dashboard Header styling */
-    .dash-header {
-      background: rgba(255, 255, 255, 0.85);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid rgba(82, 59, 139, 0.08);
-      position: sticky;
+    .dashboard-wrapper {
+      display: flex;
+      min-height: 100vh;
+      width: 100%;
+    }
+
+    /* Sidebar Styling */
+    .sidebar {
+      width: 280px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-right: 1px solid rgba(82, 59, 139, 0.08);
+      padding: 30px 20px;
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      height: 100vh;
+      left: 0;
       top: 0;
       z-index: 100;
       box-shadow: var(--shadow-sm);
     }
 
-    .dash-nav {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 16px 24px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .profile-info {
+    .sidebar-brand {
       display: flex;
       align-items: center;
       gap: 12px;
+      margin-bottom: 35px;
+      padding-left: 10px;
     }
 
-    .avatar {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background: var(--primary-light);
+    .sidebar-brand img {
+      width: 36px;
+      height: 36px;
+    }
+
+    .sidebar-brand .logo-text {
+      font-family: 'Outfit', sans-serif;
+      font-size: 22px;
+      font-weight: 800;
       color: var(--primary);
+    }
+
+    .sidebar-brand .logo-text span {
+      color: var(--accent);
+    }
+
+    .sidebar-profile {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 15px;
+      background: var(--primary-light);
+      border-radius: 16px;
+      margin-bottom: 30px;
+      border: 1px solid rgba(82, 59, 139, 0.05);
+    }
+
+    .sidebar-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: var(--white);
       display: flex;
       align-items: center;
       justify-content: center;
+      font-family: 'Outfit', sans-serif;
       font-weight: 700;
-      font-size: 16px;
-      border: 2px solid var(--primary);
+      font-size: 18px;
+      border: 2px solid var(--accent);
     }
 
-    .profile-details h4 {
+    .sidebar-profile-info {
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .sidebar-profile-info h4 {
       font-family: 'Outfit', sans-serif;
-      font-size: 15px;
+      font-size: 14px;
       font-weight: 700;
       color: var(--primary-dark);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
-    .profile-details span {
-      font-size: 11px;
+    .sidebar-profile-info span {
+      font-size: 10px;
       color: var(--text-muted);
       text-transform: uppercase;
-      letter-spacing: 0.5px;
       font-weight: 600;
+      letter-spacing: 0.5px;
     }
 
-    .logout-btn {
-      padding: 8px 18px;
-      border-radius: 30px;
-      background: none;
-      border: 1px solid rgba(82, 59, 139, 0.15);
+    /* Navigation Links */
+    .sidebar-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex: 1;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 18px;
+      border-radius: 12px;
+      color: var(--text-muted);
       font-weight: 600;
-      font-size: 13px;
+      font-size: 14px;
       cursor: pointer;
       transition: var(--transition);
-      color: var(--text-muted);
+      border: 1px solid transparent;
     }
 
-    .logout-btn:hover {
-      border-color: #E53935;
+    .nav-item svg {
+      width: 20px;
+      height: 20px;
+      stroke-width: 2px;
+      stroke: var(--text-muted);
+      transition: var(--transition);
+    }
+
+    .nav-item:hover {
+      background: rgba(82, 59, 139, 0.05);
+      color: var(--primary);
+    }
+
+    .nav-item:hover svg {
+      stroke: var(--primary);
+    }
+
+    .nav-item.active {
+      background: var(--primary);
+      color: var(--white);
+      border-color: var(--primary);
+      box-shadow: 0 4px 12px rgba(82, 59, 139, 0.15);
+    }
+
+    .nav-item.active svg {
+      stroke: var(--white);
+    }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding-top: 20px;
+      border-top: 1px solid rgba(82, 59, 139, 0.08);
+    }
+
+    .sidebar-logout {
+      width: 100%;
+      padding: 12px;
+      border-radius: 12px;
+      background: none;
+      border: 1px solid rgba(229, 57, 53, 0.2);
       color: #E53935;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: var(--transition);
+    }
+
+    .sidebar-logout:hover {
       background: rgba(229, 57, 53, 0.05);
+      border-color: #E53935;
     }
 
-    /* Main Container */
-    .dash-container {
-      max-width: 1200px;
-      margin: 32px auto;
-      padding: 0 24px;
-      display: grid;
-      gap: 32px;
+    /* Content Area */
+    .main-content {
+      margin-left: 280px;
+      flex: 1;
+      padding: 40px;
+      min-height: 100vh;
+      overflow-y: auto;
     }
 
+    /* Tab Panels */
+    .tab-panel {
+      display: none;
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    .tab-panel.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Header Title banner */
     .welcome-banner {
       background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
       color: var(--white);
       border-radius: 20px;
       padding: 32px;
+      margin-bottom: 32px;
       position: relative;
       overflow: hidden;
       box-shadow: var(--shadow-md);
@@ -119,8 +242,8 @@
     .welcome-banner::after {
       content: '';
       position: absolute;
-      width: 300px;
-      height: 300px;
+      width: 320px;
+      height: 320px;
       border-radius: 50%;
       background: rgba(255, 177, 26, 0.1);
       top: -100px;
@@ -146,11 +269,41 @@
       max-width: 600px;
     }
 
-    /* Stats Grid */
+    /* General Panel styling */
+    .dash-panel {
+      background: var(--white);
+      border-radius: 20px;
+      padding: 28px;
+      border: 1px solid rgba(82, 59, 139, 0.06);
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 32px;
+    }
+
+    .panel-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(82, 59, 139, 0.08);
+      padding-bottom: 16px;
+      margin-bottom: 24px;
+    }
+
+    .panel-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--primary-dark);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* Grid layouts */
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
       gap: 20px;
+      margin-bottom: 32px;
     }
 
     .stats-card {
@@ -166,100 +319,101 @@
     }
 
     .stats-card:hover {
-      transform: translateY(-5px);
+      transform: translateY(-4px);
       box-shadow: var(--shadow-md);
-      border-color: rgba(82, 59, 139, 0.15);
+      border-color: rgba(82, 59, 139, 0.12);
     }
 
     .card-label {
-      font-size: 13px;
+      font-size: 12px;
       color: var(--text-muted);
-      font-weight: 600;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
       margin-bottom: 12px;
     }
 
     .card-value {
       font-family: 'Outfit', sans-serif;
-      font-size: 28px;
+      font-size: 26px;
       font-weight: 800;
       color: var(--primary-dark);
       margin-bottom: 6px;
     }
 
-    .card-footer-text {
+    .card-subtext {
       font-size: 11px;
       color: var(--success);
       font-weight: 700;
-      display: flex;
-      align-items: center;
-      gap: 4px;
     }
 
-    .card-footer-text.neutral {
+    .card-subtext.neutral {
       color: var(--text-muted);
     }
 
-    /* Charts & Forms grid section */
-    .dash-row {
+    /* Grid Rows */
+    .grid-row-2col {
       display: grid;
-      grid-template-columns: 1.1fr 1.3fr;
+      grid-template-columns: 1fr 1fr;
       gap: 32px;
+      margin-bottom: 32px;
+    }
+
+    .grid-row-1-2 {
+      display: grid;
+      grid-template-columns: 1fr 1.8fr;
+      gap: 32px;
+      margin-bottom: 32px;
     }
 
     @media (max-width: 992px) {
-      .dash-row {
+      .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        border-right: none;
+        border-bottom: 1px solid rgba(82, 59, 139, 0.08);
+        padding: 15px 20px;
+      }
+      .sidebar-profile, .sidebar-footer {
+        display: none;
+      }
+      .sidebar-nav {
+        flex-direction: row;
+        overflow-x: auto;
+        padding-bottom: 5px;
+      }
+      .nav-item {
+        white-space: nowrap;
+      }
+      .main-content {
+        margin-left: 0;
+        padding: 24px;
+      }
+      .grid-row-2col, .grid-row-1-2 {
         grid-template-columns: 1fr;
       }
     }
 
-    .dash-panel {
-      background: var(--white);
-      border-radius: 20px;
-      padding: 28px;
-      border: 1px solid rgba(82, 59, 139, 0.06);
-      box-shadow: var(--shadow-sm);
-    }
-
-    .panel-title {
-      font-family: 'Outfit', sans-serif;
-      font-size: 18px;
-      font-weight: 700;
-      color: var(--primary-dark);
-      margin-bottom: 24px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid rgba(82, 59, 139, 0.06);
-      padding-bottom: 12px;
-    }
-
-    /* Forms */
-    .record-form {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-
+    /* Form styling */
     .form-group {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      margin-bottom: 0; /* Override */
+      margin-bottom: 20px;
     }
 
     .form-group label {
+      display: block;
       font-size: 12px;
       font-weight: 700;
       color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.5px;
+      margin-bottom: 8px;
     }
 
-    .record-form input,
-    .record-form select {
+    .form-control, .form-select {
       width: 100%;
       padding: 12px 16px;
-      border-radius: 10px;
+      border-radius: 12px;
       border: 1px solid rgba(82, 59, 139, 0.15);
       background: var(--white);
       color: var(--text);
@@ -268,50 +422,111 @@
       transition: var(--transition);
     }
 
-    .record-form input:focus,
-    .record-form select:focus {
+    .form-control:focus, .form-select:focus {
       outline: none;
       border-color: var(--primary);
       box-shadow: 0 0 0 3px rgba(82, 59, 139, 0.12);
     }
 
-    .form-row {
+    .form-row-2col {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 16px;
     }
 
-    .submit-btn {
-      width: 100%;
-      padding: 14px;
-      background: var(--accent);
+    /* Buttons */
+    .btn-action {
+      padding: 12px 24px;
+      background: var(--primary);
       color: var(--white);
       border: none;
       border-radius: 30px;
       font-weight: 700;
-      font-size: 15px;
+      font-size: 14px;
       cursor: pointer;
-      box-shadow: 0 4px 12px rgba(255, 177, 26, 0.2);
       transition: var(--transition);
-      margin-top: 10px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
     }
 
-    .submit-btn:hover:not(:disabled) {
-      background: var(--accent-hover);
+    .btn-action:hover:not(:disabled) {
+      background: var(--primary-dark);
       transform: translateY(-2px);
-      box-shadow: 0 6px 16px rgba(255, 177, 26, 0.35);
+      box-shadow: 0 4px 12px rgba(82, 59, 139, 0.2);
     }
-    
-    .submit-btn:disabled {
+
+    .btn-action:disabled {
       background: var(--text-muted);
       cursor: not-allowed;
-      box-shadow: none;
+      opacity: 0.7;
+    }
+
+    .btn-accent {
+      background: var(--accent);
+      color: var(--white);
+      box-shadow: 0 4px 12px rgba(255, 177, 26, 0.2);
+    }
+
+    .btn-accent:hover:not(:disabled) {
+      background: var(--accent-hover);
+      box-shadow: 0 6px 16px rgba(255, 177, 26, 0.35);
+    }
+
+    .btn-secondary {
+      background: none;
+      border: 1px solid rgba(82, 59, 139, 0.2);
+      color: var(--primary);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(82, 59, 139, 0.05);
+      border-color: var(--primary);
+    }
+
+    .btn-danger-outline {
+      background: none;
+      border: 1px solid rgba(229, 57, 53, 0.3);
+      color: #E53935;
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .btn-danger-outline:hover {
+      background: rgba(229, 57, 53, 0.05);
+      border-color: #E53935;
+    }
+
+    .btn-table-sm {
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: var(--transition);
+    }
+
+    .btn-table-primary {
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+    .btn-table-primary:hover {
+      background: var(--primary);
+      color: var(--white);
     }
 
     /* Table styles */
-    .table-container {
+    .table-responsive {
       width: 100%;
       overflow-x: auto;
+      border-radius: 12px;
+      border: 1px solid rgba(82, 59, 139, 0.06);
     }
 
     .dash-table {
@@ -319,12 +534,13 @@
       border-collapse: collapse;
       text-align: left;
       font-size: 13px;
+      background: var(--white);
     }
 
     .dash-table th {
       color: var(--text-muted);
       font-weight: 700;
-      padding: 12px 16px;
+      padding: 14px 18px;
       border-bottom: 2px solid rgba(82, 59, 139, 0.06);
       background: #FAF8FF;
       text-transform: uppercase;
@@ -333,468 +549,980 @@
     }
 
     .dash-table td {
-      padding: 16px;
+      padding: 16px 18px;
       border-bottom: 1px solid rgba(82, 59, 139, 0.05);
       color: var(--text);
       font-weight: 500;
     }
 
     .dash-table tr:hover {
-      background: var(--primary-light);
+      background: rgba(82, 59, 139, 0.02);
     }
 
-    .badge-session {
-      padding: 4px 8px;
+    /* Badges */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 10px;
       border-radius: 20px;
-      font-size: 10px;
+      font-size: 11px;
       font-weight: 700;
       text-transform: uppercase;
     }
 
-    .badge-session.morning {
-      background: rgba(255, 177, 26, 0.15);
-      color: var(--accent-hover);
-    }
-
-    .badge-session.evening {
-      background: rgba(82, 59, 139, 0.15);
-      color: var(--primary);
-    }
-
-    /* Alert Box */
-    .alert-box {
-      padding: 12px 18px;
-      border-radius: 10px;
-      margin-bottom: 24px;
-      display: none;
-      font-size: 13px;
-      font-weight: 600;
-    }
-    .alert-box.error {
-      background: #FFEBEE;
-      color: #C62828;
-      border: 1px solid #FFCDD2;
-      display: block;
-    }
-    .alert-box.success {
+    .badge-paid {
       background: #E8F5E9;
       color: #2E7D32;
-      border: 1px solid #C8E6C9;
-      display: block;
     }
 
-    .empty-state {
-      padding: 40px;
-      text-align: center;
+    .badge-pending {
+      background: #FFF8E1;
+      color: #F57F17;
+    }
+
+    .badge-failed {
+      background: #FFEBEE;
+      color: #C62828;
+    }
+
+    /* Toast notification styling */
+    .toast-box {
+      position: fixed;
+      top: 24px;
+      right: 24px;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .toast {
+      background: var(--white);
+      border-radius: 12px;
+      padding: 16px 24px;
+      box-shadow: var(--shadow-lg);
+      border-left: 5px solid var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .toast.success { border-left-color: var(--success); }
+    .toast.error { border-left-color: #E53935; }
+
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    /* Modal styling */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(30, 21, 42, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-box {
+      background: var(--white);
+      border-radius: 20px;
+      width: 90%;
+      max-width: 550px;
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+      animation: modalScale 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      border: 1px solid rgba(82, 59, 139, 0.1);
+    }
+
+    .modal-header {
+      background: #FAF8FF;
+      padding: 20px 28px;
+      border-bottom: 1px solid rgba(82, 59, 139, 0.08);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-header h3 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--primary-dark);
+    }
+
+    .modal-close {
+      cursor: pointer;
+      background: none;
+      border: none;
+      font-size: 22px;
       color: var(--text-muted);
     }
-    
-    .empty-state svg {
-      width: 48px;
-      height: 48px;
-      stroke: var(--text-muted);
-      margin-bottom: 12px;
-      opacity: 0.6;
+
+    .modal-body {
+      padding: 28px;
     }
 
+    @keyframes modalScale {
+      from { transform: scale(0.95); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    /* Visual Reports panel */
+    .report-summary-box {
+      background: #FAF8FF;
+      border: 1px solid rgba(82, 59, 139, 0.06);
+      border-radius: 12px;
+      padding: 18px 24px;
+      display: flex;
+      gap: 40px;
+      margin-bottom: 24px;
+    }
+
+    .report-summary-item h5 {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+
+    .report-summary-item span {
+      font-family: 'Outfit', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--primary-dark);
+    }
+
+    /* Searched Farmer profile styling */
+    .profile-card {
+      border: 1px solid rgba(82, 59, 139, 0.1);
+      border-radius: 16px;
+      padding: 20px;
+      background: #FAF8FF;
+      margin-bottom: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .profile-card-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--primary-dark);
+      border-bottom: 1px solid rgba(82, 59, 139, 0.08);
+      padding-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .profile-card-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      font-size: 13px;
+    }
+
+    .profile-card-item strong {
+      color: var(--text-muted);
+    }
   </style>
 </head>
 <body>
 
-  <!-- Dashboard Header -->
-  <header class="dash-header">
-    <div class="dash-nav">
-      <a href="index.html" class="logo-link">
-        <div class="logo-img-wrapper">
-          <img src="assets/logo.png" alt="e-Dairy Logo">
-        </div>
+  <!-- Toast Notification container -->
+  <div class="toast-box" id="toastContainer"></div>
+
+  <div class="dashboard-wrapper">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%23523B8B'/><circle cx='50' cy='35' r='14' fill='%23FFB11A'/><rect x='40' y='42' width='20' height='30' rx='10' fill='%23FFB11A'/></svg>" alt="Logo">
         <span class="logo-text">e-<span>Dairy</span></span>
-      </a>
+      </div>
 
-      <div class="profile-info">
-        <div class="avatar" id="userAvatar">C</div>
-        <div class="profile-details">
-          <h4 id="profileName">Loading User</h4>
-          <span>Collection Agent Portal</span>
+      <div class="sidebar-profile">
+        <div class="sidebar-avatar" id="sidebarAvatar">A</div>
+        <div class="sidebar-profile-info">
+          <h4 id="sidebarName">Central Operator</h4>
+          <span>Dairy Administrator</span>
         </div>
-        <button class="logout-btn" id="btnLogout">Sign Out</button>
       </div>
-    </div>
-  </header>
 
-  <!-- Main Container -->
-  <main class="dash-container">
-    
-    <!-- Welcome banner -->
-    <div class="welcome-banner">
-      <div class="welcome-content">
-        <h2 id="welcomeTitle">Welcome, Operations Agent!</h2>
-        <p>Record milk intake, assess fat analysis contents, manage farmer directory records, and verify live dairy statistics.</p>
-      </div>
-    </div>
+      <nav class="sidebar-nav">
+        <div class="nav-item active" data-tab="dashboard">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z" />
+          </svg>
+          Dashboard
+        </div>
+        <div class="nav-item" data-tab="farmers">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+          </svg>
+          Link Farmers
+        </div>
+        <div class="nav-item" data-tab="collections">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 9.172V5L8 4z" />
+          </svg>
+          Milk Intake & Quality
+        </div>
+        <div class="nav-item" data-tab="payments">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+          </svg>
+          Payouts & Payments
+        </div>
+        <div class="nav-item" data-tab="reports">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          Report Builder
+        </div>
+      </nav>
 
-    <!-- Dash Alerts -->
-    <div id="dashAlert" class="alert-box"></div>
+      <div class="sidebar-footer">
+        <button class="sidebar-logout" id="sidebarLogoutBtn">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:16px; height:16px; stroke:#E53935">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          </svg>
+          Sign Out
+        </button>
+      </div>
+    </aside>
 
-    <!-- Stats Grid -->
-    <div class="stats-grid">
-      <!-- Card 1 -->
-      <div class="stats-card">
-        <div class="card-label">Total Milk Collected</div>
-        <div class="card-value" id="valTotalMilk">0.00 L</div>
-        <div class="card-footer-text" id="lblTotalMilkCount">0 Records Logged</div>
+    <!-- Main Content Panel wrapper -->
+    <main class="main-content">
+      
+      <!-- HEADER BANNER -->
+      <div class="welcome-banner">
+        <div class="welcome-content">
+          <h2 id="welcomeBannerTitle">Welcome, central operator!</h2>
+          <p>Streamline collections, verify SNF/FAT ratios, configure bank disbursements, and generate comprehensive reports.</p>
+        </div>
       </div>
-      <!-- Card 2 -->
-      <div class="stats-card">
-        <div class="card-label">Average Fat Content</div>
-        <div class="card-value" id="valAvgFat">0.00 %</div>
-        <div class="card-footer-text neutral" id="lblAvgFatCompare">Total batch rating</div>
-      </div>
-      <!-- Card 3 -->
-      <div class="stats-card">
-        <div class="card-label">Active Farmers</div>
-        <div class="card-value" id="valActiveFarmers">0</div>
-        <div class="card-footer-text" id="lblActiveFarmersSub">Registered in system</div>
-      </div>
-      <!-- Card 4 -->
-      <div class="stats-card">
-        <div class="card-label">Total Transactions Logged</div>
-        <div class="card-value" id="valTotalTransactions">0</div>
-        <div class="card-footer-text" id="lblTransactionsRate">Dynamic scale uploads</div>
-      </div>
-    </div>
 
-    <!-- Form & Chart Grid Row -->
-    <div class="dash-row">
-      <!-- Left Panel: Form -->
-      <div class="dash-panel">
-        <div class="panel-title">1. Record New Milk Collection</div>
-        
-        <form id="recordForm" class="record-form">
+      <!-- TAB 1: DASHBOARD -->
+      <section class="tab-panel active" id="panel-dashboard">
+        <div class="stats-grid">
+          <div class="stats-card">
+            <div class="card-label">Today's Milk Collection</div>
+            <div class="card-value" id="statTodayQty">0.00 L</div>
+            <div class="card-subtext" id="statTodayAmt">Rs. 0.00 estimated value</div>
+          </div>
+          <div class="stats-card">
+            <div class="card-label">Linked Farmers</div>
+            <div class="card-value" id="statLinkedCount">0</div>
+            <div class="card-subtext neutral">Active supply directory</div>
+          </div>
+          <div class="stats-card">
+            <div class="card-label">Today's Disbursements</div>
+            <div class="card-value" id="statTodayPayments">Rs. 0.00</div>
+            <div class="card-subtext">Completed payouts</div>
+          </div>
+          <div class="stats-card">
+            <div class="card-label">Pending Payments</div>
+            <div class="card-value" id="statPendingPayments">Rs. 0.00</div>
+            <div class="card-subtext neutral">Outstanding farmer balance</div>
+          </div>
+        </div>
+
+        <div class="grid-row-1-2">
+          <!-- Left: Quick log collection -->
+          <div class="dash-panel" style="margin-bottom:0">
+            <div class="panel-title">
+              <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Quick Collection Log
+            </div>
+            <form id="quickCollectionForm" style="margin-top:20px;">
+              <div class="form-group">
+                <label for="quickFarmer">Select Farmer *</label>
+                <select id="quickFarmer" class="form-select" required>
+                  <option value="">Loading linked farmers...</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="quickSession">Shift *</label>
+                <select id="quickSession" class="form-select" required>
+                  <option value="morning">Morning</option>
+                  <option value="evening">Evening</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="quickQty">Quantity (Litres) *</label>
+                <input type="number" step="0.01" min="0.1" id="quickQty" class="form-control" placeholder="0.00" required>
+              </div>
+              <div class="form-row-2col">
+                <div class="form-group">
+                  <label for="quickFat">FAT (%) *</label>
+                  <input type="number" step="0.01" min="0.1" max="25" id="quickFat" class="form-control" placeholder="0.0" required>
+                </div>
+                <div class="form-group">
+                  <label for="quickSnf">SNF (%) *</label>
+                  <input type="number" step="0.01" min="0.1" max="20" id="quickSnf" class="form-control" placeholder="0.0" required>
+                </div>
+              </div>
+              <button type="submit" class="btn-action btn-accent w-100" id="btnQuickSubmit">Submit Record</button>
+            </form>
+          </div>
+
+          <!-- Right: Collections Chart -->
+          <div class="dash-panel" style="margin-bottom:0">
+            <div class="panel-title">Milk Intake History (Last 7 Days)</div>
+            <div style="height: 340px; position: relative; margin-top:20px;">
+              <canvas id="dashboardChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="dash-panel">
+          <div class="panel-header-row">
+            <div class="panel-title">Recent Milk Intake Logs</div>
+            <button class="btn-action btn-secondary btn-table-sm" id="btnGoToIntakeTab">Manage Intake</button>
+          </div>
+          <div class="table-responsive">
+            <table class="dash-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Farmer</th>
+                  <th>Code</th>
+                  <th>Shift</th>
+                  <th>Qty (L)</th>
+                  <th>FAT (%)</th>
+                  <th>SNF (%)</th>
+                  <th>Rate/L</th>
+                  <th>Amount</th>
+                </tr>
+              </thead>
+              <tbody id="dashboardLogsBody">
+                <tr>
+                  <td colspan="9" class="text-center py-4" style="color:var(--text-muted)">Loading recent logs...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 2: LINK FARMERS -->
+      <section class="tab-panel" id="panel-farmers">
+        <div class="grid-row-1-2">
+          <!-- Search & Link -->
+          <div class="dash-panel" style="margin-bottom:0">
+            <div class="panel-title">Search & Link Farmer</div>
+            <p style="font-size:12px; color:var(--text-muted); margin-top:4px; margin-bottom:20px;">Link farmers to Kathmandu Central Dairy using their unique Farmer Code.</p>
+            
+            <form id="searchFarmerForm" class="mb-4">
+              <div class="form-group">
+                <label for="searchCode">Farmer Code *</label>
+                <div style="display:flex; gap:10px;">
+                  <input type="text" id="searchCode" class="form-control" placeholder="e.g. F1001" required>
+                  <button type="submit" class="btn-action">Search</button>
+                </div>
+              </div>
+            </form>
+
+            <div id="searchResultArea" style="display:none;">
+              <!-- Profile details injected here -->
+            </div>
+          </div>
+
+          <!-- Linked Farmers Directory -->
+          <div class="dash-panel" style="margin-bottom:0">
+            <div class="panel-header-row">
+              <div class="panel-title">Linked Farmers Directory</div>
+              <span class="badge badge-paid" id="linkedDirectoryCount">0 Linked</span>
+            </div>
+            <div class="table-responsive">
+              <table class="dash-table">
+                <thead>
+                  <tr>
+                    <th>Code</th>
+                    <th>Full Name</th>
+                    <th>Phone</th>
+                    <th>Address</th>
+                    <th>Bank / Wallet details</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="linkedFarmersBody">
+                  <tr>
+                    <td colspan="6" class="text-center py-4" style="color:var(--text-muted)">No farmers linked yet. Search and link above.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: MILK INTAKE & QUALITY -->
+      <section class="tab-panel" id="panel-collections">
+        <div class="grid-row-1-2">
+          <!-- Full collection log form -->
+          <div class="dash-panel" style="margin-bottom:0">
+            <div class="panel-title">Record Milk Collection Entry</div>
+            <form id="fullCollectionForm" style="margin-top:20px;">
+              <div class="form-group">
+                <label for="collFarmerSelect">Farmer *</label>
+                <select id="collFarmerSelect" class="form-select" required>
+                  <option value="">Select a Linked Farmer</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="collDate">Collection Date *</label>
+                <input type="date" id="collDate" class="form-control" required>
+              </div>
+              <div class="form-group">
+                <label for="collSessionSelect">Collection Shift *</label>
+                <select id="collSessionSelect" class="form-select" required>
+                  <option value="morning">Morning Shift</option>
+                  <option value="evening">Evening Shift</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="collQtyInput">Milk Quantity (L) *</label>
+                <input type="number" step="0.01" min="0.1" id="collQtyInput" class="form-control" placeholder="0.00" required>
+              </div>
+              <div class="form-row-2col">
+                <div class="form-group">
+                  <label for="collFatInput">FAT (%) *</label>
+                  <input type="number" step="0.01" min="0.1" max="25" id="collFatInput" class="form-control" placeholder="0.0" required>
+                </div>
+                <div class="form-group">
+                  <label for="collSnfInput">SNF (%) *</label>
+                  <input type="number" step="0.01" min="0.1" max="20" id="collSnfInput" class="form-control" placeholder="0.0" required>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="collRemarks">Remarks (Optional)</label>
+                <textarea id="collRemarks" class="form-control" rows="2" placeholder="Quality comments, temperature records etc."></textarea>
+              </div>
+              <button type="submit" class="btn-action btn-accent w-100" id="btnFullSubmit">Log Intake Record</button>
+            </form>
+          </div>
+
+          <!-- Quality History list -->
+          <div class="dash-panel" style="margin-bottom:0">
+            <div class="panel-header-row">
+              <div class="panel-title">Quality & Collection History logs</div>
+              <div style="display:flex; gap:10px; align-items:center;">
+                <input type="date" id="filterDate" class="form-control" style="padding: 6px 12px; font-size:12px; width:130px;">
+                <select id="filterShift" class="form-select" style="padding: 6px 12px; font-size:12px; width:100px;">
+                  <option value="">All Shifts</option>
+                  <option value="morning">Morning</option>
+                  <option value="evening">Evening</option>
+                </select>
+              </div>
+            </div>
+            <div class="table-responsive">
+              <table class="dash-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Farmer</th>
+                    <th>Shift</th>
+                    <th>Qty (L)</th>
+                    <th>FAT (%)</th>
+                    <th>SNF (%)</th>
+                    <th>Payout/L</th>
+                    <th>Total</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="qualityHistoryBody">
+                  <tr>
+                    <td colspan="9" class="text-center py-4" style="color:var(--text-muted)">No quality logs matches search criteria.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 4: PAYOUTS & PAYMENTS -->
+      <section class="tab-panel" id="panel-payments">
+        <!-- Payout summaries -->
+        <div class="dash-panel">
+          <div class="panel-title">Farmers Outstanding Balances</div>
+          <p style="font-size:12px; color:var(--text-muted); margin-top:4px; margin-bottom:20px;">List of all linked farmers and their outstanding payable milk balances.</p>
+          <div class="table-responsive">
+            <table class="dash-table">
+              <thead>
+                <tr>
+                  <th>Code</th>
+                  <th>Full Name</th>
+                  <th>Total Earned (Rs.)</th>
+                  <th>Total Payouts Done (Rs.)</th>
+                  <th>Outstanding Balance</th>
+                  <th>Bank Details</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="payoutFarmersBody">
+                <tr>
+                  <td colspan="7" class="text-center py-4" style="color:var(--text-muted)">Loading outstanding farmer balances...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Payments processed log -->
+        <div class="dash-panel">
+          <div class="panel-title">Payouts Disbursement History</div>
+          <p style="font-size:12px; color:var(--text-muted); margin-top:4px; margin-bottom:20px;">Logs of all financial payout transactions processed for dairy suppliers.</p>
+          <div class="table-responsive">
+            <table class="dash-table">
+              <thead>
+                <tr>
+                  <th>Date & Time</th>
+                  <th>Farmer</th>
+                  <th>Method</th>
+                  <th>Total Amount</th>
+                  <th>Paid Amount</th>
+                  <th>Deductions</th>
+                  <th>Pending Left</th>
+                  <th>Status</th>
+                  <th>Ref Number</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="paymentsHistoryBody">
+                <tr>
+                  <td colspan="10" class="text-center py-4" style="color:var(--text-muted)">No payouts logged yet.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 5: REPORTS -->
+      <section class="tab-panel" id="panel-reports">
+        <div class="dash-panel">
+          <div class="panel-title">Generate Reports & Analytics</div>
+          <form id="reportBuilderForm" style="margin-top:20px;" class="mb-4">
+            <div class="grid-row-2col" style="margin-bottom:0; gap:20px;">
+              <div class="form-group">
+                <label for="reportType">Report Template *</label>
+                <select id="reportType" class="form-select" required>
+                  <option value="">Select Report Type</option>
+                  <option value="daily_collection">Daily Milk Collection Report</option>
+                  <option value="farmer_collection">Farmer-wise Milk Collection Report</option>
+                  <option value="dairy_collection">Dairy-wise Monthly Collection Report</option>
+                  <option value="quality_report">FAT/SNF Quality Analysis Report</option>
+                  <option value="daily_payment">Daily Payouts Report</option>
+                  <option value="monthly_payment">Monthly Payouts Audit Report</option>
+                  <option value="pending_payment">Outstanding Balances (Pending Payments) Report</option>
+                  <option value="farmer_payment">Farmer-wise Payments Payout Logs</option>
+                </select>
+              </div>
+
+              <div class="form-group" id="reportDateGroup">
+                <label for="reportDate">Report Date *</label>
+                <input type="date" id="reportDate" class="form-control">
+              </div>
+            </div>
+
+            <div class="grid-row-2col" style="margin-bottom:20px; gap:20px;">
+              <div class="form-group" id="reportFarmerGroup" style="display:none;">
+                <label for="reportFarmer">Select Farmer *</label>
+                <select id="reportFarmer" class="form-select">
+                  <option value="">Select Farmer</option>
+                </select>
+              </div>
+
+              <div class="form-row-2col" id="reportMonthYearGroup" style="display:none; width: 100%;">
+                <div class="form-group" style="width: 100%;">
+                  <label for="reportMonth">Month</label>
+                  <select id="reportMonth" class="form-select">
+                    <option value="1">January</option>
+                    <option value="2">February</option>
+                    <option value="3">March</option>
+                    <option value="4">April</option>
+                    <option value="5">May</option>
+                    <option value="6">June</option>
+                    <option value="7">July</option>
+                    <option value="8">August</option>
+                    <option value="9">September</option>
+                    <option value="10">October</option>
+                    <option value="11">November</option>
+                    <option value="12">December</option>
+                  </select>
+                </div>
+                <div class="form-group" style="width: 100%;">
+                  <label for="reportYear">Year</label>
+                  <select id="reportYear" class="form-select">
+                    <option value="2026">2026</option>
+                    <option value="2027">2027</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <button type="submit" class="btn-action btn-accent" id="btnGenerateReport">Compile Report</button>
+          </form>
+
+          <div id="reportContainer" style="display:none; border-top: 1px solid rgba(82,59,139,0.08); padding-top:24px;">
+            <div class="panel-header-row">
+              <div>
+                <h4 id="reportTitle" style="font-family:'Outfit',sans-serif; color:var(--primary-dark); font-size:18px;">Daily Collection Report</h4>
+                <p id="reportSub" style="font-size:12px; color:var(--text-muted)">COMPILED FOR: 2026-07-09</p>
+              </div>
+              <div style="display:flex; gap:10px;">
+                <button class="btn-action btn-secondary btn-table-sm" id="btnExportCSV">Export CSV</button>
+                <button class="btn-action btn-secondary btn-table-sm" id="btnPrintReport">Print Report</button>
+              </div>
+            </div>
+
+            <div class="report-summary-box" id="reportSummaryBox">
+              <!-- Summary cards dynamically injected here -->
+            </div>
+
+            <div class="table-responsive">
+              <table class="dash-table" id="reportTable">
+                <thead id="reportTableHead">
+                  <!-- Injected by JavaScript -->
+                </thead>
+                <tbody id="reportTableBody">
+                  <!-- Injected by JavaScript -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- MODAL: PAYOUT FORM -->
+  <div class="modal-overlay" id="paymentModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>Process Farmer Payment Payout</h3>
+        <button class="modal-close" id="btnClosePaymentModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="paymentModalForm">
+          <input type="hidden" id="payFarmerId">
+          <div class="profile-card">
+            <div class="profile-card-title">
+              <span id="payFarmerName">Ram Dev (F1001)</span>
+              <span class="badge badge-pending">Active Link</span>
+            </div>
+            <div class="profile-card-grid">
+              <div class="profile-card-item">
+                <strong>Bank Account:</strong> <span id="payBankAcc">Global IME Bank</span>
+              </div>
+              <div class="profile-card-item">
+                <strong>Holder Name:</strong> <span id="payBankHolder">Ram Dev</span>
+              </div>
+              <div class="profile-card-item">
+                <strong>Account No:</strong> <span id="payBankNo">10020100050</span>
+              </div>
+              <div class="profile-card-item">
+                <strong>eWallet:</strong> <span id="payWallet">9845551234</span>
+              </div>
+            </div>
+          </div>
+
           <div class="form-group">
-            <label for="collFarmer">Select Farmer *</label>
-            <select id="collFarmer" required>
-              <option value="">Loading farmers...</option>
+            <label>Outstanding Balance Payable</label>
+            <div style="font-family:'Outfit',sans-serif; font-size:24px; font-weight:800; color:var(--primary)">
+              Rs. <span id="payOutstandingLabel">0.00</span>
+            </div>
+          </div>
+
+          <div class="form-row-2col">
+            <div class="form-group">
+              <label for="payAmount">Payout Amount (Rs.) *</label>
+              <input type="number" step="0.01" min="1" id="payAmount" class="form-control" placeholder="0.00" required>
+            </div>
+            <div class="form-group">
+              <label for="payDeductions">Deductions (Rs.)</label>
+              <input type="number" step="0.01" min="0" id="payDeductions" class="form-control" value="0.00">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="payMethod">Payment Method *</label>
+            <select id="payMethod" class="form-select" required>
+              <option value="cash">Cash</option>
+              <option value="bank_transfer">Bank Transfer</option>
+              <option value="wallet">Demo Wallet</option>
             </select>
           </div>
 
-          <div class="form-row">
-            <div class="form-group">
-              <label for="collSession">Session *</label>
-              <select id="collSession" required>
-                <option value="morning">Morning</option>
-                <option value="evening">Evening</option>
-              </select>
-            </div>
-            
-            <div class="form-group">
-              <label for="collQuantity">Quantity (Litres) *</label>
-              <input type="number" id="collQuantity" step="0.01" min="0.1" placeholder="e.g. 15.50" required>
-            </div>
+          <div class="form-group">
+            <label for="payRef">Transaction Reference (Optional)</label>
+            <input type="text" id="payRef" class="form-control" placeholder="e.g. TXN-1092839">
           </div>
 
-          <div class="form-row">
-            <div class="form-group">
-              <label for="collFat">Fat Content (%) *</label>
-              <input type="number" id="collFat" step="0.01" min="0.1" max="25.0" placeholder="e.g. 4.2" required>
-            </div>
-
-            <div class="form-group">
-              <label for="collSnf">SNF Content (%) *</label>
-              <input type="number" id="collSnf" step="0.01" min="0.1" max="20.0" placeholder="e.g. 8.5" required>
-            </div>
-          </div>
-
-          <button type="submit" class="submit-btn" id="btnSubmitRecord">Log Collection Record</button>
+          <button type="submit" class="btn-action btn-accent w-100" id="btnConfirmPayment">Disburse Payment</button>
         </form>
       </div>
+    </div>
+  </div>
 
-      <!-- Right Panel: Chart -->
-      <div class="dash-panel">
-        <div class="panel-title">Milk Collections Intake Chart (Last 7 Days)</div>
-        <div style="height: 320px; position: relative;">
-          <canvas id="yieldChart"></canvas>
-        </div>
+  <!-- MODAL: EDIT QUALITY -->
+  <div class="modal-overlay" id="qualityModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>Update Milk Quality Record</h3>
+        <button class="modal-close" id="btnCloseQualityModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="qualityModalForm">
+          <input type="hidden" id="editQualityId">
+          <div class="form-group">
+            <label>Record Details</label>
+            <div style="font-size:13px; color:var(--text-muted);" id="editQualityLabel">
+              Loading...
+            </div>
+          </div>
+          <div class="form-row-2col">
+            <div class="form-group">
+              <label for="editFat">FAT (%) *</label>
+              <input type="number" step="0.01" min="0.1" max="25" id="editFat" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label for="editSnf">SNF (%) *</label>
+              <input type="number" step="0.01" min="0.1" max="20" id="editSnf" class="form-control" required>
+            </div>
+          </div>
+          <button type="submit" class="btn-action btn-accent w-100" id="btnSaveQuality">Save Changes</button>
+        </form>
       </div>
     </div>
+  </div>
 
-    <!-- Recent Logs panel -->
-    <div class="dash-panel">
-      <div class="panel-title">Recent Milk Collection Operations Logs</div>
-      <div class="table-container">
-        <table class="dash-table" id="tableRecords">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Farmer Name</th>
-              <th>Farmer Code</th>
-              <th>Session</th>
-              <th>Quantity (L)</th>
-              <th>FAT (%)</th>
-              <th>SNF (%)</th>
-              <th>Rate / L</th>
-              <th>Amount</th>
-              <th>Collected By</th>
-            </tr>
-          </thead>
-          <tbody id="tableBody">
-            <tr>
-              <td colspan="10" class="text-center py-4" style="color: var(--text-muted)">Loading recent logs...</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-  </main>
-
+  <!-- JavaScript client-side controllers -->
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      // Elements
-      const profileName = document.getElementById('profileName');
-      const welcomeTitle = document.getElementById('welcomeTitle');
-      const userAvatar = document.getElementById('userAvatar');
-      const btnLogout = document.getElementById('btnLogout');
-      const dashAlert = document.getElementById('dashAlert');
-
-      // Card elements
-      const valTotalMilk = document.getElementById('valTotalMilk');
-      const lblTotalMilkCount = document.getElementById('lblTotalMilkCount');
-      const valAvgFat = document.getElementById('valAvgFat');
-      const valActiveFarmers = document.getElementById('valActiveFarmers');
-      const valTotalTransactions = document.getElementById('valTotalTransactions');
-
-      // Form inputs
-      const recordForm = document.getElementById('recordForm');
-      const collFarmer = document.getElementById('collFarmer');
-      const collSession = document.getElementById('collSession');
-      const collQuantity = document.getElementById('collQuantity');
-      const collFat = document.getElementById('collFat');
-      const collSnf = document.getElementById('collSnf');
-      const btnSubmitRecord = document.getElementById('btnSubmitRecord');
-
-      // Tables
-      const tableBody = document.getElementById('tableBody');
-
-      // JWT Authentication check
+      // Configuration & Session
       const token = localStorage.getItem('e_dairy_token');
       const role = localStorage.getItem('e_dairy_role');
 
       if (!token || role !== 'agent') {
-        // Not authorized, go back to login
         localStorage.clear();
         window.location.href = 'login.html';
         return;
       }
 
-      // Logout handler
-      btnLogout.addEventListener('click', () => {
+      const API_BASE_URL = window.location.origin + '/api';
+
+      // Load Session Profiling info
+      let activeLinkedFarmers = [];
+      let lastReportGeneratedData = null;
+
+      // DOM Elements - Sidebar Profiling
+      const sidebarAvatar = document.getElementById('sidebarAvatar');
+      const sidebarName = document.getElementById('sidebarName');
+      const welcomeBannerTitle = document.getElementById('welcomeBannerTitle');
+      const sidebarLogoutBtn = document.getElementById('sidebarLogoutBtn');
+
+      // Toast Notification Helper
+      function showToast(msg, type = 'success') {
+        const toastContainer = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        
+        let strokeColor = type === 'success' ? '#4CAF50' : '#E53935';
+        toast.innerHTML = `
+          <svg fill="none" viewBox="0 0 24 24" stroke="${strokeColor}" style="width:20px; height:20px;">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span>${msg}</span>
+        `;
+        toastContainer.appendChild(toast);
+        setTimeout(() => {
+          toast.style.opacity = '0';
+          toast.style.transform = 'translateX(100%)';
+          setTimeout(() => toast.remove(), 400);
+        }, 3500);
+      }
+
+      // Logout
+      sidebarLogoutBtn.addEventListener('click', () => {
         localStorage.clear();
         window.location.href = 'login.html';
       });
 
-      // API Config
-      const API_BASE_URL = window.location.origin + '/api';
+      // Tab Management
+      const navItems = document.querySelectorAll('.nav-item');
+      const tabPanels = document.querySelectorAll('.tab-panel');
 
-      // Alert helper
-      function showAlert(msg, type = 'error') {
-        dashAlert.innerText = msg;
-        dashAlert.className = `alert-box ${type}`;
-        dashAlert.style.display = "block";
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
+      navItems.forEach(item => {
+        item.addEventListener('click', () => {
+          navItems.forEach(i => i.classList.remove('active'));
+          tabPanels.forEach(p => p.classList.remove('active'));
 
-      function clearAlert() {
-        dashAlert.innerText = '';
-        dashAlert.className = 'alert-box';
-        dashAlert.style.display = 'none';
-      }
+          item.classList.add('active');
+          const activeTab = item.getAttribute('data-tab');
+          document.getElementById(`panel-${activeTab}`).classList.add('active');
+          
+          // Custom tab reload logic
+          if (activeTab === 'dashboard') {
+            loadDashboardStats();
+          } else if (activeTab === 'farmers') {
+            loadLinkedFarmers();
+          } else if (activeTab === 'collections') {
+            loadIntakeAndHistory();
+          } else if (activeTab === 'payments') {
+            loadPaymentsTab();
+          } else if (activeTab === 'reports') {
+            loadReportsTab();
+          }
+        });
+      });
 
-      // Fetch dashboard details & operations details
-      async function loadDashboard() {
+      // Global Date defaults to Today
+      const todayString = new Date().toISOString().split('T')[0];
+      document.getElementById('collDate').value = todayString;
+      document.getElementById('filterDate').value = todayString;
+      document.getElementById('reportDate').value = todayString;
+
+      // ───────────────────────────────────────────────────────────────────────
+      // INITIAL LOADS & DROPDOWNS
+      // ───────────────────────────────────────────────────────────────────────
+      async function loadProfile() {
         try {
-          // Fetch Profile
-          const profileResponse = await fetch(`${API_BASE_URL}/profile/`, {
+          const res = await fetch(`${API_BASE_URL}/profile/`, {
             headers: { 'Authorization': `Bearer ${token}` }
           });
-          if (!profileResponse.ok) throw new Error("Authentication failed");
-          const profile = await profileResponse.json();
-
-          // Populate profile elements
+          if (!res.ok) throw new Error("Verification failed.");
+          const profile = await res.json();
+          
           const fullName = `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || profile.username;
-          profileName.innerText = fullName;
-          welcomeTitle.innerText = `Welcome, ${fullName}!`;
-          userAvatar.innerText = (profile.first_name || profile.username || 'A').charAt(0).toUpperCase();
+          sidebarName.innerText = fullName;
+          welcomeBannerTitle.innerText = `Welcome, ${fullName}!`;
+          sidebarAvatar.innerText = (profile.first_name || profile.username || 'A').charAt(0).toUpperCase();
+        } catch (err) {
+          console.error(err);
+          showToast("Failed to load user profile session.", "error");
+        }
+      }
 
-          // Fetch Dashboard statistics
-          const statsResponse = await fetch(`${API_BASE_URL}/dashboard/`, {
+      async function populateFarmerDropdowns() {
+        try {
+          const res = await fetch(`${API_BASE_URL}/dairy/linked-farmers/`, {
             headers: { 'Authorization': `Bearer ${token}` }
           });
-          if (!statsResponse.ok) throw new Error("Failed to load dashboard data");
-          const stats = await statsResponse.json();
+          if (!res.ok) throw new Error("Failed to load directory.");
+          activeLinkedFarmers = await res.json();
+          
+          // Dropdowns
+          const quickFarmer = document.getElementById('quickFarmer');
+          const collFarmerSelect = document.getElementById('collFarmerSelect');
+          const reportFarmer = document.getElementById('reportFarmer');
+          
+          let optionsHtml = '<option value="">Select Farmer *</option>';
+          activeLinkedFarmers.forEach(lf => {
+            optionsHtml += `<option value="${lf.farmer}">${lf.farmer_name} (${lf.farmer_code})</option>`;
+          });
+          
+          quickFarmer.innerHTML = optionsHtml;
+          collFarmerSelect.innerHTML = optionsHtml;
+          reportFarmer.innerHTML = '<option value="">-- All Farmers --</option>' + optionsHtml.replace('Select Farmer *', '');
+        } catch (err) {
+          console.error(err);
+        }
+      }
 
-          // Populate Summary cards
-          valTotalMilk.innerText = `${stats.summary.total_milk.toFixed(2)} L`;
-          lblTotalMilkCount.innerText = `${stats.summary.total_collections} Records Logged`;
-          valAvgFat.innerText = `${stats.summary.avg_fat.toFixed(2)} %`;
-          valActiveFarmers.innerText = stats.summary.active_farmers;
-          valTotalTransactions.innerText = stats.summary.total_collections;
+      // ───────────────────────────────────────────────────────────────────────
+      // TAB 1: DASHBOARD
+      // ───────────────────────────────────────────────────────────────────────
+      let dashboardChartObj = null;
 
-          // Populate recent records in table
-          const records = stats.recent_records || [];
-          if (records.length === 0) {
-            tableBody.innerHTML = `
-              <tr>
-                <td colspan="10" class="text-center py-4">
-                  <div class="empty-state">
-                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                    </svg>
-                    <p>No milk intake collections recorded today.</p>
-                  </div>
-                </td>
-              </tr>
-            `;
+      async function loadDashboardStats() {
+        try {
+          const res = await fetch(`${API_BASE_URL}/dairy/dashboard/`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (!res.ok) throw new Error();
+          const data = await res.json();
+
+          document.getElementById('statTodayQty').innerText = `${data.today_total_quantity.toFixed(2)} L`;
+          document.getElementById('statTodayAmt').innerText = `Rs. ${data.today_total_amount.toFixed(2)} estimated value`;
+          document.getElementById('statLinkedCount').innerText = data.linked_farmers;
+          document.getElementById('statTodayPayments').innerText = `Rs. ${data.today_total_payments.toFixed(2)}`;
+          document.getElementById('statPendingPayments').innerText = `Rs. ${data.pending_payments.toFixed(2)}`;
+
+          // Load recent collections body
+          const recentLogs = data.recent_collections || [];
+          const logsBody = document.getElementById('dashboardLogsBody');
+          
+          if (recentLogs.length === 0) {
+            logsBody.innerHTML = '<tr><td colspan="9" class="text-center">No collections recorded today.</td></tr>';
           } else {
-            let trHtml = '';
-            records.forEach(rec => {
-              const recAmt = parseFloat(rec.amount) || 0;
-              const recSnf = parseFloat(rec.snf) || 0;
-              const recDate = rec.date || new Date(rec.timestamp).toLocaleDateString();
-
-              trHtml += `
+            let trs = '';
+            recentLogs.forEach(r => {
+              trs += `
                 <tr>
-                  <td>${recDate}</td>
-                  <td style="font-weight:600; color:var(--primary-dark);">${rec.farmer_name || rec.farmer_username}</td>
-                  <td>${rec.farmer_code || 'N/A'}</td>
-                  <td><span class="badge-session ${rec.session}">${rec.session}</span></td>
-                  <td>${parseFloat(rec.quantity).toFixed(2)} L</td>
-                  <td>${parseFloat(rec.fat).toFixed(2)} %</td>
-                  <td>${recSnf.toFixed(2)} %</td>
-                  <td>Rs. ${parseFloat(rec.rate).toFixed(2)}</td>
-                  <td style="color:var(--primary); font-weight:700;">Rs. ${recAmt.toFixed(2)}</td>
-                  <td>${rec.agent_name || rec.collected_by || 'System'}</td>
+                  <td>${r.date}</td>
+                  <td>${r.farmer_name}</td>
+                  <td><code>${r.farmer_code}</code></td>
+                  <td><span class="badge ${r.session === 'morning' ? 'badge-pending' : 'badge-paid'}">${r.session}</span></td>
+                  <td>${parseFloat(r.quantity).toFixed(2)} L</td>
+                  <td>${parseFloat(r.fat).toFixed(2)} %</td>
+                  <td>${parseFloat(r.snf).toFixed(2)} %</td>
+                  <td>Rs. ${parseFloat(r.rate).toFixed(2)}</td>
+                  <td style="font-weight:700; color:var(--primary)">Rs. ${parseFloat(r.amount).toFixed(2)}</td>
                 </tr>
               `;
             });
-            tableBody.innerHTML = trHtml;
+            logsBody.innerHTML = trs;
           }
 
-          // Build Chart
-          renderChart(stats.chart_data || []);
-
-        } catch (err) {
-          console.error(err);
-          showAlert("Error loading dashboard operations details: " + err.message);
-        }
-      }
-
-      // Fetch Farmers to populate dropdown
-      async function loadFarmers() {
-        try {
-          const response = await fetch(`${API_BASE_URL}/farmers/`, {
+          // Fetch general statistics for weekly chart
+          const statsRes = await fetch(`${API_BASE_URL}/dashboard/`, {
             headers: { 'Authorization': `Bearer ${token}` }
           });
-          if (!response.ok) throw new Error("Failed to fetch farmers list");
-          const farmers = await response.json();
-
-          let optionsHtml = '<option value="">Select a Farmer *</option>';
-          farmers.forEach(farmer => {
-            const displayName = `${farmer.first_name || ''} ${farmer.last_name || ''}`.trim() || farmer.username;
-            const code = farmer.profile?.farmer_code || farmer.username;
-            optionsHtml += `<option value="${farmer.id}">${displayName} (${code})</option>`;
-          });
-          collFarmer.innerHTML = optionsHtml;
+          if (statsRes.ok) {
+            const statsData = await statsRes.json();
+            renderDashboardChart(statsData.chart_data || []);
+          }
         } catch (err) {
-          console.error(err);
-          collFarmer.innerHTML = '<option value="">Error loading farmers list</option>';
+          showToast("Failed to fetch dashboard summaries.", "error");
         }
       }
 
-      // Submit Record form handler
-      recordForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        clearAlert();
-
-        const farmerId = collFarmer.value;
-        const session = collSession.value;
-        const quantity = parseFloat(collQuantity.value);
-        const fat = parseFloat(collFat.value);
-        const snf = parseFloat(collSnf.value);
-
-        if (!farmerId || !session || isNaN(quantity) || isNaN(fat) || isNaN(snf)) {
-          showAlert("All fields marked * are required.");
-          return;
-        }
-
-        btnSubmitRecord.disabled = true;
-        btnSubmitRecord.innerText = 'Submitting record...';
-
-        try {
-          const response = await fetch(`${API_BASE_URL}/collection/`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({
-              farmer: parseInt(farmerId),
-              session,
-              quantity,
-              fat,
-              snf
-            })
-          });
-          const data = await response.json();
-
-          if (response.ok) {
-            showAlert("Milk collection record saved successfully!", "success");
-            // Reset input values but keep farmer and session for quicker entry
-            collQuantity.value = '';
-            collFat.value = '';
-            collSnf.value = '';
-            
-            // Reload statistics
-            await loadDashboard();
-          } else {
-            let errorMsg = 'Failed to submit record.';
-            if (data.detail) {
-              errorMsg = data.detail;
-            } else if (typeof data === 'object') {
-              const keys = Object.keys(data);
-              if (keys.length > 0) {
-                errorMsg = `${keys[0]}: ${data[keys[0]][0]}`;
-              }
-            }
-            showAlert(errorMsg);
-          }
-        } catch (err) {
-          console.error(err);
-          showAlert("Failed to connect to backend scale servers.");
-        } finally {
-          btnSubmitRecord.disabled = false;
-          btnSubmitRecord.innerText = 'Log Collection Record';
-        }
-      });
-
-      // Chart.js initialization
-      let myChart = null;
-      function renderChart(chartData) {
-        const ctx = document.getElementById('yieldChart').getContext('2d');
+      function renderDashboardChart(chartData) {
+        const ctx = document.getElementById('dashboardChart').getContext('2d');
         const labels = chartData.map(d => d.day);
-        const data = chartData.map(d => d.total);
+        const totals = chartData.map(d => d.total);
 
-        if (myChart) {
-          myChart.destroy();
-        }
+        if (dashboardChartObj) dashboardChartObj.destroy();
 
-        myChart = new Chart(ctx, {
+        dashboardChartObj = new Chart(ctx, {
           type: 'bar',
           data: {
             labels: labels,
             datasets: [{
-              label: 'Total Collections (Litres)',
-              data: data,
+              label: 'Milk intake (Litres)',
+              data: totals,
               backgroundColor: '#523B8B',
               borderColor: '#523B8B',
               borderWidth: 1,
@@ -805,41 +1533,932 @@
           options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: {
-              legend: {
-                display: false
-              }
-            },
+            plugins: { legend: { display: false } },
             scales: {
-              y: {
-                beginAtZero: true,
-                grid: {
-                  color: 'rgba(82, 59, 139, 0.05)'
-                },
-                ticks: {
-                  font: {
-                    family: 'Inter'
-                  }
-                }
-              },
-              x: {
-                grid: {
-                  display: false
-                },
-                ticks: {
-                  font: {
-                    family: 'Inter'
-                  }
-                }
-              }
+              y: { beginAtZero: true, grid: { color: 'rgba(82, 59, 139, 0.05)' } },
+              x: { grid: { display: false } }
             }
           }
         });
       }
 
-      // Initial loads
-      loadDashboard();
-      loadFarmers();
+      // Quick record form submission
+      document.getElementById('quickCollectionForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const farmerId = document.getElementById('quickFarmer').value;
+        const session = document.getElementById('quickSession').value;
+        const qty = parseFloat(document.getElementById('quickQty').value);
+        const fat = parseFloat(document.getElementById('quickFat').value);
+        const snf = parseFloat(document.getElementById('quickSnf').value);
+
+        const btn = document.getElementById('btnQuickSubmit');
+        btn.disabled = true;
+
+        try {
+          const res = await fetch(`${API_BASE_URL}/dairy/record-collection/`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              farmer: parseInt(farmerId),
+              session: session,
+              quantity: qty,
+              fat: fat,
+              snf: snf,
+              date: todayString
+            })
+          });
+          const data = await res.json();
+          if (res.ok) {
+            showToast("Milk collection saved successfully!", "success");
+            document.getElementById('quickQty').value = '';
+            document.getElementById('quickFat').value = '';
+            document.getElementById('quickSnf').value = '';
+            loadDashboardStats();
+          } else {
+            showToast(data.detail || "Validation check error.", "error");
+          }
+        } catch (err) {
+          showToast("Network failure connection.", "error");
+        } finally {
+          btn.disabled = false;
+        }
+      });
+
+      document.getElementById('btnGoToIntakeTab').addEventListener('click', () => {
+        document.querySelector('[data-tab="collections"]').click();
+      });
+
+
+      // ───────────────────────────────────────────────────────────────────────
+      // TAB 2: LINK FARMERS
+      // ───────────────────────────────────────────────────────────────────────
+      const searchFarmerForm = document.getElementById('searchFarmerForm');
+      const searchResultArea = document.getElementById('searchResultArea');
+      const searchCodeInput = document.getElementById('searchCode');
+
+      searchFarmerForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const code = searchCodeInput.value.trim();
+        if (!code) return;
+
+        try {
+          const res = await fetch(`${API_BASE_URL}/dairy/search-farmer/?farmer_code=${code}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          const data = await res.json();
+
+          if (res.ok) {
+            searchResultArea.style.display = 'block';
+            let bankName = data.bank_details.bank_name || 'N/A';
+            let accNo = data.bank_details.account_number || 'N/A';
+            let holder = data.bank_details.account_holder_name || 'N/A';
+            
+            let btnHtml = '';
+            if (data.is_linked) {
+              btnHtml = `<span class="badge badge-paid">Connected to your Dairy</span>`;
+            } else {
+              btnHtml = `<button type="button" class="btn-action btn-accent w-100" id="btnLinkAction" data-code="${data.farmer_code}">Link to Kathmandu Central Dairy</button>`;
+            }
+
+            searchResultArea.innerHTML = `
+              <div class="profile-card">
+                <div class="profile-card-title">
+                  <span>${data.first_name} ${data.last_name} (${data.farmer_code})</span>
+                </div>
+                <div class="profile-card-grid">
+                  <div class="profile-card-item"><strong>Phone:</strong> ${data.phone || 'N/A'}</div>
+                  <div class="profile-card-item"><strong>Address:</strong> ${data.address || 'N/A'}</div>
+                  <div class="profile-card-item"><strong>Bank Name:</strong> ${bankName}</div>
+                  <div class="profile-card-item"><strong>Account Holder:</strong> ${holder}</div>
+                  <div class="profile-card-item"><strong>Account Number:</strong> ${accNo}</div>
+                  <div class="profile-card-item"><strong>Wallet No:</strong> ${data.bank_details.wallet_number || 'N/A'}</div>
+                </div>
+                <div style="margin-top:15px;">
+                  ${btnHtml}
+                </div>
+              </div>
+            `;
+
+            const btnLink = document.getElementById('btnLinkAction');
+            if (btnLink) {
+              btnLink.addEventListener('click', async () => {
+                try {
+                  const linkRes = await fetch(`${API_BASE_URL}/dairy/link-farmer/`, {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ farmer_code: data.farmer_code })
+                  });
+                  const linkData = await linkRes.json();
+                  if (linkRes.ok) {
+                    showToast("Farmer linked successfully!", "success");
+                    searchCodeInput.value = '';
+                    searchResultArea.style.display = 'none';
+                    loadLinkedFarmers();
+                    populateFarmerDropdowns();
+                  } else {
+                    showToast(linkData.detail || "Linking failed.", "error");
+                  }
+                } catch (err) {
+                  showToast("Network linking connection failure.", "error");
+                }
+              });
+            }
+          } else {
+            searchResultArea.style.display = 'block';
+            searchResultArea.innerHTML = `<div class="alert-box error">${data.detail || "Farmer not found."}</div>`;
+          }
+        } catch (err) {
+          showToast("Network searching connection failure.", "error");
+        }
+      });
+
+      async function loadLinkedFarmers() {
+        try {
+          const res = await fetch(`${API_BASE_URL}/dairy/linked-farmers/`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          const data = await res.json();
+          
+          document.getElementById('linkedDirectoryCount').innerText = `${data.length} Linked`;
+          const body = document.getElementById('linkedFarmersBody');
+
+          if (data.length === 0) {
+            body.innerHTML = '<tr><td colspan="6" class="text-center py-4">No linked farmers. Search and link them above.</td></tr>';
+          } else {
+            let trs = '';
+            data.forEach(lf => {
+              let bankInfo = 'N/A';
+              if (lf.bank_details && lf.bank_details.bank_name) {
+                bankInfo = `${lf.bank_details.bank_name}<br><small>${lf.bank_details.account_number}</small>`;
+              } else if (lf.bank_details && lf.bank_details.wallet_number) {
+                bankInfo = `Wallet: ${lf.bank_details.wallet_number}`;
+              }
+
+              trs += `
+                <tr>
+                  <td><code>${lf.farmer_code}</code></td>
+                  <td style="font-weight:600; color:var(--primary-dark)">${lf.farmer_name}</td>
+                  <td>${lf.farmer_phone || 'N/A'}</td>
+                  <td>${lf.farmer_address || 'N/A'}</td>
+                  <td>${bankInfo}</td>
+                  <td>
+                    <button class="btn-danger-outline btn-unlink" data-id="${lf.farmer}">Deactivate Link</button>
+                  </td>
+                </tr>
+              `;
+            });
+            body.innerHTML = trs;
+
+            // Bind unlinking event
+            document.querySelectorAll('.btn-unlink').forEach(btn => {
+              btn.addEventListener('click', async () => {
+                const id = btn.getAttribute('data-id');
+                if (!confirm("Are you sure you want to deactivate/unlink this farmer?")) return;
+
+                try {
+                  const res = await fetch(`${API_BASE_URL}/dairy/deactivate-farmer/`, {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ farmer_id: parseInt(id) })
+                  });
+                  if (res.ok) {
+                    showToast("Link deactivated successfully.");
+                    loadLinkedFarmers();
+                    populateFarmerDropdowns();
+                  } else {
+                    showToast("Unlinking failed.", "error");
+                  }
+                } catch (err) {
+                  showToast("Connection failed.", "error");
+                }
+              });
+            });
+          }
+        } catch (err) {
+          showToast("Failed to load directory.", "error");
+        }
+      }
+
+
+      // ───────────────────────────────────────────────────────────────────────
+      // TAB 3: MILK INTAKE & QUALITY HISTORIES
+      // ───────────────────────────────────────────────────────────────────────
+      const fullCollectionForm = document.getElementById('fullCollectionForm');
+      const qualityHistoryBody = document.getElementById('qualityHistoryBody');
+      const filterDateInput = document.getElementById('filterDate');
+      const filterShiftSelect = document.getElementById('filterShift');
+
+      // Fetch collection and quality history
+      async function loadIntakeAndHistory() {
+        const date = filterDateInput.value;
+        const shift = filterShiftSelect.value;
+        
+        let url = `${API_BASE_URL}/collection/`;
+        let queryParams = [];
+        if (date) queryParams.push(`date=${date}`);
+        if (shift) queryParams.push(`session=${shift}`);
+        
+        if (queryParams.length > 0) {
+          url += `?${queryParams.join('&')}`;
+        }
+
+        try {
+          const res = await fetch(url, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          const records = await res.json();
+          
+          if (records.length === 0) {
+            qualityHistoryBody.innerHTML = '<tr><td colspan="9" class="text-center py-4">No collection logs matches search filters.</td></tr>';
+          } else {
+            let trs = '';
+            records.forEach(r => {
+              trs += `
+                <tr>
+                  <td>${r.date}</td>
+                  <td style="font-weight:600; color:var(--primary-dark)">${r.farmer_name} (${r.farmer_code})</td>
+                  <td><span class="badge ${r.session === 'morning' ? 'badge-pending' : 'badge-paid'}">${r.session}</span></td>
+                  <td>${parseFloat(r.quantity).toFixed(2)} L</td>
+                  <td>${parseFloat(r.fat).toFixed(2)} %</td>
+                  <td>${parseFloat(r.snf).toFixed(2)} %</td>
+                  <td>Rs. ${parseFloat(r.rate).toFixed(2)}</td>
+                  <td style="font-weight:700; color:var(--primary)">Rs. ${parseFloat(r.amount).toFixed(2)}</td>
+                  <td>
+                    <div style="display:flex; gap:6px;">
+                      <button class="btn-table-sm btn-table-primary btn-edit-quality" 
+                        data-id="${r.id}" 
+                        data-farmer="${r.farmer_name}" 
+                        data-date="${r.date}" 
+                        data-qty="${r.quantity}"
+                        data-fat="${r.fat}" 
+                        data-snf="${r.snf}">Edit</button>
+                      <button class="btn-table-sm btn-danger-outline btn-delete-collection" data-id="${r.id}">Delete</button>
+                    </div>
+                  </td>
+                </tr>
+              `;
+            });
+            qualityHistoryBody.innerHTML = trs;
+
+            // Bind edit modals
+            document.querySelectorAll('.btn-edit-quality').forEach(btn => {
+              btn.addEventListener('click', () => {
+                const id = btn.getAttribute('data-id');
+                const farmer = btn.getAttribute('data-farmer');
+                const date = btn.getAttribute('data-date');
+                const qty = btn.getAttribute('data-qty');
+                const fat = btn.getAttribute('data-fat');
+                const snf = btn.getAttribute('data-snf');
+
+                document.getElementById('editQualityId').value = id;
+                document.getElementById('editFat').value = fat;
+                document.getElementById('editSnf').value = snf;
+                document.getElementById('editQualityLabel').innerHTML = `
+                  Farmer: <strong>${farmer}</strong><br>
+                  Date: <strong>${date}</strong> | Intake: <strong>${parseFloat(qty).toFixed(2)} Litres</strong>
+                `;
+                
+                document.getElementById('qualityModal').classList.add('active');
+              });
+            });
+
+            // Bind delete collections
+            document.querySelectorAll('.btn-delete-collection').forEach(btn => {
+              btn.addEventListener('click', async () => {
+                const id = btn.getAttribute('data-id');
+                if (!confirm("Are you sure you want to delete this milk collection record? This action will also delete the associated quality data and adjust payouts!")) return;
+
+                try {
+                  const res = await fetch(`${API_BASE_URL}/collection/${id}/`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                  });
+                  if (res.status === 204 || res.status === 200) {
+                    showToast("Record deleted successfully.");
+                    loadIntakeAndHistory();
+                  } else {
+                    showToast("Deletion authorization failed.", "error");
+                  }
+                } catch (err) {
+                  showToast("Network deletion connection failure.", "error");
+                }
+              });
+            });
+          }
+        } catch (err) {
+          showToast("Failed to fetch collections history log.", "error");
+        }
+      }
+
+      // Filter events
+      filterDateInput.addEventListener('change', loadIntakeAndHistory);
+      filterShiftSelect.addEventListener('change', loadIntakeAndHistory);
+
+      // Submission of full collection log
+      fullCollectionForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const farmerId = document.getElementById('collFarmerSelect').value;
+        const date = document.getElementById('collDate').value;
+        const session = document.getElementById('collSessionSelect').value;
+        const qty = parseFloat(document.getElementById('collQtyInput').value);
+        const fat = parseFloat(document.getElementById('collFatInput').value);
+        const snf = parseFloat(document.getElementById('collSnfInput').value);
+        const remarks = document.getElementById('collRemarks').value;
+
+        const btn = document.getElementById('btnFullSubmit');
+        btn.disabled = true;
+
+        try {
+          const res = await fetch(`${API_BASE_URL}/dairy/record-collection/`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              farmer: parseInt(farmerId),
+              date: date,
+              session: session,
+              quantity: qty,
+              fat: fat,
+              snf: snf,
+              remarks: remarks
+            })
+          });
+          const data = await res.json();
+          if (res.ok) {
+            showToast("Milk intake collection logged and SMS notification dispatched!", "success");
+            // Clear inputs
+            document.getElementById('collQtyInput').value = '';
+            document.getElementById('collFatInput').value = '';
+            document.getElementById('collSnfInput').value = '';
+            document.getElementById('collRemarks').value = '';
+            loadIntakeAndHistory();
+          } else {
+            showToast(data.detail || "Logging collection failed.", "error");
+          }
+        } catch (err) {
+          showToast("Network logging collection error.", "error");
+        } finally {
+          btn.disabled = false;
+        }
+      });
+
+      // Close Quality edit Modal
+      document.getElementById('btnCloseQualityModal').addEventListener('click', () => {
+        document.getElementById('qualityModal').classList.remove('active');
+      });
+
+      // Submit Quality edits
+      document.getElementById('qualityModalForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('editQualityId').value;
+        const fat = parseFloat(document.getElementById('editFat').value);
+        const snf = parseFloat(document.getElementById('editSnf').value);
+
+        const btn = document.getElementById('btnSaveQuality');
+        btn.disabled = true;
+
+        try {
+          // Put update to quality endpoint
+          const res = await fetch(`${API_BASE_URL}/quality/${id}/`, {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              fat_percentage: fat,
+              snf_percentage: snf
+            })
+          });
+          if (res.ok) {
+            showToast("Quality details and payout updated successfully!");
+            document.getElementById('qualityModal').classList.remove('active');
+            loadIntakeAndHistory();
+          } else {
+            showToast("Failed to save changes.", "error");
+          }
+        } catch (err) {
+          showToast("Network save failure.", "error");
+        } finally {
+          btn.disabled = false;
+        }
+      });
+
+
+      // ───────────────────────────────────────────────────────────────────────
+      // TAB 4: PAYOUTS & PAYMENTS
+      // ───────────────────────────────────────────────────────────────────────
+      async function loadPaymentsTab() {
+        await loadOutstandingBalances();
+        await loadDisbursementsHistory();
+      }
+
+      async function loadOutstandingBalances() {
+        const body = document.getElementById('payoutFarmersBody');
+        try {
+          // Iterate active linked farmers and get payable summaries
+          if (activeLinkedFarmers.length === 0) {
+            body.innerHTML = '<tr><td colspan="7" class="text-center">No linked farmers registered in the system. Link farmers first.</td></tr>';
+            return;
+          }
+
+          let trs = '';
+          for (let lf of activeLinkedFarmers) {
+            const summaryRes = await fetch(`${API_BASE_URL}/dairy/farmer-payable-summary/${lf.farmer}/`, {
+              headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (summaryRes.ok) {
+              const summary = await summaryRes.json();
+              let bankInfo = 'N/A';
+              if (summary.bank_details && summary.bank_details.bank_name) {
+                bankInfo = `${summary.bank_details.bank_name}<br><small>${summary.bank_details.account_number}</small>`;
+              }
+
+              trs += `
+                <tr>
+                  <td><code>${summary.farmer_code}</code></td>
+                  <td style="font-weight:600; color:var(--primary-dark)">${summary.farmer_name}</td>
+                  <td>Rs. ${summary.total_earned.toFixed(2)}</td>
+                  <td>Rs. ${summary.total_paid.toFixed(2)}</td>
+                  <td style="font-weight:700; color:${summary.pending_balance > 0 ? 'var(--accent-hover)' : 'var(--success)'}">
+                    Rs. ${summary.pending_balance.toFixed(2)}
+                  </td>
+                  <td>${bankInfo}</td>
+                  <td>
+                    <div style="display:flex; gap:6px;">
+                      <button class="btn-table-sm btn-table-primary btn-pay-now" 
+                        data-id="${summary.farmer_id}" 
+                        data-name="${summary.farmer_name}" 
+                        data-code="${summary.farmer_code}"
+                        data-balance="${summary.pending_balance}"
+                        data-bank="${summary.bank_details.bank_name}"
+                        data-holder="${summary.bank_details.account_holder_name}"
+                        data-no="${summary.bank_details.account_number}"
+                        data-wallet="${summary.bank_details.wallet_number}"
+                        ${summary.pending_balance <= 0 ? 'disabled' : ''}>Disburse Pay</button>
+                      <button class="btn-table-sm btn-danger-outline btn-sms-remind" 
+                        data-id="${summary.farmer_id}"
+                        ${summary.pending_balance <= 0 ? 'disabled' : ''}>SMS Balance</button>
+                    </div>
+                  </td>
+                </tr>
+              `;
+            }
+          }
+          body.innerHTML = trs;
+
+          // Bind payout dialog triggers
+          document.querySelectorAll('.btn-pay-now').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              const name = btn.getAttribute('data-name');
+              const code = btn.getAttribute('data-code');
+              const balance = parseFloat(btn.getAttribute('data-balance'));
+              const bank = btn.getAttribute('data-bank') || 'N/A';
+              const holder = btn.getAttribute('data-holder') || 'N/A';
+              const no = btn.getAttribute('data-no') || 'N/A';
+              const wallet = btn.getAttribute('data-wallet') || 'N/A';
+
+              document.getElementById('payFarmerId').value = id;
+              document.getElementById('payFarmerName').innerText = `${name} (${code})`;
+              document.getElementById('payOutstandingLabel').innerText = balance.toFixed(2);
+              document.getElementById('payAmount').value = balance.toFixed(2);
+              document.getElementById('payAmount').max = balance;
+              document.getElementById('payDeductions').value = '0.00';
+              document.getElementById('payBankAcc').innerText = bank;
+              document.getElementById('payBankHolder').innerText = holder;
+              document.getElementById('payBankNo').innerText = no;
+              document.getElementById('payWallet').innerText = wallet;
+
+              document.getElementById('paymentModal').classList.add('active');
+            });
+          });
+
+          // Bind SMS reminders
+          document.querySelectorAll('.btn-sms-remind').forEach(btn => {
+            btn.addEventListener('click', async () => {
+              const id = btn.getAttribute('data-id');
+              btn.disabled = true;
+              btn.innerText = 'Sending...';
+
+              try {
+                const res = await fetch(`${API_BASE_URL}/dairy/notify-pending-payment/`, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                  },
+                  body: JSON.stringify({ farmer_id: parseInt(id) })
+                });
+                if (res.ok) {
+                  showToast("Pending balance SMS reminder dispatched!");
+                } else {
+                  showToast("Failed to send reminder SMS.", "error");
+                }
+              } catch (err) {
+                showToast("Network notification error.", "error");
+              } finally {
+                btn.disabled = false;
+                btn.innerText = 'SMS Balance';
+              }
+            });
+          });
+        } catch (err) {
+          showToast("Failed to fetch outstanding balances list.", "error");
+        }
+      }
+
+      async function loadDisbursementsHistory() {
+        const body = document.getElementById('paymentsHistoryBody');
+        try {
+          const res = await fetch(`${API_BASE_URL}/payments/`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          const history = await res.json();
+
+          if (history.length === 0) {
+            body.innerHTML = '<tr><td colspan="10" class="text-center">No disbursements logged yet.</td></tr>';
+          } else {
+            let trs = '';
+            history.forEach(h => {
+              let statusBadge = '';
+              if (h.payment_status === 'paid') statusBadge = '<span class="badge badge-paid">Paid</span>';
+              else if (h.payment_status === 'pending') statusBadge = '<span class="badge badge-pending">Pending</span>';
+              else statusBadge = '<span class="badge badge-failed">Failed</span>';
+
+              trs += `
+                <tr>
+                  <td>${new Date(h.payment_time).toLocaleString()}</td>
+                  <td style="font-weight:600; color:var(--primary-dark)">${h.farmer_name} (${h.farmer_code})</td>
+                  <td>${h.payment_method.toUpperCase()}</td>
+                  <td>Rs. ${parseFloat(h.total_amount).toFixed(2)}</td>
+                  <td style="font-weight:700; color:var(--success)">Rs. ${parseFloat(h.paid_amount).toFixed(2)}</td>
+                  <td>Rs. ${parseFloat(h.deductions).toFixed(2)}</td>
+                  <td>Rs. ${parseFloat(h.pending_amount).toFixed(2)}</td>
+                  <td>${statusBadge}</td>
+                  <td><code>${h.transaction_reference || 'N/A'}</code></td>
+                  <td>
+                    <button class="btn-danger-outline btn-payment-sms" data-id="${h.id}">SMS Alert</button>
+                  </td>
+                </tr>
+              `;
+            });
+            body.innerHTML = trs;
+
+            // Bind transaction SMS trigger
+            document.querySelectorAll('.btn-payment-sms').forEach(btn => {
+              btn.addEventListener('click', async () => {
+                const payId = btn.getAttribute('data-id');
+                btn.disabled = true;
+                try {
+                  const res = await fetch(`${API_BASE_URL}/payments/${payId}/`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                  });
+                  const paymentData = await res.json();
+                  // Re-notify via endpoint
+                  const notifyRes = await fetch(`${API_BASE_URL}/dairy/notify-pending-payment/`, {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ farmer_id: paymentData.farmer })
+                  });
+                  if (notifyRes.ok) {
+                    showToast("SMS details dispatched successfully!");
+                  } else {
+                    showToast("Disbursement alert failure.", "error");
+                  }
+                } catch (err) {
+                  showToast("Network notification issue.", "error");
+                } finally {
+                  btn.disabled = false;
+                }
+              });
+            });
+          }
+        } catch (err) {
+          showToast("Failed to fetch payment log lists.", "error");
+        }
+      }
+
+      // Close Payment Modal
+      document.getElementById('btnClosePaymentModal').addEventListener('click', () => {
+        document.getElementById('paymentModal').classList.remove('active');
+      });
+
+      // Submit Payout modal form
+      document.getElementById('paymentModalForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const farmerId = document.getElementById('payFarmerId').value;
+        const total = parseFloat(document.getElementById('payOutstandingLabel').innerText);
+        const amount = parseFloat(document.getElementById('payAmount').value);
+        const deductions = parseFloat(document.getElementById('payDeductions').value);
+        const method = document.getElementById('payMethod').value;
+        const ref = document.getElementById('payRef').value;
+
+        if (amount + deductions > total) {
+          showToast("Sum of payout and deductions exceeds outstanding balance!", "error");
+          return;
+        }
+
+        const btn = document.getElementById('btnConfirmPayment');
+        btn.disabled = true;
+        btn.innerText = 'Processing payout...';
+
+        try {
+          const res = await fetch(`${API_BASE_URL}/dairy/process-payment/`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              farmer: parseInt(farmerId),
+              payment_date: todayString,
+              total_amount: total,
+              paid_amount: amount,
+              deductions: deductions,
+              payment_method: method,
+              transaction_reference: ref,
+              payment_status: 'paid' // Default confirm marks as Paid
+            })
+          });
+          const data = await res.json();
+          if (res.ok) {
+            showToast("Payout successfully disbursed and logged! SMS alert dispatched.", "success");
+            document.getElementById('paymentModal').classList.remove('active');
+            loadPaymentsTab();
+          } else {
+            showToast(data.detail || "Payout processing failed.", "error");
+          }
+        } catch (err) {
+          showToast("Network payout dispatch error.", "error");
+        } finally {
+          btn.disabled = false;
+          btn.innerText = 'Disburse Payment';
+        }
+      });
+
+
+      // ───────────────────────────────────────────────────────────────────────
+      // TAB 5: REPORT BUILDER
+      // ───────────────────────────────────────────────────────────────────────
+      const reportBuilderForm = document.getElementById('reportBuilderForm');
+      const reportTypeSelect = document.getElementById('reportType');
+      const reportDateGroup = document.getElementById('reportDateGroup');
+      const reportFarmerGroup = document.getElementById('reportFarmerGroup');
+      const reportMonthYearGroup = document.getElementById('reportMonthYearGroup');
+
+      // Handle contextual selector displays
+      reportTypeSelect.addEventListener('change', () => {
+        const type = reportTypeSelect.value;
+        
+        // Reset defaults
+        reportDateGroup.style.display = 'none';
+        reportFarmerGroup.style.display = 'none';
+        reportMonthYearGroup.style.display = 'none';
+        
+        if (type === 'daily_collection' || type === 'quality_report' || type === 'daily_payment') {
+          reportDateGroup.style.display = 'block';
+        } else if (type === 'farmer_collection' || type === 'farmer_payment') {
+          reportFarmerGroup.style.display = 'block';
+        } else if (type === 'dairy_collection' || type === 'monthly_payment') {
+          reportMonthYearGroup.style.display = 'flex';
+        }
+      });
+
+      function loadReportsTab() {
+        populateFarmerDropdowns();
+      }
+
+      // Generate report submission handler
+      reportBuilderForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const type = reportTypeSelect.value;
+        const date = document.getElementById('reportDate').value;
+        const farmerId = document.getElementById('reportFarmer').value;
+        const month = document.getElementById('reportMonth').value;
+        const year = document.getElementById('reportYear').value;
+
+        if (!type) return;
+
+        let queryParams = [`report_type=${type}`];
+        if (date) queryParams.push(`date=${date}`);
+        if (farmerId) queryParams.push(`farmer_id=${farmerId}`);
+        if (month) queryParams.push(`month=${month}`);
+        if (year) queryParams.push(`year=${year}`);
+
+        const btn = document.getElementById('btnGenerateReport');
+        btn.disabled = true;
+        btn.innerText = 'Compiling...';
+
+        try {
+          const res = await fetch(`${API_BASE_URL}/dairy/reports/?${queryParams.join('&')}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          const reportData = await res.json();
+          if (res.ok) {
+            renderGeneratedReport(reportData);
+          } else {
+            showToast("Failed to compile report data.", "error");
+          }
+        } catch (err) {
+          showToast("Network report compilation failed.", "error");
+        } finally {
+          btn.disabled = false;
+          btn.innerText = 'Compile Report';
+        }
+      });
+
+      function renderGeneratedReport(data) {
+        lastReportGeneratedData = data;
+        const reportContainer = document.getElementById('reportContainer');
+        const reportTitle = document.getElementById('reportTitle');
+        const reportSub = document.getElementById('reportSub');
+        const summaryBox = document.getElementById('reportSummaryBox');
+        const head = document.getElementById('reportTableHead');
+        const body = document.getElementById('reportTableBody');
+
+        reportContainer.style.display = 'block';
+        summaryBox.innerHTML = '';
+        
+        let titleText = reportTypeSelect.options[reportTypeSelect.selectedIndex].text;
+        reportTitle.innerText = titleText;
+        
+        let subText = '';
+        if (data.date) subText = `DATE: ${data.date}`;
+        else if (data.month && data.year) subText = `MONTH/YEAR: ${data.month}/${data.year}`;
+        else if (data.farmer_id) {
+          let farmerObj = activeLinkedFarmers.find(f => f.farmer == data.farmer_id);
+          subText = `FARMER: ${farmerObj ? farmerObj.farmer_name : 'Unknown'}`;
+        }
+        reportSub.innerText = subText.toUpperCase();
+
+        // 1. Build summary cards
+        if (data.summary) {
+          let cardsHtml = '';
+          const keys = Object.keys(data.summary);
+          keys.forEach(k => {
+            let label = k.replace('total_', '').replace('avg_', '').toUpperCase();
+            let val = data.summary[k];
+            let labelSuffix = '';
+            if (label === 'QUANTITY') labelSuffix = ' L';
+            else if (label === 'FAT' || label === 'SNF') labelSuffix = ' %';
+            else if (label === 'AMOUNT' || label === 'PAID' || label === 'PENDING' || label === 'DEDUCTIONS') val = 'Rs. ' + parseFloat(val).toFixed(2);
+            
+            cardsHtml += `
+              <div class="report-summary-item">
+                <h5>${label}</h5>
+                <span>${typeof val === 'number' ? val.toFixed(2) + labelSuffix : val}</span>
+              </div>
+            `;
+          });
+          summaryBox.innerHTML = cardsHtml;
+        } else {
+          summaryBox.style.display = 'none';
+        }
+
+        // 2. Build table head & body based on report type
+        let ths = '';
+        let trs = '';
+        const records = data.records || [];
+
+        if (data.report_type.includes('collection') || data.report_type === 'quality_report') {
+          head.innerHTML = `
+            <tr>
+              <th>Date</th>
+              <th>Farmer Code</th>
+              <th>Farmer Name</th>
+              <th>Shift</th>
+              <th>Qty (L)</th>
+              <th>FAT (%)</th>
+              <th>SNF (%)</th>
+              <th>Rate / L (Rs.)</th>
+              <th>Amount (Rs.)</th>
+            </tr>
+          `;
+
+          if (records.length === 0) {
+            body.innerHTML = '<tr><td colspan="9" class="text-center py-4">No records matches report timeframe.</td></tr>';
+          } else {
+            records.forEach(r => {
+              trs += `
+                <tr>
+                  <td>${r.date}</td>
+                  <td><code>${r.farmer_code}</code></td>
+                  <td>${r.farmer_name}</td>
+                  <td>${r.session}</td>
+                  <td>${parseFloat(r.quantity).toFixed(2)}</td>
+                  <td>${parseFloat(r.fat).toFixed(2)}</td>
+                  <td>${parseFloat(r.snf).toFixed(2)}</td>
+                  <td>Rs. ${parseFloat(r.rate).toFixed(2)}</td>
+                  <td style="font-weight:700">Rs. ${parseFloat(r.amount).toFixed(2)}</td>
+                </tr>
+              `;
+            });
+            body.innerHTML = trs;
+          }
+        } else if (data.report_type.includes('payment')) {
+          head.innerHTML = `
+            <tr>
+              <th>Date/Time</th>
+              <th>Farmer Code</th>
+              <th>Farmer Name</th>
+              <th>Method</th>
+              <th>Total Amount</th>
+              <th>Paid Amount</th>
+              <th>Deductions</th>
+              <th>Pending Left</th>
+              <th>Status</th>
+              <th>Ref No</th>
+            </tr>
+          `;
+
+          if (records.length === 0) {
+            body.innerHTML = '<tr><td colspan="10" class="text-center py-4">No disbursements found.</td></tr>';
+          } else {
+            records.forEach(r => {
+              let balanceLabel = '';
+              if (r.pending_balance !== undefined) balanceLabel = r.pending_balance;
+              else if (r.pending_amount !== undefined) balanceLabel = r.pending_amount;
+              else balanceLabel = '0.00';
+
+              trs += `
+                <tr>
+                  <td>${r.payment_time ? new Date(r.payment_time).toLocaleString() : r.payment_date}</td>
+                  <td><code>${r.farmer_code}</code></td>
+                  <td>${r.farmer_name}</td>
+                  <td>${(r.payment_method || 'CASH').toUpperCase()}</td>
+                  <td>Rs. ${parseFloat(r.total_amount).toFixed(2)}</td>
+                  <td style="color:var(--success)">Rs. ${parseFloat(r.paid_amount).toFixed(2)}</td>
+                  <td>Rs. ${parseFloat(r.deductions || 0).toFixed(2)}</td>
+                  <td>Rs. ${parseFloat(balanceLabel).toFixed(2)}</td>
+                  <td><span class="badge badge-paid">${r.payment_status || 'Paid'}</span></td>
+                  <td><code>${r.transaction_reference || 'N/A'}</code></td>
+                </tr>
+              `;
+            });
+            body.innerHTML = trs;
+          }
+        }
+      }
+
+      // Print Report
+      document.getElementById('btnPrintReport').addEventListener('click', () => {
+        window.print();
+      });
+
+      // Export CSV
+      document.getElementById('btnExportCSV').addEventListener('click', () => {
+        if (!lastReportGeneratedData || !lastReportGeneratedData.records || lastReportGeneratedData.records.length === 0) {
+          showToast("No report records available to export.", "error");
+          return;
+        }
+
+        const records = lastReportGeneratedData.records;
+        let csvContent = "data:text/csv;charset=utf-8,";
+        
+        // Header
+        const headers = Object.keys(records[0]);
+        csvContent += headers.join(",") + "\r\n";
+
+        // Rows
+        records.forEach(r => {
+          let row = headers.map(h => {
+            let escaped = ('' + r[h]).replace(/"/g, '""');
+            return `"${escaped}"`;
+          });
+          csvContent += row.join(",") + "\r\n";
+        });
+
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `${lastReportGeneratedData.report_type}_report.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        showToast("CSV report downloaded successfully!");
+      });
+
+      // ───────────────────────────────────────────────────────────────────────
+      // INITIAL SYSTEM LOADING
+      // ───────────────────────────────────────────────────────────────────────
+      loadProfile();
+      loadDashboardStats();
+      populateFarmerDropdowns();
     });
   </script>
 </body>

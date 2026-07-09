@@ -216,3 +216,7 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# e-dairy custom logs
+sms_logs.txt
+backend/sms_logs.txt

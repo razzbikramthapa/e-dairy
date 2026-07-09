@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from django.db import transaction
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from .models import Profile, MilkCollection
+from .models import Profile, MilkCollection, LinkedFarmer, FarmerBankDetails, Payment, QualityRecord
 from .twilio_helper import verify_otp
 
 class ProfileSerializer(serializers.ModelSerializer):
@@ -21,9 +21,9 @@ class UserSerializer(serializers.ModelSerializer):
 class UserRegisterSerializer(serializers.ModelSerializer):
     role = serializers.ChoiceField(choices=Profile.ROLE_CHOICES, write_only=True)
     farmer_code = serializers.CharField(max_length=20, required=False, allow_blank=True, allow_null=True, write_only=True)
-    farm_name = serializers.CharField(max_length=255, required=False, allow_blank=True, write_only=True)
-    phone = serializers.CharField(max_length=15, required=False, allow_blank=True, write_only=True)
-    address = serializers.CharField(max_length=255, required=False, allow_blank=True, write_only=True)
+    farm_name = serializers.CharField(max_length=255, required=False, allow_blank=True, allow_null=True, write_only=True)
+    phone = serializers.CharField(max_length=15, required=False, allow_blank=True, allow_null=True, write_only=True)
+    address = serializers.CharField(max_length=255, required=False, allow_blank=True, allow_null=True, write_only=True)
     password = serializers.CharField(write_only=True, style={'input_type': 'password'})
 
     class Meta:
@@ -56,6 +56,14 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         phone = validated_data.pop('phone', '')
         address = validated_data.pop('address', '')
         password = validated_data.pop('password')
+
+        # Auto-generate farmer code if not provided
+        if role == 'farmer' and not farmer_code:
+            import random
+            while True:
+                farmer_code = f"F{random.randint(1000, 9999)}"
+                if not Profile.objects.filter(farmer_code=farmer_code).exists():
+                    break
 
         with transaction.atomic():
             user = User.objects.create_user(
@@ -113,26 +121,53 @@ class OTPTokenObtainPairSerializer(TokenObtainPairSerializer):
         }
         return data
 
-class MilkCollectionSerializer(serializers.ModelSerializer):
-    farmer_name = serializers.CharField(source='farmer.get_full_name', read_only=True)
-    farmer_username = serializers.CharField(source='farmer.username', read_only=True)
-    farmer_code = serializers.CharField(source='farmer.profile.farmer_code', read_only=True)
-    agent_name = serializers.CharField(source='collected_by.get_full_name', read_only=True)
 
+class MilkCollectionSerializer(serializers.ModelSerializer):
+    farmer_code = serializers.CharField(source='farmer.profile.farmer_code', read_only=True)
+    farmer_name = serializers.CharField(source='farmer.get_full_name', read_only=True)
+    collected_by_name = serializers.CharField(source='collected_by.get_full_name', read_only=True)
+    
     class Meta:
         model = MilkCollection
-        fields = (
-            'id', 'farmer', 'farmer_name', 'farmer_username', 'farmer_code',
-            'collected_by', 'agent_name', 'date', 'session',
-            'quantity', 'fat', 'snf', 'rate', 'amount', 'timestamp'
-        )
-        read_only_fields = ('id', 'collected_by', 'rate', 'amount', 'date', 'timestamp')
+        fields = ('id', 'farmer', 'farmer_code', 'farmer_name', 'date', 'session', 'quantity', 'fat', 'snf', 'remarks', 'rate', 'amount', 'collected_by', 'collected_by_name')
+        read_only_fields = ('collected_by', 'rate', 'amount')
 
-    def validate_farmer(self, value):
-        # Ensure the selected user is indeed a farmer
-        try:
-            if value.profile.role != 'farmer':
-                raise serializers.ValidationError("Selected user is not registered as a Farmer.")
-        except Profile.DoesNotExist:
-            raise serializers.ValidationError("Selected user does not have a profile.")
-        return value
+
+class FarmerBankDetailsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FarmerBankDetails
+        fields = ('bank_name', 'account_holder_name', 'account_number', 'wallet_number')
+
+
+class LinkedFarmerSerializer(serializers.ModelSerializer):
+    farmer_code = serializers.CharField(source='farmer.profile.farmer_code', read_only=True)
+    farmer_name = serializers.CharField(source='farmer.get_full_name', read_only=True)
+    farmer_phone = serializers.CharField(source='farmer.profile.phone', read_only=True)
+    farmer_address = serializers.CharField(source='farmer.profile.address', read_only=True)
+    bank_details = FarmerBankDetailsSerializer(source='farmer.bank_details', read_only=True)
+    
+    class Meta:
+        model = LinkedFarmer
+        fields = ('id', 'farmer', 'farmer_code', 'farmer_name', 'farmer_phone', 'farmer_address', 'bank_details', 'linked_date', 'is_active')
+
+
+class PaymentSerializer(serializers.ModelSerializer):
+    farmer_code = serializers.CharField(source='farmer.profile.farmer_code', read_only=True)
+    farmer_name = serializers.CharField(source='farmer.get_full_name', read_only=True)
+    
+    class Meta:
+        model = Payment
+        fields = ('id', 'farmer', 'farmer_code', 'farmer_name', 'payment_date', 'total_amount', 'paid_amount', 'pending_amount', 'deductions', 'payment_status', 'payment_method', 'transaction_reference', 'payment_time')
+        read_only_fields = ('pending_amount', 'payment_time')
+
+
+class QualityRecordSerializer(serializers.ModelSerializer):
+    farmer_code = serializers.CharField(source='milk_collection.farmer.profile.farmer_code', read_only=True)
+    farmer_name = serializers.CharField(source='milk_collection.farmer.get_full_name', read_only=True)
+    date = serializers.DateField(source='milk_collection.date', read_only=True)
+    session = serializers.CharField(source='milk_collection.session', read_only=True)
+    quantity = serializers.DecimalField(source='milk_collection.quantity', max_digits=8, decimal_places=2, read_only=True)
+
+    class Meta:
+        model = QualityRecord
+        fields = ('id', 'milk_collection', 'farmer_code', 'farmer_name', 'date', 'session', 'quantity', 'fat_percentage', 'snf_percentage', 'recorded_date', 'updated_date')

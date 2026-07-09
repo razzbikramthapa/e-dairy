@@ -4,7 +4,7 @@ from django.utils import timezone
 from datetime import timedelta
 import random
 from decimal import Decimal
-from api.models import Profile, MilkCollection
+from api.models import Profile, MilkCollection, DairyOperator, LinkedFarmer, FarmerBankDetails
 
 class Command(BaseCommand):
     help = 'Seeds the database with test agents, farmers, and milk collection records.'
@@ -14,7 +14,10 @@ class Command(BaseCommand):
         
         # 1. Clear existing data to prevent duplicates
         self.stdout.write('Clearing existing records...')
+        FarmerBankDetails.objects.all().delete()
+        LinkedFarmer.objects.all().delete()
         MilkCollection.objects.all().delete()
+        DairyOperator.objects.all().delete()
         Profile.objects.all().delete()
         User.objects.all().delete()
 
@@ -32,6 +35,13 @@ class Command(BaseCommand):
             role='agent',
             phone='9801234567',
             address='Dairy Head Office, KTM'
+        )
+        DairyOperator.objects.create(
+            user=agent_user,
+            dairy_name="Kathmandu Central Dairy",
+            registration_no="D-98412-KTM",
+            phone="9801234567",
+            address="Koteshwor, Kathmandu"
         )
 
         # 3. Create Farmers
@@ -59,6 +69,20 @@ class Command(BaseCommand):
                 phone='9845551234',
                 address=f_data['address']
             )
+            # Create bank details
+            FarmerBankDetails.objects.create(
+                farmer=user,
+                bank_name="Global IME Bank",
+                account_holder_name=f"{f_data['first_name']} {f_data['last_name']}",
+                account_number=f"100201000{user.id}0",
+                wallet_number="9845551234"
+            )
+            # Link farmer to dairy operator
+            LinkedFarmer.objects.create(
+                dairy_operator=agent_user,
+                farmer=user,
+                is_active=True
+            )
             farmers.append(user)
 
         # 4. Create Milk Collections for the last 7 days
@@ -75,7 +99,6 @@ class Command(BaseCommand):
             
             for farmer in active_farmers_today:
                 for session in sessions:
-                    # Randomize session data
                     quantity = Decimal(str(round(random.uniform(12.5, 45.0), 2)))
                     fat = Decimal(str(round(random.uniform(3.8, 5.8), 2)))
                     snf = Decimal(str(round(random.uniform(7.8, 9.2), 2)))
@@ -86,13 +109,13 @@ class Command(BaseCommand):
                         session=session,
                         quantity=quantity,
                         fat=fat,
-                        snf=snf
+                        snf=snf,
+                        remarks="Standard intake delivery" if random.random() > 0.5 else ""
                     )
-                    # Force set date since save override defaults to auto_now_add
                     collection.save()
                     
-                    # Hack: Override the auto-set date which defaults to today due to auto_now_add=True
+                    # Override the auto-set date which defaults to today in save()
                     MilkCollection.objects.filter(id=collection.id).update(date=date_point)
                     count += 1
 
-        self.stdout.write(self.style.SUCCESS(f'Successfully seeded {count} milk records, 1 agent and {len(farmers)} farmers!'))
+        self.stdout.write(self.style.SUCCESS(f'Successfully seeded {count} milk records, 1 agent and {len(farmers)} farmers with connections & bank details!'))

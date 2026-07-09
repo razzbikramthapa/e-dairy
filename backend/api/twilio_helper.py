@@ -1,6 +1,8 @@
 import os
 import logging
 import requests
+import datetime
+from django.utils import timezone
 
 logger = logging.getLogger(__name__)
 
@@ -246,3 +248,63 @@ def verify_otp(phone_number, code):
 
     # ── Simulation ────────────────────────────────────────────────────────────
     return code == "123456"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SPARROW SMS SERVICE & SANDBOX (for demo notifications)
+# ─────────────────────────────────────────────────────────────────────────────
+SPARROW_SMS_TOKEN = os.environ.get("SPARROW_SMS_TOKEN")
+SPARROW_SMS_SENDER = os.environ.get("SPARROW_SMS_SENDER", "Demo")
+
+def send_sparrow_sms(phone, text):
+    """
+    Sends an SMS using Sparrow SMS API (Simulated sandbox if no token is configured).
+    Also writes logs to a local file backend/sms_logs.txt for easy testing/verification.
+    """
+    phone = phone.strip()
+    if phone.startswith("+977"):
+        phone = phone[4:]
+    if phone.startswith("0") and len(phone) > 1:
+        phone = phone[1:]
+        
+    sms_log_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "sms_logs.txt")
+    log_entry = f"[{timezone.now()}] To: +977 {phone} | Msg: {text}\n"
+    
+    # Write to local test log file
+    try:
+        with open(sms_log_path, "a") as f:
+            f.write(log_entry)
+    except Exception as e:
+        logger.error(f"Failed to write to local sms_logs.txt: {e}")
+        
+    if not SPARROW_SMS_TOKEN or "your-" in SPARROW_SMS_TOKEN:
+        logger.info(f"[SMS SANDBOX] Sending Sparrow SMS to {phone}: {text}")
+        return {
+            "status": "simulated",
+            "message": f"Simulated SMS written to sms_logs.txt.",
+            "text": text
+        }
+        
+    try:
+        url = "http://api.sparrowspay.com/v2/sms/"
+        params = {
+            "token": SPARROW_SMS_TOKEN,
+            "from": SPARROW_SMS_SENDER,
+            "to": phone,
+            "text": text
+        }
+        resp = requests.get(url, params=params, timeout=10)
+        body = resp.json()
+        logger.info(f"Sparrow SMS response: {body}")
+        return {
+            "status": "success",
+            "message": "SMS sent successfully via Sparrow SMS.",
+            "response": body
+        }
+    except Exception as e:
+        logger.error(f"Sparrow SMS API failure: {e}")
+        return {
+            "status": "failed",
+            "message": f"SMS failed to send: {str(e)}. Sandbox fallback logged.",
+            "text": text
+        }

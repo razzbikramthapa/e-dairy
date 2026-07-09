@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from decimal import Decimal
+from django.utils import timezone
 
 class Profile(models.Model):
     ROLE_CHOICES = (
@@ -17,35 +18,142 @@ class Profile(models.Model):
     def __str__(self):
         return f"{self.user.username} ({self.get_role_display()})"
 
+
+class DairyOperator(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='dairy_operator')
+    dairy_name = models.CharField(max_length=255)
+    registration_no = models.CharField(max_length=100)
+    phone = models.CharField(max_length=15, unique=True)
+    address = models.CharField(max_length=255)
+    logo = models.ImageField(upload_to='dairy_logos/', blank=True, null=True)
+    
+    def __str__(self):
+        return self.dairy_name
+
+
+class LinkedFarmer(models.Model):
+    dairy_operator = models.ForeignKey(User, on_delete=models.CASCADE, related_name='linked_farmers')
+    farmer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='dairy_links')
+    linked_date = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)
+    
+    class Meta:
+        unique_together = ('dairy_operator', 'farmer')
+    
+    def __str__(self):
+        try:
+            code = self.farmer.profile.farmer_code or self.farmer.username
+        except AttributeError:
+            code = self.farmer.username
+            
+        try:
+            dairy_name = self.dairy_operator.dairy_operator.dairy_name
+        except AttributeError:
+            dairy_name = "System Dairy"
+            
+        return f"{code} -> {dairy_name}"
+
+
+class FarmerBankDetails(models.Model):
+    farmer = models.OneToOneField(User, on_delete=models.CASCADE, related_name='bank_details')
+    bank_name = models.CharField(max_length=255)
+    account_holder_name = models.CharField(max_length=255)
+    account_number = models.CharField(max_length=50, unique=True)
+    wallet_number = models.CharField(max_length=50, blank=True, null=True)
+    
+    def __str__(self):
+        return f"{self.account_holder_name} - {self.account_number}"
+
+
 class MilkCollection(models.Model):
-    SESSION_CHOICES = (
+    SHIFT_CHOICES = (
         ('morning', 'Morning'),
         ('evening', 'Evening'),
     )
+    
     farmer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='milk_collections')
-    collected_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='collections_registered')
-    date = models.DateField(auto_now_add=True)
-    session = models.CharField(max_length=10, choices=SESSION_CHOICES)
+    collected_by = models.ForeignKey(User, null=True, on_delete=models.SET_NULL, related_name='collections_registered')
+    date = models.DateField(default=timezone.localdate)
+    session = models.CharField(max_length=10, choices=SHIFT_CHOICES)
     quantity = models.DecimalField(max_digits=8, decimal_places=2, help_text="Quantity in Litres")
-    fat = models.DecimalField(max_digits=4, decimal_places=2, help_text="Fat percentage")
-    snf = models.DecimalField(max_digits=4, decimal_places=2, help_text="SNF (Solids-Not-Fat) percentage")
-    rate = models.DecimalField(max_digits=6, decimal_places=2, blank=True, help_text="Rate per Litre")
-    amount = models.DecimalField(max_digits=10, decimal_places=2, blank=True, help_text="Total Payout Amount")
+    fat = models.DecimalField(max_digits=4, decimal_places=2)
+    snf = models.DecimalField(max_digits=4, decimal_places=2)
+    remarks = models.TextField(blank=True, null=True)
+    rate = models.DecimalField(max_digits=6, decimal_places=2, default=Decimal('0.00'))
+    amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     timestamp = models.DateTimeField(auto_now_add=True)
-
+    
     def save(self, *args, **kwargs):
-        # Automatically calculate rate and total amount if not specified
-        # Standard pricing logic: base fat multiplier + SNF multiplier
-        if not self.rate:
-            # Let's say base fat coefficient is 8.5 and SNF is 4.5
-            fat_val = Decimal(str(self.fat))
-            snf_val = Decimal(str(self.snf))
-            self.rate = (fat_val * Decimal('8.5')) + (snf_val * Decimal('4.5'))
-        
-        if not self.amount:
-            self.amount = Decimal(str(self.quantity)) * Decimal(str(self.rate))
+        # Calculate payout rate using standard formula: rate = (fat * 6) + (snf * 4)
+        if self.fat and self.snf:
+            self.rate = Decimal(str(self.fat)) * Decimal('6.0') + Decimal(str(self.snf)) * Decimal('4.0')
+        else:
+            self.rate = Decimal('50.00')
+            
+        # Calculate amount
+        if self.quantity:
+            self.amount = Decimal(str(self.quantity)) * self.rate
             
         super().save(*args, **kwargs)
-
+        
+        # Auto-create or sync QualityRecord
+        QualityRecord.objects.update_or_create(
+            milk_collection=self,
+            defaults={
+                'fat_percentage': self.fat,
+                'snf_percentage': self.snf
+            }
+        )
+    
     def __str__(self):
-        return f"Coll #{self.id} - {self.farmer.username} ({self.quantity}L)"
+        return f"{self.farmer.username} - {self.date} ({self.session})"
+
+
+class Payment(models.Model):
+    PAYMENT_STATUS = (
+        ('pending', 'Pending'),
+        ('paid', 'Paid'),
+        ('failed', 'Failed'),
+    )
+    PAYMENT_METHOD = (
+        ('cash', 'Cash'),
+        ('bank_transfer', 'Bank Transfer'),
+        ('wallet', 'Demo Wallet'),
+    )
+    
+    farmer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='payments')
+    dairy_operator = models.ForeignKey(User, on_delete=models.CASCADE, related_name='payments_made')
+    payment_date = models.DateField(default=timezone.localdate)
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    paid_amount = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
+    pending_amount = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
+    deductions = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
+    payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS, default='pending')
+    payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD, default='cash')
+    transaction_reference = models.CharField(max_length=100, blank=True, null=True)
+    payment_time = models.DateTimeField(auto_now_add=True)
+    
+    def save(self, *args, **kwargs):
+        # Calculate pending amount
+        self.pending_amount = Decimal(str(self.total_amount)) - Decimal(str(self.paid_amount)) - Decimal(str(self.deductions))
+        if self.pending_amount < 0:
+            self.pending_amount = Decimal('0.00')
+        super().save(*args, **kwargs)
+        
+    def __str__(self):
+        return f"Payment - {self.farmer.username} - {self.payment_date}"
+
+
+class QualityRecord(models.Model):
+    milk_collection = models.OneToOneField(MilkCollection, on_delete=models.CASCADE, related_name='quality_record')
+    fat_percentage = models.DecimalField(max_digits=4, decimal_places=2)
+    snf_percentage = models.DecimalField(max_digits=4, decimal_places=2)
+    recorded_date = models.DateTimeField(auto_now_add=True)
+    updated_date = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        try:
+            username = self.milk_collection.farmer.username
+        except AttributeError:
+            username = "Unknown"
+        return f"Quality - {username} - FAT:{self.fat_percentage}% SNF:{self.snf_percentage}%"

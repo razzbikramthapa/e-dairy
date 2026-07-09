@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Alert Helpers
   function showAlert(message, type = 'danger') {
-    authAlert.innerText = message;
+    authAlert.innerHTML = message;
     authAlert.className = `modal-alert ${type}`;
     authAlert.style.display = 'block';
   }
@@ -378,7 +378,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (response.ok) {
         switchTab('login');
-        showAlert('Registration successful! You can now sign in using your OTP.', 'success');
+        let successMsg = 'Registration successful! You can now sign in using your OTP.';
+        if (data.profile && data.profile.role === 'farmer' && data.profile.farmer_code) {
+          successMsg = `Registration successful! Your Farmer Code is <strong>${data.profile.farmer_code}</strong>. Please save this code and sign in using your OTP.`;
+        }
+        showAlert(successMsg, 'success');
         document.getElementById('loginUser').value = phone;
         document.getElementById('loginPass').value = enteredOTP;
       } else {
