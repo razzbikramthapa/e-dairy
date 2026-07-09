@@ -25,6 +25,15 @@ from .twilio_helper import send_otp, send_sparrow_sms
 
 logger = logging.getLogger(__name__)
 
+class DeleteAccountView(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def delete(self, request):
+        user = request.user
+        user.delete()
+        return Response({"detail": "Account deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
+
+
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     permission_classes = (AllowAny,)

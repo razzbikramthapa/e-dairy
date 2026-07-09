@@ -24,15 +24,231 @@
       color: var(--text);
     }
 
-    /* Dashboard Header styling */
-    .dash-header {
-      background: rgba(255, 255, 255, 0.85);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid rgba(82, 59, 139, 0.08);
+    .layout-container {
+      display: flex;
+      width: 100%;
+      min-height: 100vh;
+    }
+
+    /* ===== NEW SIDEBAR ===== */
+    .sidebar {
+      width: 280px;
+      min-width: 280px;
+      background: var(--white);
+      padding: 28px 20px;
+      border-right: 1px solid rgba(82, 59, 139, 0.08);
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
+      box-shadow: 2px 0 16px rgba(82, 59, 139, 0.06);
       position: sticky;
       top: 0;
-      z-index: 100;
+      height: 100vh;
+    }
+
+    .sidebar-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 32px;
+      text-decoration: none;
+    }
+    .sidebar-logo .logo-img-wrapper img {
+      width: 40px;
+      height: 40px;
+    }
+    .sidebar-logo .logo-text {
+      font-family: 'Outfit', sans-serif;
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--primary-dark);
+    }
+    .sidebar-logo .logo-text span {
+      color: var(--accent);
+    }
+
+    /* User Profile Card in sidebar */
+    .sidebar-user-card {
+      background: var(--primary-light);
+      border-radius: 16px;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 32px;
+    }
+    .sidebar-user-avatar {
+      width: 46px;
+      height: 46px;
+      min-width: 46px;
+      border-radius: 50%;
+      background: var(--primary);
+      border: 3px solid var(--accent);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 18px;
+      font-family: 'Outfit', sans-serif;
+    }
+    .sidebar-user-info h4 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--primary-dark);
+      margin: 0 0 2px 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 160px;
+    }
+    .sidebar-user-info span {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+
+    /* Sidebar Nav Items */
+    .sidebar-nav {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      flex-grow: 1;
+    }
+    .sidebar-nav li {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 16px;
+      margin-bottom: 4px;
+      cursor: pointer;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 15px;
+      color: var(--text-muted);
+      transition: all 0.2s ease;
+    }
+    .sidebar-nav li svg {
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+      stroke: currentColor;
+    }
+    .sidebar-nav li:hover {
+      background: var(--primary-light);
+      color: var(--primary-dark);
+    }
+    .sidebar-nav li.active {
+      background: var(--primary);
+      color: white;
+      box-shadow: 0 4px 14px rgba(82, 59, 139, 0.35);
+    }
+    .sidebar-nav li.active svg {
+      stroke: white;
+    }
+
+    /* Sidebar Sign Out */
+    .sidebar-signout {
+      margin-top: auto;
+      padding-top: 24px;
+      border-top: 1px solid rgba(82, 59, 139, 0.08);
+    }
+    .sidebar-signout button {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 13px 20px;
+      border-radius: 12px;
+      border: 1.5px solid rgba(229, 57, 53, 0.25);
+      background: white;
+      color: #E53935;
+      font-weight: 700;
+      font-size: 15px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .sidebar-signout button:hover {
+      background: rgba(229, 57, 53, 0.06);
+      border-color: #E53935;
+    }
+    .sidebar-signout button svg {
+      width: 18px;
+      height: 18px;
+      stroke: #E53935;
+    }
+
+    .main-content {
+      flex-grow: 1;
+      overflow-x: hidden;
+    }
+    
+    .profile-card {
+      background: var(--white);
+      padding: 32px;
+      border-radius: 20px;
       box-shadow: var(--shadow-sm);
+      max-width: 600px;
+      margin: 32px auto;
+      border: 1px solid rgba(82, 59, 139, 0.06);
+    }
+    .profile-card h3 {
+      margin-bottom: 24px;
+      font-family: 'Outfit', sans-serif;
+      color: var(--primary-dark);
+      font-size: 24px;
+    }
+    .profile-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 16px 0;
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+      font-size: 14px;
+    }
+    .profile-item strong {
+      color: var(--text-muted);
+    }
+    .profile-item span {
+      font-weight: 600;
+      color: var(--primary-dark);
+    }
+    .profile-item:last-child {
+      border-bottom: none;
+    }
+    .action-buttons {
+      margin-top: 32px;
+      display: flex;
+      gap: 16px;
+    }
+    .btn-danger {
+      background: #E53935;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: opacity 0.2s;
+    }
+    .btn-danger:hover {
+      opacity: 0.9;
+    }
+    .btn-secondary {
+      background: var(--primary-light);
+      color: var(--primary-dark);
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background 0.2s;
+    }
+    .btn-secondary:hover {
+      background: #e0d7f5;
     }
 
     .dash-nav {
@@ -105,6 +321,13 @@
       display: grid;
       gap: 32px;
     }
+    
+    .content-section {
+      display: none;
+    }
+    .content-section.active {
+      display: block;
+    }
 
     .welcome-banner {
       background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
@@ -150,7 +373,9 @@
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 20px;
+      gap: 32px;
+      margin-bottom: 32px;
+      margin-top: 15px;
     }
 
     .stats-card {
@@ -202,8 +427,9 @@
     /* Charts & Details section */
     .dash-row {
       display: grid;
-      grid-template-columns: 1.6fr 1fr;
+      grid-template-columns: 1fr;
       gap: 32px;
+      margin-bottom: 32px;
     }
 
     @media (max-width: 992px) {
@@ -322,29 +548,49 @@
 </head>
 <body>
 
-  <!-- Dashboard Header -->
-  <header class="dash-header">
-    <div class="dash-nav">
-      <a href="index.html" class="logo-link">
+  <div class="layout-container">
+    <aside class="sidebar" id="sidebar">
+      <!-- Logo -->
+      <a href="index.html" class="sidebar-logo">
         <div class="logo-img-wrapper">
           <img src="assets/logo.png" alt="e-Dairy Logo">
         </div>
         <span class="logo-text">e-<span>Dairy</span></span>
       </a>
 
-      <div class="profile-info">
-        <div class="avatar" id="userAvatar">F</div>
-        <div class="profile-details">
-          <h4 id="profileName">Loading User</h4>
+      <!-- User Card -->
+      <div class="sidebar-user-card">
+        <div class="sidebar-user-avatar" id="userAvatar">F</div>
+        <div class="sidebar-user-info">
+          <h4 id="profileName">Loading...</h4>
           <span>Farmer Portal</span>
         </div>
-        <button class="logout-btn" id="btnLogout">Sign Out</button>
       </div>
-    </div>
-  </header>
 
-  <!-- Main Container -->
-  <main class="dash-container">
+      <!-- Navigation -->
+      <ul class="sidebar-nav">
+        <li class="active" id="navDashboard">
+          <svg fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+          Dashboard
+        </li>
+        <li id="navProfile">
+          <svg fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+          My Profile
+        </li>
+      </ul>
+
+      <!-- Sign Out -->
+      <div class="sidebar-signout">
+        <button id="btnSidebarSignout">
+          <svg fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+          Sign Out
+        </button>
+      </div>
+    </aside>
+
+    <div class="main-content">
+      <!-- Main Container -->
+      <main class="dash-container content-section active" id="sectionDashboard">
     
     <!-- Welcome banner -->
     <div class="welcome-banner">
@@ -394,32 +640,6 @@
         </div>
       </div>
 
-      <!-- Right Panel: Overview -->
-      <div class="dash-panel">
-        <div class="panel-title">Dairy Profile Details</div>
-        <div class="profile-details-list" style="font-size: 13px;">
-          <div style="display:flex; justify-content:space-between; margin-bottom:14px; border-bottom:1px solid rgba(82,59,139,0.05); padding-bottom:8px;">
-            <strong style="color:var(--text-muted);">Farmer Code:</strong>
-            <span id="dtFarmerCode" style="font-weight:600;">-</span>
-          </div>
-          <div style="display:flex; justify-content:space-between; margin-bottom:14px; border-bottom:1px solid rgba(82,59,139,0.05); padding-bottom:8px;">
-            <strong style="color:var(--text-muted);">Farm Name:</strong>
-            <span id="dtFarmName" style="font-weight:600;">-</span>
-          </div>
-          <div style="display:flex; justify-content:space-between; margin-bottom:14px; border-bottom:1px solid rgba(82,59,139,0.05); padding-bottom:8px;">
-            <strong style="color:var(--text-muted);">Registered Phone:</strong>
-            <span id="dtPhone" style="font-weight:600;">-</span>
-          </div>
-          <div style="display:flex; justify-content:space-between; margin-bottom:14px; border-bottom:1px solid rgba(82,59,139,0.05); padding-bottom:8px;">
-            <strong style="color:var(--text-muted);">Address:</strong>
-            <span id="dtAddress" style="font-weight:600;">-</span>
-          </div>
-          <div style="display:flex; justify-content:space-between; margin-bottom:14px;">
-            <strong style="color:var(--text-muted);">System Username:</strong>
-            <span id="dtUsername" style="font-weight:600;">-</span>
-          </div>
-        </div>
-      </div>
     </div>
 
     <!-- Recent Logs panel -->
@@ -450,14 +670,67 @@
 
   </main>
 
+      <!-- Profile Section -->
+      <div class="content-section" id="sectionProfile" style="padding: 32px 24px;">
+        <div class="profile-card">
+          <h3>Farmer Profile</h3>
+          <div class="profile-item">
+            <strong>Full Name:</strong>
+            <span id="profFullName">-</span>
+          </div>
+          <div class="profile-item">
+            <strong>Role:</strong>
+            <span id="profRole">Farmer</span>
+          </div>
+          <div class="profile-item">
+            <strong>Farmer Code:</strong>
+            <span id="profFarmerCode">-</span>
+          </div>
+          <div class="profile-item">
+            <strong>Farm Name:</strong>
+            <span id="profFarmName">-</span>
+          </div>
+          <div class="profile-item">
+            <strong>Registered Phone:</strong>
+            <span id="profPhone">-</span>
+          </div>
+          <div class="profile-item">
+            <strong>Address:</strong>
+            <span id="profAddress">-</span>
+          </div>
+          <div class="action-buttons">
+            <button class="btn-secondary" id="btnSignOutProf">Sign Out</button>
+            <button class="btn-danger" id="btnDeleteAccount">Delete Account</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       // Elements
       const profileName = document.getElementById('profileName');
       const welcomeTitle = document.getElementById('welcomeTitle');
       const userAvatar = document.getElementById('userAvatar');
-      const btnLogout = document.getElementById('btnLogout');
       const dashAlert = document.getElementById('dashAlert');
+
+      // Sidebar & Navigation Elements
+      const navDashboard = document.getElementById('navDashboard');
+      const navProfile = document.getElementById('navProfile');
+      const sectionDashboard = document.getElementById('sectionDashboard');
+      const sectionProfile = document.getElementById('sectionProfile');
+      const btnSidebarSignout = document.getElementById('btnSidebarSignout');
+
+      // Profile Section Elements
+      const profFullName = document.getElementById('profFullName');
+      const profRole = document.getElementById('profRole');
+      const profFarmerCode = document.getElementById('profFarmerCode');
+      const profFarmName = document.getElementById('profFarmName');
+      const profPhone = document.getElementById('profPhone');
+      const profAddress = document.getElementById('profAddress');
+      const btnSignOutProf = document.getElementById('btnSignOutProf');
+      const btnDeleteAccount = document.getElementById('btnDeleteAccount');
 
       // Card elements
       const valTotalMilk = document.getElementById('valTotalMilk');
@@ -467,13 +740,6 @@
       const valAvgSnf = document.getElementById('valAvgSnf');
       const valTotalEarnings = document.getElementById('valTotalEarnings');
 
-      // Profile details
-      const dtFarmerCode = document.getElementById('dtFarmerCode');
-      const dtFarmName = document.getElementById('dtFarmName');
-      const dtPhone = document.getElementById('dtPhone');
-      const dtAddress = document.getElementById('dtAddress');
-      const dtUsername = document.getElementById('dtUsername');
-
       // Tables
       const tableBody = document.getElementById('tableBody');
 
@@ -482,20 +748,62 @@
       const role = localStorage.getItem('e_dairy_role');
 
       if (!token || role !== 'farmer') {
-        // Not authorized, go back to login
         localStorage.clear();
         window.location.href = 'login.html';
         return;
       }
 
+      // Navigation Logic
+      function switchTab(tab) {
+        if (tab === 'dashboard') {
+          navDashboard.classList.add('active');
+          navProfile.classList.remove('active');
+          sectionDashboard.classList.add('active');
+          sectionProfile.classList.remove('active');
+        } else if (tab === 'profile') {
+          navProfile.classList.add('active');
+          navDashboard.classList.remove('active');
+          sectionProfile.classList.add('active');
+          sectionDashboard.classList.remove('active');
+        }
+      }
+
+      navDashboard.addEventListener('click', () => switchTab('dashboard'));
+      navProfile.addEventListener('click', () => switchTab('profile'));
+
       // Logout handler
-      btnLogout.addEventListener('click', () => {
+      const handleLogout = () => {
         localStorage.clear();
-        window.location.href = 'login.html';
-      });
+        window.location.href = 'index.html';
+      };
+      
+      btnSidebarSignout.addEventListener('click', handleLogout);
+      btnSignOutProf.addEventListener('click', handleLogout);
 
       // API Config
       const API_BASE_URL = window.location.origin + '/api';
+
+      // Delete Account Logic
+      btnDeleteAccount.addEventListener('click', async () => {
+        if (confirm("Are you sure you want to delete your account? This action cannot be undone.")) {
+          try {
+            const res = await fetch(`${API_BASE_URL}/account/delete/`, {
+              method: 'DELETE',
+              headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) {
+              alert("Account deleted successfully.");
+              handleLogout();
+            } else {
+              const data = await res.json();
+              alert(data.detail || "Error deleting account.");
+            }
+          } catch (err) {
+            console.error(err);
+            alert("Error connecting to server.");
+          }
+        }
+      });
 
       // Alert helper
       function showError(msg) {
@@ -520,11 +828,13 @@
           welcomeTitle.innerText = `Welcome, ${fullName}!`;
           userAvatar.innerText = (profile.first_name || profile.username || 'F').charAt(0).toUpperCase();
 
-          dtFarmerCode.innerText = profile.profile?.farmer_code || 'N/A';
-          dtFarmName.innerText = profile.profile?.farm_name || 'N/A';
-          dtPhone.innerText = profile.profile?.phone || 'N/A';
-          dtAddress.innerText = profile.profile?.address || 'N/A';
-          dtUsername.innerText = profile.username;
+          // Populate New Profile Section
+          profFullName.innerText = fullName;
+          profRole.innerText = 'Farmer';
+          profFarmerCode.innerText = profile.profile?.farmer_code || 'N/A';
+          profFarmName.innerText = profile.profile?.farm_name || 'N/A';
+          profPhone.innerText = profile.profile?.phone || 'N/A';
+          profAddress.innerText = profile.profile?.address || 'N/A';
 
           // Fetch Dashboard statistics
           const statsResponse = await fetch(`${API_BASE_URL}/dashboard/`, {

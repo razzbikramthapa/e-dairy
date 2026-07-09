@@ -12,8 +12,21 @@ class Profile(models.Model):
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='farmer')
     farmer_code = models.CharField(max_length=20, unique=True, null=True, blank=True)
     farm_name = models.CharField(max_length=255, blank=True, help_text="Farm name (farmers only)")
-    phone = models.CharField(max_length=15, blank=True)
+    phone = models.CharField(max_length=10, blank=True)
     address = models.CharField(max_length=255, blank=True)
+
+    def save(self, *args, **kwargs):
+        if self.role == 'farmer' and not self.farmer_code:
+            profiles = Profile.objects.filter(role='farmer').exclude(farmer_code__isnull=True).exclude(farmer_code='')
+            max_code = 0
+            for p in profiles:
+                code_str = p.farmer_code
+                if code_str.startswith('F') and code_str[1:].isdigit():
+                    max_code = max(max_code, int(code_str[1:]))
+                elif code_str.isdigit():
+                    max_code = max(max_code, int(code_str))
+            self.farmer_code = f"F{max_code + 1}"
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.user.username} ({self.get_role_display()})"
