@@ -127,7 +127,7 @@ header.scrolled {
   font-family: 'Outfit', sans-serif;
   font-size: 24px;
   font-weight: 700;
-  color: var(--primary-dark);
+  color: var(--primary);
   letter-spacing: -0.5px;
 }
 
@@ -264,6 +264,12 @@ nav a.active::after {
   font-size: 56px;
 }
 
+.hero-content h1 span.logo-text2 {
+  color: var(--accent);
+  background: none;
+  -webkit-text-fill-color: initial;
+}
+
 .hero-content p {
   font-size: 15px;
   color: var(--text-muted);
@@ -271,39 +277,6 @@ nav a.active::after {
   max-width: 540px;
   font-weight: 400;
 }
-
-/* .check-badges {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-bottom: 40px;
-}
-
-.check-badge {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 18px;
-  background: rgba(255, 177, 26, 0.08);
-  border: 1px solid rgba(255, 177, 26, 0.2);
-  border-radius: 30px;
-  font-size: 13px;
-  font-weight: 600;
-  color: #8C5B00;
-  box-shadow: 0 2px 4px rgba(255, 177, 26, 0.04);
-}
-
-.check-badge.purple {
-  background: rgba(82, 59, 139, 0.05);
-  border-color: rgba(82, 59, 139, 0.15);
-  color: var(--primary-dark);
-}
-
-.check-badge svg {
-  width: 14px;
-  height: 14px;
-  stroke-width: 3;
-} */
 
 .cta-group {
   display: flex;

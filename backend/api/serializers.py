@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from django.db import transaction
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from .models import Profile, MilkCollection, LinkedFarmer, FarmerBankDetails, Payment, QualityRecord
+from .models import Profile, MilkCollection, LinkedFarmer, FarmerBankDetails, Payment, QualityRecord, PaymentRequest
 from .twilio_helper import verify_otp
 
 class ProfileSerializer(serializers.ModelSerializer):
@@ -136,7 +136,7 @@ class MilkCollectionSerializer(serializers.ModelSerializer):
 class FarmerBankDetailsSerializer(serializers.ModelSerializer):
     class Meta:
         model = FarmerBankDetails
-        fields = ('bank_name', 'account_holder_name', 'account_number', 'wallet_number')
+        fields = ('id', 'bank_name', 'account_holder_name', 'account_number', 'qr_code', 'is_primary')
 
 
 class LinkedFarmerSerializer(serializers.ModelSerializer):
@@ -144,7 +144,7 @@ class LinkedFarmerSerializer(serializers.ModelSerializer):
     farmer_name = serializers.CharField(source='farmer.get_full_name', read_only=True)
     farmer_phone = serializers.CharField(source='farmer.profile.phone', read_only=True)
     farmer_address = serializers.CharField(source='farmer.profile.address', read_only=True)
-    bank_details = FarmerBankDetailsSerializer(source='farmer.bank_details', read_only=True)
+    bank_details = FarmerBankDetailsSerializer(source='farmer.bank_details', many=True, read_only=True)
     
     class Meta:
         model = LinkedFarmer
@@ -171,3 +171,12 @@ class QualityRecordSerializer(serializers.ModelSerializer):
     class Meta:
         model = QualityRecord
         fields = ('id', 'milk_collection', 'farmer_code', 'farmer_name', 'date', 'session', 'quantity', 'fat_percentage', 'snf_percentage', 'recorded_date', 'updated_date')
+
+
+class PaymentRequestSerializer(serializers.ModelSerializer):
+    farmer_name = serializers.CharField(source='farmer.get_full_name', read_only=True)
+    
+    class Meta:
+        model = PaymentRequest
+        fields = ('id', 'farmer', 'farmer_name', 'amount_requested', 'request_date', 'status', 'remarks')
+        read_only_fields = ('farmer', 'request_date', 'status')

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,8 +11,10 @@
     href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%23523B8B'/><circle cx='50' cy='35' r='14' fill='%23FFB11A'/><rect x='40' y='42' width='20' height='30' rx='10' fill='%23FFB11A'/></svg>">
 
   <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;700;800&display=swap" rel="stylesheet">
-  
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;700;800&display=swap"
+    rel="stylesheet">
+
   <!-- Chart.js CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -53,16 +56,19 @@
       margin-bottom: 32px;
       text-decoration: none;
     }
+
     .sidebar-logo .logo-img-wrapper img {
       width: 40px;
       height: 40px;
     }
+
     .sidebar-logo .logo-text {
       font-family: 'Outfit', sans-serif;
       font-size: 22px;
       font-weight: 800;
       color: var(--primary-dark);
     }
+
     .sidebar-logo .logo-text span {
       color: var(--accent);
     }
@@ -77,6 +83,7 @@
       gap: 14px;
       margin-bottom: 32px;
     }
+
     .sidebar-user-avatar {
       width: 46px;
       height: 46px;
@@ -92,6 +99,7 @@
       font-size: 18px;
       font-family: 'Outfit', sans-serif;
     }
+
     .sidebar-user-info h4 {
       font-family: 'Outfit', sans-serif;
       font-size: 15px;
@@ -103,6 +111,7 @@
       text-overflow: ellipsis;
       max-width: 160px;
     }
+
     .sidebar-user-info span {
       font-size: 10px;
       font-weight: 700;
@@ -118,6 +127,7 @@
       margin: 0;
       flex-grow: 1;
     }
+
     .sidebar-nav li {
       display: flex;
       align-items: center;
@@ -131,21 +141,25 @@
       color: var(--text-muted);
       transition: all 0.2s ease;
     }
+
     .sidebar-nav li svg {
       width: 20px;
       height: 20px;
       flex-shrink: 0;
       stroke: currentColor;
     }
+
     .sidebar-nav li:hover {
       background: var(--primary-light);
       color: var(--primary-dark);
     }
+
     .sidebar-nav li.active {
       background: var(--primary);
       color: white;
       box-shadow: 0 4px 14px rgba(82, 59, 139, 0.35);
     }
+
     .sidebar-nav li.active svg {
       stroke: white;
     }
@@ -156,6 +170,7 @@
       padding-top: 24px;
       border-top: 1px solid rgba(82, 59, 139, 0.08);
     }
+
     .sidebar-signout button {
       width: 100%;
       display: flex;
@@ -172,10 +187,12 @@
       cursor: pointer;
       transition: all 0.2s;
     }
+
     .sidebar-signout button:hover {
       background: rgba(229, 57, 53, 0.06);
       border-color: #E53935;
     }
+
     .sidebar-signout button svg {
       width: 18px;
       height: 18px;
@@ -186,7 +203,7 @@
       flex-grow: 1;
       overflow-x: hidden;
     }
-    
+
     .profile-card {
       background: var(--white);
       padding: 32px;
@@ -196,34 +213,41 @@
       margin: 32px auto;
       border: 1px solid rgba(82, 59, 139, 0.06);
     }
+
     .profile-card h3 {
       margin-bottom: 24px;
       font-family: 'Outfit', sans-serif;
       color: var(--primary-dark);
       font-size: 24px;
     }
+
     .profile-item {
       display: flex;
       justify-content: space-between;
       padding: 16px 0;
-      border-bottom: 1px solid rgba(0,0,0,0.05);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
       font-size: 14px;
     }
+
     .profile-item strong {
       color: var(--text-muted);
     }
+
     .profile-item span {
       font-weight: 600;
       color: var(--primary-dark);
     }
+
     .profile-item:last-child {
       border-bottom: none;
     }
+
     .action-buttons {
       margin-top: 32px;
       display: flex;
       gap: 16px;
     }
+
     .btn-danger {
       background: #E53935;
       color: white;
@@ -234,9 +258,11 @@
       font-weight: 600;
       transition: opacity 0.2s;
     }
+
     .btn-danger:hover {
       opacity: 0.9;
     }
+
     .btn-secondary {
       background: var(--primary-light);
       color: var(--primary-dark);
@@ -247,6 +273,7 @@
       font-weight: 600;
       transition: background 0.2s;
     }
+
     .btn-secondary:hover {
       background: #e0d7f5;
     }
@@ -321,10 +348,11 @@
       display: grid;
       gap: 32px;
     }
-    
+
     .content-section {
       display: none;
     }
+
     .content-section.active {
       display: block;
     }
@@ -522,6 +550,7 @@
       font-size: 13px;
       font-weight: 600;
     }
+
     .alert-box.error {
       background: #FFEBEE;
       color: #C62828;
@@ -535,7 +564,7 @@
       text-align: center;
       color: var(--text-muted);
     }
-    
+
     .empty-state svg {
       width: 48px;
       height: 48px;
@@ -543,9 +572,9 @@
       margin-bottom: 12px;
       opacity: 0.6;
     }
-
   </style>
 </head>
+
 <body>
 
   <div class="layout-container">
@@ -569,20 +598,38 @@
 
       <!-- Navigation -->
       <ul class="sidebar-nav">
+        <li id="navProfile">
+          <svg fill="none" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+          </svg>
+          My Profile
+        </li>
         <li class="active" id="navDashboard">
-          <svg fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+          <svg fill="none" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z">
+            </path>
+          </svg>
           Dashboard
         </li>
-        <li id="navProfile">
-          <svg fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
-          My Profile
+        <li id="navPayment">
+          <svg fill="none" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
+            </path>
+          </svg>
+          Payments
         </li>
       </ul>
 
       <!-- Sign Out -->
       <div class="sidebar-signout">
         <button id="btnSidebarSignout">
-          <svg fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+          <svg fill="none" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+          </svg>
           Sign Out
         </button>
       </div>
@@ -591,84 +638,83 @@
     <div class="main-content">
       <!-- Main Container -->
       <main class="dash-container content-section active" id="sectionDashboard">
-    
-    <!-- Welcome banner -->
-    <div class="welcome-banner">
-      <div class="welcome-content">
-        <h2 id="welcomeTitle">Welcome, Farmer!</h2>
-        <p>Monitor your daily milk contributions, analyze milk quality indicators (FAT/SNF), and keep track of automated payouts.</p>
-      </div>
-    </div>
 
-    <div id="dashAlert" class="alert-box"></div>
-
-    <!-- Stats Grid -->
-    <div class="stats-grid">
-      <!-- Card 1 -->
-      <div class="stats-card">
-        <div class="card-label">Total Milk Contributed</div>
-        <div class="card-value" id="valTotalMilk">0.00 L</div>
-        <div class="card-footer-text" id="lblTotalMilkCount">0 Contributions</div>
-      </div>
-      <!-- Card 2 -->
-      <div class="stats-card">
-        <div class="card-label">Average Fat Content</div>
-        <div class="card-value" id="valAvgFat">0.00 %</div>
-        <div class="card-footer-text" id="lblAvgFatCompare">Quality grade: Standard</div>
-      </div>
-      <!-- Card 3 -->
-      <div class="stats-card">
-        <div class="card-label">Average SNF Content</div>
-        <div class="card-value" id="valAvgSnf">0.00 %</div>
-        <div class="card-footer-text neutral" id="lblAvgSnfSub">Solids-Not-Fat</div>
-      </div>
-      <!-- Card 4 -->
-      <div class="stats-card">
-        <div class="card-label">Total Estimated Earnings</div>
-        <div class="card-value" id="valTotalEarnings">Rs. 0.00</div>
-        <div class="card-footer-text" id="lblEarningsRate">Dynamic rate payout</div>
-      </div>
-    </div>
-
-    <!-- Charts & Tables Row -->
-    <div class="dash-row">
-      <!-- Left Panel: Chart -->
-      <div class="dash-panel">
-        <div class="panel-title">Supplied Milk Analytics (Last 7 Days)</div>
-        <div style="height: 320px; position: relative;">
-          <canvas id="yieldChart"></canvas>
+        <!-- Welcome banner -->
+        <div class="welcome-banner">
+          <div class="welcome-content">
+            <h2 id="welcomeTitle">Welcome, Farmer!</h2>
+            <p>Monitor your daily milk contributions, analyze milk quality indicators (FAT/SNF), and keep track of
+              automated payouts.</p>
+          </div>
         </div>
-      </div>
 
-    </div>
+        <div id="dashAlert" class="alert-box"></div>
 
-    <!-- Recent Logs panel -->
-    <div class="dash-panel">
-      <div class="panel-title">Recent Milk Supply Contributions</div>
-      <div class="table-container">
-        <table class="dash-table" id="tableRecords">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Session</th>
-              <th>Quantity (L)</th>
-              <th>FAT (%)</th>
-              <th>SNF (%)</th>
-              <th>Rate / L</th>
-              <th>Amount</th>
-              <th>Collected By</th>
-            </tr>
-          </thead>
-          <tbody id="tableBody">
-            <tr>
-              <td colspan="8" class="text-center py-4" style="color: var(--text-muted)">Loading recent logs...</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+          <!-- Card 1 -->
+          <div class="stats-card">
+            <div class="card-label">Total Milk Contributed</div>
+            <div class="card-value" id="valTotalMilk">0.00 L</div>
+          </div>
+          <!-- Card 2 -->
+          <div class="stats-card">
+            <div class="card-label">Average Fat Content</div>
+            <div class="card-value" id="valAvgFat">0.00 %</div>
+            <div class="card-footer-text" id="lblAvgFatCompare">Quality grade: Standard</div>
+          </div>
+          <!-- Card 3 -->
+          <div class="stats-card">
+            <div class="card-label">Average SNF Content</div>
+            <div class="card-value" id="valAvgSnf">0.00 %</div>
+            <div class="card-footer-text neutral" id="lblAvgSnfSub">Solids-Not-Fat</div>
+          </div>
+          <!-- Card 4 -->
+          <div class="stats-card">
+            <div class="card-label">Total Estimated Earnings</div>
+            <div class="card-value" id="valTotalEarnings">Rs. 0.00</div>
+          </div>
+        </div>
 
-  </main>
+        <!-- Charts & Tables Row -->
+        <div class="dash-row">
+          <!-- Left Panel: Chart -->
+          <div class="dash-panel">
+            <div class="panel-title">Supplied Milk Analytics (Last 7 Days)</div>
+            <div style="height: 320px; position: relative;">
+              <canvas id="yieldChart"></canvas>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Recent Logs panel -->
+        <div class="dash-panel">
+          <div class="panel-title">Recent Milk Supply Contributions</div>
+          <div class="table-container">
+            <table class="dash-table" id="tableRecords">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Session</th>
+                  <th>Quantity (L)</th>
+                  <th>FAT (%)</th>
+                  <th>SNF (%)</th>
+                  <th>Rate / L</th>
+                  <th>Amount</th>
+                  <th>Collected By</th>
+                </tr>
+              </thead>
+              <tbody id="tableBody">
+                <tr>
+                  <td colspan="8" class="text-center py-4" style="color: var(--text-muted)">Loading recent logs...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </main>
 
       <!-- Profile Section -->
       <div class="content-section" id="sectionProfile" style="padding: 32px 24px;">
@@ -704,7 +750,83 @@
           </div>
         </div>
       </div>
+
+      <!-- Payment Section -->
+      <div class="content-section" id="sectionPayment" style="padding: 32px 24px;">
+        <h2
+          style="font-family: 'Outfit', sans-serif; font-size: 24px; color: var(--primary-dark); margin-bottom: 24px;">
+          Payment Module</h2>
+
+        <div class="stats-grid" style="margin-bottom: 32px;">
+          <div class="stats-card">
+            <div class="card-label">Total Earnings</div>
+            <div class="card-value" id="valPayTotalEarnings">Rs. 0.00</div>
+          </div>
+          <div class="stats-card">
+            <div class="card-label">Amount Received</div>
+            <div class="card-value" id="valPayAmountReceived" style="color: var(--success);">Rs. 0.00</div>
+          </div>
+          <div class="stats-card">
+            <div class="card-label">Amount Left</div>
+            <div class="card-value" id="valPayAmountLeft" style="color: #E53935;">Rs. 0.00</div>
+            <button class="btn-secondary" style="margin-top: 12px; width: 100%;" id="btnRequestMoney">Request
+              Money</button>
+          </div>
+        </div>
+
+        <div id="bankCardsContainer" class="stats-grid" style="margin-bottom: 24px;"></div>
+
+        <div class="profile-card" style="margin: 0; max-width: 100%;">
+          <h3>Bank Details & QR Code</h3>
+          <form id="bankDetailsForm" style="display: flex; flex-direction: column; gap: 16px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+              <div>
+                <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px;">Bank Name</label>
+                <select id="bankName"
+                  style="width: 100%; padding: 10px; border: 1px solid rgba(82, 59, 139, 0.2); border-radius: 8px; background-color: white;">
+                  <option value="" disabled selected>Select Bank</option>
+                  <option value="Agricultural Development Bank Limited">Agricultural Development Bank Limited</option>
+                  <option value="Everest Bank Limited">Everest Bank Limited</option>
+                  <option value="Kumari Bank Limited">Kumari Bank Limited</option>
+                  <option value="Laxmi Sunrise Bank Limited">Laxmi Sunrise Bank Limited</option>
+                  <option value="NMB Bank Limited">NMB Bank Limited</option>
+                  <option value="Nabil Bank Limited">Nabil Bank Limited</option>
+                  <option value="Nepal Investment Mega Bank Limited">Nepal Investment Mega Bank Limited</option>
+                  <option value="NIC Asia Bank Limited">NIC Asia Bank Limited</option>
+                  <option value="Rastriya Banijya Bank">Rastriya Banijya Bank</option>
+                  <option value="Sanima Bank Limited">Sanima Bank Limited</option>
+                  <option value="Siddartha Bank Limited">Siddhartha Bank Limited</option>
+                </select>
+              </div>
+              <div>
+                <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px;">Account Holder
+                  Name</label>
+                <input type="text" id="accHolderName"
+                  style="width: 100%; padding: 10px; border: 1px solid rgba(82, 59, 139, 0.2); border-radius: 8px;">
+              </div>
+              <div>
+                <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px;">Account
+                  Number</label>
+                <input type="text" id="accNumber"
+                  style="width: 100%; padding: 10px; border: 1px solid rgba(82, 59, 139, 0.2); border-radius: 8px;">
+              </div>
+              <div>
+                <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px;">Payment QR
+                  Code</label>
+                <input type="file" id="qrCode" accept="image/*"
+                  style="width: 100%; padding: 10px; border: 1px solid rgba(82, 59, 139, 0.2); border-radius: 8px;">
+                <img id="qrCodePreview" src=""
+                  style="max-width: 200px; margin-top: 12px; display: none; border-radius: 8px; border: 1px solid #eee;">
+              </div>
+              <button type="submit" class="btn-secondary"
+                style="background: var(--primary); color: white; align-self: flex-start;">Add Bank Details</button>
+            </div>
+        </div>
+
+        </form>
+      </div>
     </div>
+  </div>
   </div>
 
   <script>
@@ -718,8 +840,10 @@
       // Sidebar & Navigation Elements
       const navDashboard = document.getElementById('navDashboard');
       const navProfile = document.getElementById('navProfile');
+      const navPayment = document.getElementById('navPayment');
       const sectionDashboard = document.getElementById('sectionDashboard');
       const sectionProfile = document.getElementById('sectionProfile');
+      const sectionPayment = document.getElementById('sectionPayment');
       const btnSidebarSignout = document.getElementById('btnSidebarSignout');
 
       // Profile Section Elements
@@ -734,7 +858,6 @@
 
       // Card elements
       const valTotalMilk = document.getElementById('valTotalMilk');
-      const lblTotalMilkCount = document.getElementById('lblTotalMilkCount');
       const valAvgFat = document.getElementById('valAvgFat');
       const lblAvgFatCompare = document.getElementById('lblAvgFatCompare');
       const valAvgSnf = document.getElementById('valAvgSnf');
@@ -755,28 +878,36 @@
 
       // Navigation Logic
       function switchTab(tab) {
+        navDashboard.classList.remove('active');
+        navProfile.classList.remove('active');
+        navPayment.classList.remove('active');
+        sectionDashboard.classList.remove('active');
+        sectionProfile.classList.remove('active');
+        sectionPayment.classList.remove('active');
+
         if (tab === 'dashboard') {
           navDashboard.classList.add('active');
-          navProfile.classList.remove('active');
           sectionDashboard.classList.add('active');
-          sectionProfile.classList.remove('active');
         } else if (tab === 'profile') {
           navProfile.classList.add('active');
-          navDashboard.classList.remove('active');
           sectionProfile.classList.add('active');
-          sectionDashboard.classList.remove('active');
+        } else if (tab === 'payment') {
+          navPayment.classList.add('active');
+          sectionPayment.classList.add('active');
+          loadPaymentData();
         }
       }
 
       navDashboard.addEventListener('click', () => switchTab('dashboard'));
       navProfile.addEventListener('click', () => switchTab('profile'));
+      navPayment.addEventListener('click', () => switchTab('payment'));
 
       // Logout handler
       const handleLogout = () => {
         localStorage.clear();
         window.location.href = 'index.html';
       };
-      
+
       btnSidebarSignout.addEventListener('click', handleLogout);
       btnSignOutProf.addEventListener('click', handleLogout);
 
@@ -845,7 +976,6 @@
 
           // Populate Summary cards
           valTotalMilk.innerText = `${stats.summary.total_milk.toFixed(2)} L`;
-          lblTotalMilkCount.innerText = `${stats.summary.total_collections} Contributions`;
           valAvgFat.innerText = `${stats.summary.avg_fat.toFixed(2)} %`;
 
           if (stats.summary.avg_fat >= 5.0) {
@@ -989,7 +1119,204 @@
 
       // Initial load
       loadDashboard();
+
+      // ============================================
+      // Payment Module Logic
+      // ============================================
+      const valPayTotalEarnings = document.getElementById('valPayTotalEarnings');
+      const valPayAmountReceived = document.getElementById('valPayAmountReceived');
+      const valPayAmountLeft = document.getElementById('valPayAmountLeft');
+      const btnRequestMoney = document.getElementById('btnRequestMoney');
+      const bankCardsContainer = document.getElementById('bankCardsContainer');
+
+      const bankDetailsForm = document.getElementById('bankDetailsForm');
+      const bankName = document.getElementById('bankName');
+      const accHolderName = document.getElementById('accHolderName');
+      const accNumber = document.getElementById('accNumber');
+      const qrCode = document.getElementById('qrCode');
+      const qrCodePreview = document.getElementById('qrCodePreview');
+      let editingBankId = null;
+
+      window.editBank = function (id, name, holder, number) {
+        editingBankId = id;
+        bankName.value = name;
+        accHolderName.value = holder;
+        accNumber.value = number;
+        document.querySelector('#bankDetailsForm button[type="submit"]').textContent = 'Update Bank Details';
+        document.getElementById('bankDetailsForm').scrollIntoView({ behavior: 'smooth' });
+      };
+
+      window.setPrimaryBank = async function (id) {
+        if (!confirm('Set this bank account as primary?')) return;
+        try {
+          const res = await fetch(`${API_BASE_URL}/farmer/bank-details/${id}/`, {
+            method: 'PUT',
+            headers: { 
+               'Authorization': `Bearer ${token}`,
+               'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ is_primary: true })
+          });
+          if (res.ok) {
+            alert('Bank set as primary!');
+            loadPaymentData();
+          } else {
+            const data = await res.json();
+            alert('Error setting primary bank: ' + JSON.stringify(data));
+          }
+        } catch (error) {
+          console.error(error);
+          alert('Error setting primary bank.');
+        }
+      };
+
+      window.deleteBank = async function (id) {
+        if (!confirm('Are you sure you want to remove this bank detail?')) return;
+        try {
+          const res = await fetch(`${API_BASE_URL}/farmer/bank-details/${id}/`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (res.ok) {
+            alert('Bank detail removed successfully!');
+            loadPaymentData();
+          } else {
+            alert('Error removing bank detail.');
+          }
+        } catch (error) {
+          console.error(error);
+          alert('Error removing bank detail.');
+        }
+      };
+
+      async function loadPaymentData() {
+        try {
+          // Fetch payment summary
+          const sumRes = await fetch(`${API_BASE_URL}/farmer/payment-summary/`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (sumRes.ok) {
+            const sumData = await sumRes.json();
+            valPayTotalEarnings.textContent = `Rs. ${sumData.total_earned.toFixed(2)}`;
+            valPayAmountReceived.textContent = `Rs. ${sumData.total_paid.toFixed(2)}`;
+            valPayAmountLeft.textContent = `Rs. ${sumData.pending_balance.toFixed(2)}`;
+          }
+
+          // Fetch bank details
+          const bankRes = await fetch(`${API_BASE_URL}/farmer/bank-details/`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (bankRes.ok) {
+            const bankData = await bankRes.json();
+            bankCardsContainer.innerHTML = '';
+
+            bankData.forEach((bank, index) => {
+              const card = document.createElement('div');
+              card.className = 'stats-card';
+              card.style.position = 'relative';
+
+              let qrHtml = '';
+              if (bank.qr_code) {
+                qrHtml = `<img src="${bank.qr_code}" alt="QR" style="width: 80px; height: 80px; border-radius: 8px; border: 1px solid #eee; margin-top: 12px; display: block;">`;
+              }
+
+              let badgeHtml = bank.is_primary ? 
+                 `<span style="background: var(--success); color: white; padding: 2px 8px; border-radius: 12px; font-size: 10px; font-weight: bold; position: absolute; top: -10px; right: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">Primary</span>` : 
+                 `<span style="background: var(--text-muted); color: white; padding: 2px 8px; border-radius: 12px; font-size: 10px; font-weight: bold; position: absolute; top: -10px; right: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">Secondary</span>`;
+
+              let setPrimaryBtnHtml = bank.is_primary ? '' : `<button class="btn-secondary" style="padding: 4px 12px; font-size: 12px; background: rgba(255, 177, 26, 0.1); color: var(--accent); border: none;" onclick="setPrimaryBank(${bank.id})">Set Primary</button>`;
+
+              card.innerHTML = `
+                ${badgeHtml}
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-top: 8px;">
+                  <div class="card-label">Bank ${index + 1}</div>
+                  <div style="display: flex; gap: 8px;">
+                    ${setPrimaryBtnHtml}
+                    <button class="btn-secondary" style="padding: 4px 12px; font-size: 12px; background: rgba(82, 59, 139, 0.1); color: var(--primary); border: none;" onclick="editBank(${bank.id}, '${bank.bank_name}', '${bank.account_holder_name}', '${bank.account_number}')">Edit</button>
+                    <button class="btn-secondary" style="padding: 4px 12px; font-size: 12px; background: rgba(229, 57, 53, 0.1); color: #E53935; border: none;" onclick="deleteBank(${bank.id})">Remove</button>
+                  </div>
+                </div>
+                <div class="card-value" style="font-size: 18px; margin-top: 8px;">${bank.bank_name}</div>
+                <div class="card-footer-text" style="color: var(--text); font-weight: 500; font-size: 13px; margin-top: 8px; display: block;">
+                  A/C Name: ${bank.account_holder_name}<br>
+                  A/C No: ${bank.account_number}
+                </div>
+                ${qrHtml}
+              `;
+              bankCardsContainer.appendChild(card);
+            });
+          }
+        } catch (error) {
+          console.error("Error loading payment data:", error);
+        }
+      }
+
+      btnRequestMoney.addEventListener('click', async () => {
+        try {
+          const res = await fetch(`${API_BASE_URL}/farmer/request-payment/`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ remarks: 'Requested via dashboard' })
+          });
+          if (res.ok) {
+            alert('Money request sent successfully!');
+          } else {
+            alert('Error sending money request.');
+          }
+        } catch (error) {
+          console.error(error);
+          alert('Error sending money request.');
+        }
+      });
+
+      bankDetailsForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const formData = new FormData();
+        formData.append('bank_name', bankName.value);
+        formData.append('account_holder_name', accHolderName.value);
+        formData.append('account_number', accNumber.value);
+
+        if (qrCode.files.length > 0) {
+          formData.append('qr_code', qrCode.files[0]);
+        }
+
+        try {
+          let url = `${API_BASE_URL}/farmer/bank-details/`;
+          let method = 'POST';
+          if (editingBankId) {
+            url = `${API_BASE_URL}/farmer/bank-details/${editingBankId}/`;
+            method = 'PUT';
+          }
+
+          const res = await fetch(url, {
+            method: method,
+            headers: { 'Authorization': `Bearer ${token}` },
+            body: formData
+          });
+
+          if (res.ok) {
+            alert(editingBankId ? 'Bank details updated successfully!' : 'Bank details added successfully!');
+            bankDetailsForm.reset();
+            qrCodePreview.style.display = 'none';
+            editingBankId = null;
+            document.querySelector('#bankDetailsForm button[type="submit"]').textContent = 'Add Bank Details';
+            loadPaymentData();
+          } else {
+            const data = await res.json();
+            alert('Error saving bank details: ' + JSON.stringify(data));
+          }
+        } catch (error) {
+          console.error(error);
+          alert('Error saving bank details.');
+        }
+      });
+
     });
   </script>
 </body>
+
 </html>

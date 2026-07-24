@@ -12,10 +12,29 @@ from .views import (
     GenerateCodeView,
     OTPTokenObtainPairView,
     DeleteAccountView,
+    dairy_dashboard,
+    link_farmer,
+    deactivate_linked_farmer,
+    get_linked_farmers,
+    search_farmer_by_code,
+    record_milk_collection,
+    farmer_payable_summary,
+    process_payment,
+    get_farmer_payment_history,
+    notify_pending_payment,
+    generate_report,
+    QualityRecordViewSet,
+    PaymentViewSet,
+    FarmerPaymentSummaryView,
+    FarmerBankDetailsView,
+    FarmerBankDetailsUpdateView,
+    RequestPaymentView
 )
 
 router = DefaultRouter()
 router.register(r'collection', MilkCollectionViewSet, basename='milk-collection')
+router.register(r'quality', QualityRecordViewSet, basename='quality-record')
+router.register(r'payments', PaymentViewSet, basename='payment')
 
 urlpatterns = [
     # Auth Endpoints
@@ -34,4 +53,23 @@ urlpatterns = [
     
     # Viewsets (Collection)
     path('', include(router.urls)),
+
+    # Farmer Payment Endpoints
+    path('farmer/payment-summary/', FarmerPaymentSummaryView.as_view(), name='farmer-payment-summary'),
+    path('farmer/bank-details/', FarmerBankDetailsView.as_view(), name='farmer-bank-details'),
+    path('farmer/bank-details/<int:pk>/', FarmerBankDetailsUpdateView.as_view(), name='farmer-bank-details-update'),
+    path('farmer/request-payment/', RequestPaymentView.as_view(), name='farmer-request-payment'),
+
+    # Custom Dairy Operator Actions
+    path('dairy/dashboard/', dairy_dashboard, name='dairy_dashboard'),
+    path('dairy/link-farmer/', link_farmer, name='link_farmer'),
+    path('dairy/deactivate-farmer/', deactivate_linked_farmer, name='deactivate_linked_farmer'),
+    path('dairy/linked-farmers/', get_linked_farmers, name='get_linked_farmers'),
+    path('dairy/search-farmer/', search_farmer_by_code, name='search_farmer_by_code'),
+    path('dairy/record-collection/', record_milk_collection, name='record_milk_collection'),
+    path('dairy/farmer-payable-summary/<int:farmer_id>/', farmer_payable_summary, name='farmer_payable_summary'),
+    path('dairy/process-payment/', process_payment, name='process_payment'),
+    path('dairy/payment-history/<int:farmer_id>/', get_farmer_payment_history, name='get_farmer_payment_history'),
+    path('dairy/notify-pending-payment/', notify_pending_payment, name='notify_pending_payment'),
+    path('dairy/reports/', generate_report, name='generate_report'),
 ]

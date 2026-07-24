@@ -68,11 +68,12 @@ class LinkedFarmer(models.Model):
 
 
 class FarmerBankDetails(models.Model):
-    farmer = models.OneToOneField(User, on_delete=models.CASCADE, related_name='bank_details')
+    farmer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='bank_details')
     bank_name = models.CharField(max_length=255)
     account_holder_name = models.CharField(max_length=255)
     account_number = models.CharField(max_length=50, unique=True)
-    wallet_number = models.CharField(max_length=50, blank=True, null=True)
+    qr_code = models.ImageField(upload_to='payment_qrs/', blank=True, null=True)
+    is_primary = models.BooleanField(default=False)
     
     def __str__(self):
         return f"{self.account_holder_name} - {self.account_number}"
@@ -170,3 +171,19 @@ class QualityRecord(models.Model):
         except AttributeError:
             username = "Unknown"
         return f"Quality - {username} - FAT:{self.fat_percentage}% SNF:{self.snf_percentage}%"
+
+
+class PaymentRequest(models.Model):
+    STATUS_CHOICES = (
+        ('pending', 'Pending'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+    )
+    farmer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='payment_requests')
+    amount_requested = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    request_date = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    remarks = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.farmer.username} - {self.status} - {self.request_date}"

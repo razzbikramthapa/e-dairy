@@ -321,13 +321,15 @@ def search_farmer_by_code(request):
     except Profile.DoesNotExist:
         return Response({'detail': 'Farmer with this code does not exist.'}, status=status.HTTP_404_NOT_FOUND)
         
-    bank_details = getattr(user, 'bank_details', None)
-    bank_data = {
-        'bank_name': bank_details.bank_name if bank_details else '',
-        'account_holder_name': bank_details.account_holder_name if bank_details else '',
-        'account_number': bank_details.account_number if bank_details else '',
-        'wallet_number': bank_details.wallet_number if bank_details else ''
-    }
+    bank_details_list = user.bank_details.all()
+    bank_data = [
+        {
+            'id': bd.id,
+            'bank_name': bd.bank_name,
+            'account_holder_name': bd.account_holder_name,
+            'account_number': bd.account_number
+        } for bd in bank_details_list
+    ]
     
     is_linked = LinkedFarmer.objects.filter(dairy_operator=request.user, farmer=user, is_active=True).exists()
     
@@ -384,13 +386,15 @@ def farmer_payable_summary(request, farmer_id):
     if pending_balance < 0:
         pending_balance = Decimal('0.00')
         
-    bank_details = getattr(farmer, 'bank_details', None)
-    bank_data = {
-        'bank_name': bank_details.bank_name if bank_details else '',
-        'account_holder_name': bank_details.account_holder_name if bank_details else '',
-        'account_number': bank_details.account_number if bank_details else '',
-        'wallet_number': bank_details.wallet_number if bank_details else ''
-    }
+    bank_details_list = farmer.bank_details.all()
+    bank_data = [
+        {
+            'id': bd.id,
+            'bank_name': bd.bank_name,
+            'account_holder_name': bd.account_holder_name,
+            'account_number': bd.account_number
+        } for bd in bank_details_list
+    ]
     
     return Response({
         'farmer_id': farmer.id,
@@ -732,3 +736,109 @@ class PaymentViewSet(viewsets.ModelViewSet):
                 send_sparrow_sms(phone, msg)
             except Exception as e:
                 logger.error(f"Failed to send payment SMS: {e}")
+
+
+class FarmerPaymentSummaryView(APIView):
+    permission_classes = (IsAuthenticated,)
+    
+    def get(self, request):
+        user = request.user
+        
+        total_earned = MilkCollection.objects.filter(farmer=user).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+        total_paid = Payment.objects.filter(farmer=user, payment_status='paid').aggregate(total=Sum('paid_amount'))['total'] or Decimal('0.00')
+        total_deductions = Payment.objects.filter(farmer=user, payment_status='paid').aggregate(total=Sum('deductions'))['total'] or Decimal('0.00')
+        
+        pending_balance = total_earned - total_paid - total_deductions
+        if pending_balance < 0:
+            pending_balance = Decimal('0.00')
+            
+        return Response({
+            'total_earned': float(total_earned),
+            'total_paid': float(total_paid),
+            'pending_balance': float(pending_balance)
+        })
+
+class FarmerBankDetailsView(APIView):
+    permission_classes = (IsAuthenticated,)
+    
+    def get(self, request):
+        details = request.user.bank_details.all()
+        from .serializers import FarmerBankDetailsSerializer
+        serializer = FarmerBankDetailsSerializer(details, many=True)
+        return Response(serializer.data)
+            
+    def post(self, request):
+        if request.user.bank_details.count() >= 3:
+            return Response({'detail': 'Maximum 3 bank accounts allowed (1 primary, 2 secondary).'}, status=status.HTTP_400_BAD_REQUEST)
+            
+        from .serializers import FarmerBankDetailsSerializer
+        serializer = FarmerBankDetailsSerializer(data=request.data)
+        if serializer.is_valid():
+            is_primary_req = request.data.get('is_primary')
+            is_primary = is_primary_req == 'true' or is_primary_req is True
+            if request.user.bank_details.count() == 0:
+                is_primary = True
+                
+            if is_primary:
+                request.user.bank_details.update(is_primary=False)
+                
+            serializer.save(farmer=request.user, is_primary=is_primary)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class FarmerBankDetailsUpdateView(APIView):
+    permission_classes = (IsAuthenticated,)
+    
+    def put(self, request, pk):
+        try:
+            details = request.user.bank_details.get(pk=pk)
+        except FarmerBankDetails.DoesNotExist:
+            return Response({'detail': 'Bank details not found.'}, status=status.HTTP_404_NOT_FOUND)
+            
+        from .serializers import FarmerBankDetailsSerializer
+        serializer = FarmerBankDetailsSerializer(details, data=request.data, partial=True)
+        if serializer.is_valid():
+            is_primary_req = request.data.get('is_primary')
+            if is_primary_req == 'true' or is_primary_req is True:
+                request.user.bank_details.exclude(pk=pk).update(is_primary=False)
+                serializer.save(is_primary=True)
+            else:
+                serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+    def delete(self, request, pk):
+        try:
+            details = request.user.bank_details.get(pk=pk)
+            was_primary = details.is_primary
+            details.delete()
+            if was_primary and request.user.bank_details.exists():
+                first_account = request.user.bank_details.first()
+                first_account.is_primary = True
+                first_account.save()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except FarmerBankDetails.DoesNotExist:
+            return Response({'detail': 'Bank details not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+class RequestPaymentView(APIView):
+    permission_classes = (IsAuthenticated,)
+    
+    def post(self, request):
+        amount = request.data.get('amount')
+        remarks = request.data.get('remarks', '')
+        
+        try:
+            amount = Decimal(str(amount)) if amount else None
+        except:
+            return Response({'detail': 'Invalid amount'}, status=status.HTTP_400_BAD_REQUEST)
+            
+        from .models import PaymentRequest
+        from .serializers import PaymentRequestSerializer
+        
+        pr = PaymentRequest.objects.create(
+            farmer=request.user,
+            amount_requested=amount,
+            remarks=remarks
+        )
+        serializer = PaymentRequestSerializer(pr)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
