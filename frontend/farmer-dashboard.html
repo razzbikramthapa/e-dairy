@@ -1264,11 +1264,12 @@
           if (res.ok) {
             alert('Money request sent successfully!');
           } else {
-            alert('Error sending money request.');
+            const err = await res.json().catch(() => ({}));
+            alert(err.detail || 'Error sending money request.');
           }
         } catch (error) {
           console.error(error);
-          alert('Error sending money request.');
+          alert('Network error sending money request.');
         }
       });
 

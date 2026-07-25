@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from django.db import transaction
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from .models import Profile, MilkCollection, LinkedFarmer, FarmerBankDetails, Payment, QualityRecord, PaymentRequest
+from .models import Profile, MilkCollection, LinkedFarmer, FarmerBankDetails, Payment, QualityRecord, PaymentRequest, Notification
 from .twilio_helper import verify_otp
 
 class ProfileSerializer(serializers.ModelSerializer):
@@ -134,9 +134,17 @@ class MilkCollectionSerializer(serializers.ModelSerializer):
 
 
 class FarmerBankDetailsSerializer(serializers.ModelSerializer):
+    wallet_number = serializers.SerializerMethodField()
+
     class Meta:
         model = FarmerBankDetails
-        fields = ('id', 'bank_name', 'account_holder_name', 'account_number', 'qr_code', 'is_primary')
+        fields = ('id', 'bank_name', 'account_holder_name', 'account_number', 'qr_code', 'is_primary', 'wallet_number')
+
+    def get_wallet_number(self, obj):
+        try:
+            return obj.farmer.profile.phone
+        except:
+            return ""
 
 
 class LinkedFarmerSerializer(serializers.ModelSerializer):
@@ -144,11 +152,18 @@ class LinkedFarmerSerializer(serializers.ModelSerializer):
     farmer_name = serializers.CharField(source='farmer.get_full_name', read_only=True)
     farmer_phone = serializers.CharField(source='farmer.profile.phone', read_only=True)
     farmer_address = serializers.CharField(source='farmer.profile.address', read_only=True)
-    bank_details = FarmerBankDetailsSerializer(source='farmer.bank_details', many=True, read_only=True)
+    bank_details = serializers.SerializerMethodField()
     
     class Meta:
         model = LinkedFarmer
         fields = ('id', 'farmer', 'farmer_code', 'farmer_name', 'farmer_phone', 'farmer_address', 'bank_details', 'linked_date', 'is_active')
+
+    def get_bank_details(self, obj):
+        farmer = obj.farmer
+        bd = farmer.bank_details.filter(is_primary=True).first() or farmer.bank_details.first()
+        if bd:
+            return FarmerBankDetailsSerializer(bd, context=self.context).data
+        return None
 
 
 class PaymentSerializer(serializers.ModelSerializer):
@@ -180,3 +195,10 @@ class PaymentRequestSerializer(serializers.ModelSerializer):
         model = PaymentRequest
         fields = ('id', 'farmer', 'farmer_name', 'amount_requested', 'request_date', 'status', 'remarks')
         read_only_fields = ('farmer', 'request_date', 'status')
+
+
+class NotificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Notification
+        fields = ('id', 'notification_type', 'title', 'message', 'is_read', 'related_farmer_id', 'created_at')
+        read_only_fields = ('id', 'notification_type', 'title', 'message', 'related_farmer_id', 'created_at')

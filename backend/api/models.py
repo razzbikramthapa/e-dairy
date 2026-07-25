@@ -187,3 +187,24 @@ class PaymentRequest(models.Model):
 
     def __str__(self):
         return f"{self.farmer.username} - {self.status} - {self.request_date}"
+
+
+class Notification(models.Model):
+    NOTIFICATION_TYPES = (
+        ('payment_request', 'Payment Request'),
+        ('payment_received', 'Payment Received'),
+        ('general', 'General'),
+    )
+    recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    notification_type = models.CharField(max_length=20, choices=NOTIFICATION_TYPES, default='general')
+    title = models.CharField(max_length=255)
+    message = models.TextField()
+    is_read = models.BooleanField(default=False)
+    related_farmer_id = models.IntegerField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.title} -> {self.recipient.username}"

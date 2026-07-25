@@ -28,7 +28,10 @@ from .views import (
     FarmerPaymentSummaryView,
     FarmerBankDetailsView,
     FarmerBankDetailsUpdateView,
-    RequestPaymentView
+    RequestPaymentView,
+    current_profile,
+    list_notifications,
+    mark_notification_read
 )
 
 router = DefaultRouter()
@@ -42,16 +45,16 @@ urlpatterns = [
     path('register/', RegisterView.as_view(), name='api-register'),
     path('token/', OTPTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    
+
     # User Profile & Directory
     path('profile/', UserProfileView.as_view(), name='user-profile'),
     path('account/delete/', DeleteAccountView.as_view(), name='delete-account'),
     path('farmers/', FarmerListView.as_view(), name='farmer-list'),
-    
+
     # Dashboard Analytics
     path('dashboard/', DashboardStatsView.as_view(), name='dashboard-stats'),
-    
-    # Viewsets (Collection)
+
+    # Viewsets (Collection, Quality, Payments)
     path('', include(router.urls)),
 
     # Farmer Payment Endpoints
@@ -63,6 +66,7 @@ urlpatterns = [
     # Custom Dairy Operator Actions
     path('dairy/dashboard/', dairy_dashboard, name='dairy_dashboard'),
     path('dairy/link-farmer/', link_farmer, name='link_farmer'),
+    path('me/', current_profile, name='api_current_profile'),
     path('dairy/deactivate-farmer/', deactivate_linked_farmer, name='deactivate_linked_farmer'),
     path('dairy/linked-farmers/', get_linked_farmers, name='get_linked_farmers'),
     path('dairy/search-farmer/', search_farmer_by_code, name='search_farmer_by_code'),
@@ -72,4 +76,9 @@ urlpatterns = [
     path('dairy/payment-history/<int:farmer_id>/', get_farmer_payment_history, name='get_farmer_payment_history'),
     path('dairy/notify-pending-payment/', notify_pending_payment, name='notify_pending_payment'),
     path('dairy/reports/', generate_report, name='generate_report'),
+
+    # Notification Endpoints
+    path('notifications/', list_notifications, name='list_notifications'),
+    path('notifications/read-all/', mark_notification_read, name='mark_all_read'),
+    path('notifications/<int:notification_id>/read/', mark_notification_read, name='mark_notification_read'),
 ]

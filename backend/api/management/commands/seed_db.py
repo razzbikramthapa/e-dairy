@@ -75,7 +75,7 @@ class Command(BaseCommand):
                 bank_name="Global IME Bank",
                 account_holder_name=f"{f_data['first_name']} {f_data['last_name']}",
                 account_number=f"100201000{user.id}0",
-                wallet_number="9845551234"
+                is_primary=True
             )
             # Link farmer to dairy operator
             LinkedFarmer.objects.create(

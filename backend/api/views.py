@@ -11,7 +11,7 @@ from decimal import Decimal
 from rest_framework_simplejwt.views import TokenObtainPairView
 import logging
 
-from .models import Profile, MilkCollection, LinkedFarmer, Payment, FarmerBankDetails, QualityRecord
+from .models import Profile, MilkCollection, LinkedFarmer, Payment, FarmerBankDetails, QualityRecord, PaymentRequest, Notification
 from .serializers import (
     UserRegisterSerializer, 
     UserSerializer, 
@@ -19,7 +19,9 @@ from .serializers import (
     OTPTokenObtainPairSerializer,
     LinkedFarmerSerializer,
     PaymentSerializer,
-    QualityRecordSerializer
+    PaymentRequestSerializer,
+    QualityRecordSerializer,
+    NotificationSerializer
 )
 from .twilio_helper import send_otp, send_sparrow_sms
 
@@ -113,15 +115,19 @@ class DashboardStatsView(APIView):
         user = request.user
         
         # Base filter based on user role
+        role = 'unknown'
         try:
             profile = user.profile
             is_farmer = (profile.role == 'farmer')
+            role = profile.role
         except Profile.DoesNotExist:
             is_farmer = False
 
         collections = MilkCollection.objects.all()
         if is_farmer:
             collections = collections.filter(farmer=user)
+        else:
+            collections = collections.filter(collected_by=user)
             
         # 1. Calculate General Aggregates
         stats = collections.aggregate(
@@ -132,9 +138,13 @@ class DashboardStatsView(APIView):
         
         total_milk = stats['total_milk'] or Decimal('0.00')
         avg_fat = stats['avg_fat'] or Decimal('0.00')
+        total_collections = stats['total_collections'] or 0
         
-        # Active farmers count (total farmers registered in system)
-        active_farmers_count = User.objects.filter(profile__role='farmer').count()
+        # Active farmers count
+        if is_farmer:
+            active_farmers_count = User.objects.filter(profile__role='farmer').count()
+        else:
+            active_farmers_count = LinkedFarmer.objects.filter(dairy_operator=user, is_active=True).count()
         
         # 2. Calculate Weekly Chart Data (Last 7 Days)
         today = timezone.localdate()
@@ -157,9 +167,10 @@ class DashboardStatsView(APIView):
             "summary": {
                 "total_milk": float(total_milk),
                 "avg_fat": round(float(avg_fat), 2),
+                "total_collections": total_collections,
                 "active_farmers": active_farmers_count,
                 "is_farmer": is_farmer,
-                "role": profile.role if not is_farmer else 'farmer'
+                "role": role
             },
             "chart_data": weekly_chart,
             "recent_records": recent_records_serializer.data
@@ -264,10 +275,11 @@ def link_farmer(request):
         farmer = profile.user
     except Profile.DoesNotExist:
         return Response({'detail': 'Farmer with this code does not exist.'}, status=status.HTTP_404_NOT_FOUND)
-        
+
     linked_farmer, created = LinkedFarmer.objects.get_or_create(
         dairy_operator=request.user,
-        farmer=farmer
+        farmer=farmer,
+        defaults={'is_active': True}
     )
     
     if not created:
@@ -280,22 +292,74 @@ def link_farmer(request):
             
     return Response({'detail': 'Farmer linked successfully.'}, status=status.HTTP_201_CREATED)
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def current_profile(request):
+    user = request.user
+    profile = getattr(user, 'profile', None)
+    dairy = getattr(user, 'dairy_operator', None)  # adjust if your relation name differs
+
+    return Response({
+        "user_id": user.id,
+        "username": user.username,
+        "full_name": user.get_full_name(),
+        "phone": profile.phone if profile else None,
+        "address": profile.address if profile else None,
+        "role": profile.role if profile else None,
+        "dairy": {
+            "id": dairy.id,
+            "dairy_name": dairy.dairy_name,
+            "address": dairy.address,
+        } if dairy else None
+    })
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def deactivate_linked_farmer(request):
-    """Deactivate or unlink a farmer from the dairy operator"""
+    """Deactivate or unlink a farmer from the dairy operator only if all transactions are settled"""
     farmer_id = request.data.get('farmer_id')
     if not farmer_id:
         return Response({'detail': 'Farmer ID is required.'}, status=status.HTTP_400_BAD_REQUEST)
-        
+
     try:
         link = LinkedFarmer.objects.get(dairy_operator=request.user, farmer_id=farmer_id)
-        link.is_active = False
-        link.save()
-        return Response({'detail': 'Farmer unlinked successfully.'})
     except LinkedFarmer.DoesNotExist:
         return Response({'detail': 'Link not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+    farmer = link.farmer
+
+    pending_payments = Payment.objects.filter(
+        dairy_operator=request.user, farmer=farmer, payment_status='pending'
+    ).exclude(pending_amount=0).exists()
+
+    pending_requests = PaymentRequest.objects.filter(
+        farmer=farmer, status='pending'
+    ).exists()
+
+    total_earned = MilkCollection.objects.filter(
+        farmer=farmer, collected_by=request.user
+    ).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+
+    total_paid = Payment.objects.filter(
+        farmer=farmer, dairy_operator=request.user, payment_status='paid'
+    ).aggregate(total=Sum('paid_amount'))['total'] or Decimal('0.00')
+
+    total_deductions = Payment.objects.filter(
+        farmer=farmer, dairy_operator=request.user, payment_status='paid'
+    ).aggregate(total=Sum('deductions'))['total'] or Decimal('0.00')
+
+    pending_balance = total_earned - total_paid - total_deductions
+
+    if pending_payments or pending_requests or pending_balance > 0:
+        return Response({
+            'detail': 'Cannot deactivate. There are unsettled transactions with this farmer. '
+                       f'Pending balance: Rs. {pending_balance:.2f}. '
+                       'Please settle all payments first.'
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    link.is_active = False
+    link.save()
+    return Response({'detail': 'Farmer unlinked successfully.'})
 
 
 @api_view(['GET'])
@@ -321,15 +385,15 @@ def search_farmer_by_code(request):
     except Profile.DoesNotExist:
         return Response({'detail': 'Farmer with this code does not exist.'}, status=status.HTTP_404_NOT_FOUND)
         
-    bank_details_list = user.bank_details.all()
-    bank_data = [
-        {
-            'id': bd.id,
-            'bank_name': bd.bank_name,
-            'account_holder_name': bd.account_holder_name,
-            'account_number': bd.account_number
-        } for bd in bank_details_list
-    ]
+    bd = user.bank_details.filter(is_primary=True).first() or user.bank_details.first()
+    bank_data = {
+        'id': bd.id,
+        'bank_name': bd.bank_name,
+        'account_holder_name': bd.account_holder_name,
+        'account_number': bd.account_number,
+        'wallet_number': profile.phone,
+        'is_primary': bd.is_primary
+    } if bd else None
     
     is_linked = LinkedFarmer.objects.filter(dairy_operator=request.user, farmer=user, is_active=True).exists()
     
@@ -386,15 +450,15 @@ def farmer_payable_summary(request, farmer_id):
     if pending_balance < 0:
         pending_balance = Decimal('0.00')
         
-    bank_details_list = farmer.bank_details.all()
-    bank_data = [
-        {
-            'id': bd.id,
-            'bank_name': bd.bank_name,
-            'account_holder_name': bd.account_holder_name,
-            'account_number': bd.account_number
-        } for bd in bank_details_list
-    ]
+    bd = farmer.bank_details.filter(is_primary=True).first() or farmer.bank_details.first()
+    bank_data = {
+        'id': bd.id,
+        'bank_name': bd.bank_name,
+        'account_holder_name': bd.account_holder_name,
+        'account_number': bd.account_number,
+        'wallet_number': farmer.profile.phone,
+        'is_primary': bd.is_primary
+    } if bd else None
     
     return Response({
         'farmer_id': farmer.id,
@@ -829,16 +893,72 @@ class RequestPaymentView(APIView):
         
         try:
             amount = Decimal(str(amount)) if amount else None
-        except:
+        except Exception:
             return Response({'detail': 'Invalid amount'}, status=status.HTTP_400_BAD_REQUEST)
-            
-        from .models import PaymentRequest
-        from .serializers import PaymentRequestSerializer
         
-        pr = PaymentRequest.objects.create(
-            farmer=request.user,
-            amount_requested=amount,
-            remarks=remarks
-        )
+        farmer = request.user
+        try:
+            pr = PaymentRequest.objects.create(
+                farmer=farmer,
+                amount_requested=amount,
+                remarks=remarks
+            )
+        except Exception as e:
+            logger.error(f"Failed to create PaymentRequest: {e}")
+            return Response({'detail': 'Failed to create payment request.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
         serializer = PaymentRequestSerializer(pr)
+
+        try:
+            linked_operators = LinkedFarmer.objects.filter(
+                farmer=farmer, is_active=True
+            ).values_list('dairy_operator_id', flat=True)
+
+            farmer_name = farmer.get_full_name() or farmer.username
+            amount_str = f"Rs. {amount:.2f}" if amount else "any amount"
+            title = f"Payment Request from {farmer_name}"
+            message = f"{farmer_name} has requested a payment of {amount_str}."
+            if remarks:
+                message += f" Note: {remarks}"
+
+            for operator_id in linked_operators:
+                Notification.objects.create(
+                    recipient_id=operator_id,
+                    notification_type='payment_request',
+                    title=title,
+                    message=message,
+                    related_farmer_id=farmer.id
+                )
+        except Exception as e:
+            logger.error(f"Failed to create notification for payment request: {e}")
+
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def list_notifications(request):
+    """Get all notifications for the logged-in user"""
+    notifications = Notification.objects.filter(recipient=request.user)[:50]
+    serializer = NotificationSerializer(notifications, many=True)
+    unread_count = Notification.objects.filter(recipient=request.user, is_read=False).count()
+    return Response({
+        'notifications': serializer.data,
+        'unread_count': unread_count
+    })
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def mark_notification_read(request, notification_id=None):
+    """Mark notification(s) as read. If notification_id is provided, mark single; else mark all."""
+    if notification_id:
+        try:
+            notif = Notification.objects.get(id=notification_id, recipient=request.user)
+            notif.is_read = True
+            notif.save()
+        except Notification.DoesNotExist:
+            return Response({'detail': 'Notification not found.'}, status=status.HTTP_404_NOT_FOUND)
+    else:
+        Notification.objects.filter(recipient=request.user, is_read=False).update(is_read=True)
+    return Response({'detail': 'Marked as read.'})

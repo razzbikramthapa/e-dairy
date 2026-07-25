@@ -6,24 +6,22 @@ from django.utils import timezone
 
 logger = logging.getLogger(__name__)
 
-# ─────────────────────────────────────────────────────────────────────────────
 # NEPALOTP CONFIGURATION  (primary provider)
-# ─────────────────────────────────────────────────────────────────────────────
+
 NEPALOTP_API_KEY = os.environ.get("NEPALOTP_API_KEY")           # notp_sandbox_... or notp_live_...
 NEPALOTP_BASE_URL = "https://api.nepalotp.com/v1"
 
-# ─────────────────────────────────────────────────────────────────────────────
+
 # TWILIO CONFIGURATION  (fallback provider)
-# ─────────────────────────────────────────────────────────────────────────────
+
 TWILIO_ACCOUNT_SID = os.environ.get("TWILIO_ACCOUNT_SID")
 TWILIO_AUTH_TOKEN = os.environ.get("TWILIO_AUTH_TOKEN")
 TWILIO_VERIFY_SERVICE_SID = os.environ.get("TWILIO_VERIFY_SERVICE_SID")
 TWILIO_DEFAULT_COUNTRY_CODE = os.environ.get("TWILIO_DEFAULT_COUNTRY_CODE", "+977")
 
 
-# ─────────────────────────────────────────────────────────────────────────────
 # PROVIDER DETECTION
-# ─────────────────────────────────────────────────────────────────────────────
+
 def _is_nepalotp_configured():
     """Returns True when a real NepalOTP API key is present (sandbox or live)."""
     return bool(
@@ -55,9 +53,9 @@ def active_provider():
     return "simulation"
 
 
-# ─────────────────────────────────────────────────────────────────────────────
+
 # PHONE FORMATTING
-# ─────────────────────────────────────────────────────────────────────────────
+
 def format_phone_e164(phone):
     """
     Convert a local Nepal number to E.164 for Twilio (e.g. +9779841234567).
@@ -84,10 +82,10 @@ def format_phone_nepalotp(phone):
     return phone
 
 
-# ─────────────────────────────────────────────────────────────────────────────
+
 # OTP_ID CACHE  (needed for NepalOTP's two-step send → verify flow)
 # Django's cache is used so the otp_id persists between the two API calls.
-# ─────────────────────────────────────────────────────────────────────────────
+
 def _cache_set(key, value, timeout=360):
     """Store a value in Django's cache (6-minute TTL by default)."""
     try:
@@ -108,9 +106,9 @@ def _otp_cache_key(phone):
     return f"nepalotp_otp_id_{phone}"
 
 
-# ─────────────────────────────────────────────────────────────────────────────
+
 # SEND OTP
-# ─────────────────────────────────────────────────────────────────────────────
+
 def send_otp(phone_number):
     """
     Send an OTP to the given phone number using the first configured provider.
@@ -127,7 +125,7 @@ def send_otp(phone_number):
     provider = active_provider()
     logger.info(f"send_otp: using provider '{provider}' for {phone_number}")
 
-    # ── NepalOTP ──────────────────────────────────────────────────────────────
+    #  NepalOTP
     if provider == "nepalotp":
         formatted = format_phone_nepalotp(phone_number)
         try:
@@ -161,7 +159,8 @@ def send_otp(phone_number):
         except requests.RequestException as e:
             raise ValueError(f"NepalOTP network error: {e}")
 
-    # ── Twilio ────────────────────────────────────────────────────────────────
+    
+    # Twilio 
     if provider == "twilio":
         from twilio.rest import Client
         from twilio.base.exceptions import TwilioRestException
@@ -178,7 +177,8 @@ def send_otp(phone_number):
         except TwilioRestException as e:
             raise ValueError(f"Twilio error: {e.msg}")
 
-    # ── Simulation ────────────────────────────────────────────────────────────
+    # Simulation 
+    
     logger.warning(f"No SMS provider configured — simulating OTP for {phone_number}")
     return {
         "status": "simulated",
@@ -187,9 +187,9 @@ def send_otp(phone_number):
     }
 
 
-# ─────────────────────────────────────────────────────────────────────────────
+
 # VERIFY OTP
-# ─────────────────────────────────────────────────────────────────────────────
+
 def verify_otp(phone_number, code):
     """
     Verify the OTP submitted by the user.
@@ -198,7 +198,8 @@ def verify_otp(phone_number, code):
     provider = active_provider()
     logger.info(f"verify_otp: using provider '{provider}' for {phone_number}")
 
-    # ── NepalOTP ──────────────────────────────────────────────────────────────
+    # NepalOTP 
+    
     if provider == "nepalotp":
         formatted = format_phone_nepalotp(phone_number)
         otp_id = _cache_get(_otp_cache_key(formatted))
@@ -231,7 +232,7 @@ def verify_otp(phone_number, code):
             logger.error(f"NepalOTP verify network error: {e}")
             return False
 
-    # ── Twilio ────────────────────────────────────────────────────────────────
+    # Twilio
     if provider == "twilio":
         from twilio.rest import Client
         from twilio.base.exceptions import TwilioRestException
@@ -246,13 +247,11 @@ def verify_otp(phone_number, code):
             logger.error(f"Twilio verify error: {e}")
             return False
 
-    # ── Simulation ────────────────────────────────────────────────────────────
+    #  Simulation 
     return code == "123456"
 
 
-# ─────────────────────────────────────────────────────────────────────────────
 # SPARROW SMS SERVICE & SANDBOX (for demo notifications)
-# ─────────────────────────────────────────────────────────────────────────────
 SPARROW_SMS_TOKEN = os.environ.get("SPARROW_SMS_TOKEN")
 SPARROW_SMS_SENDER = os.environ.get("SPARROW_SMS_SENDER", "Demo")
 

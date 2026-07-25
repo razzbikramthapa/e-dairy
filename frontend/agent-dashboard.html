@@ -474,6 +474,19 @@
       box-shadow: 0 6px 16px rgba(255, 177, 26, 0.35);
     }
 
+    .btn-cancel {
+      background: var(--white);
+      color: var(--text-muted);
+      border: 2px solid rgba(82, 59, 139, 0.15);
+      box-shadow: none;
+    }
+    .btn-cancel:hover {
+      background: #f5f5f5;
+      border-color: rgba(82, 59, 139, 0.3);
+      transform: translateY(-2px);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
     .btn-secondary {
       background: none;
       border: 1px solid rgba(82, 59, 139, 0.2);
@@ -741,6 +754,137 @@
     .profile-card-item strong {
       color: var(--text-muted);
     }
+
+    /* Notification Nav Item Badge */
+    .nav-item .notif-badge {
+      background: #E53935;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      min-width: 18px;
+      height: 18px;
+      border-radius: 9px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 5px;
+      margin-left: 8px;
+      line-height: 1;
+    }
+    .nav-item .notif-badge:empty,
+    .nav-item .notif-badge[data-count="0"] {
+      display: none;
+    }
+
+    /* Notifications Panel */
+    .notif-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .notif-item {
+      background: var(--white);
+      border: 1px solid rgba(82, 59, 139, 0.08);
+      border-radius: 12px;
+      padding: 16px 20px;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      cursor: pointer;
+    }
+    .notif-item:hover {
+      border-color: rgba(82, 59, 139, 0.18);
+      box-shadow: var(--shadow-sm);
+    }
+    .notif-item.unread {
+      background: #FAF8FF;
+      border-left: 3px solid var(--primary);
+    }
+    .notif-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .notif-icon.payment-request {
+      background: rgba(255, 177, 26, 0.15);
+      color: var(--accent);
+    }
+    .notif-icon.payment-received {
+      background: rgba(76, 175, 80, 0.15);
+      color: #4CAF50;
+    }
+    .notif-icon.general {
+      background: rgba(82, 59, 139, 0.1);
+      color: var(--primary);
+    }
+    .notif-body {
+      flex: 1;
+      min-width: 0;
+    }
+    .notif-title {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--primary-dark);
+      margin-bottom: 4px;
+    }
+    .notif-message {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    .notif-time {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 6px;
+      opacity: 0.7;
+    }
+    .notif-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .notif-actions .btn-action {
+      padding: 6px 16px;
+      font-size: 12px;
+      border-radius: 8px;
+    }
+    .notif-empty {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-muted);
+    }
+    .notif-empty svg {
+      width: 48px;
+      height: 48px;
+      margin-bottom: 12px;
+      opacity: 0.3;
+    }
+    .notif-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .notif-header-row .btn-mark-all {
+      font-size: 13px;
+      color: var(--primary);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 8px;
+      transition: background 0.2s;
+    }
+    .notif-header-row .btn-mark-all:hover {
+      background: rgba(82, 59, 139, 0.05);
+    }
   </style>
 </head>
 <body>
@@ -752,7 +896,7 @@
     <!-- Sidebar Navigation -->
     <aside class="sidebar">
       <div class="sidebar-brand">
-        <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%23523B8B'/><circle cx='50' cy='35' r='14' fill='%23FFB11A'/><rect x='40' y='42' width='20' height='30' rx='10' fill='%23FFB11A'/></svg>" alt="Logo">
+        <img src="assets/logo.png" alt="e-Dairy Logo">
         <span class="logo-text">e-<span>Dairy</span></span>
       </div>
 
@@ -794,6 +938,13 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
           Report Builder
+        </div>
+        <div class="nav-item" data-tab="notifications">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+          </svg>
+          Notifications
+          <span class="notif-badge" id="notifBadge" data-count="0"></span>
         </div>
       </nav>
 
@@ -960,7 +1111,7 @@
                     <th>Full Name</th>
                     <th>Phone</th>
                     <th>Address</th>
-                    <th>Bank / Wallet details</th>
+                    <th>Bank details</th>
                     <th>Action</th>
                   </tr>
                 </thead>
@@ -1214,6 +1365,29 @@
         </div>
       </section>
 
+      <!-- TAB 6: NOTIFICATIONS -->
+      <section class="tab-panel" id="panel-notifications">
+        <div class="dash-panel">
+          <div class="notif-header-row">
+            <div class="panel-title">
+              <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+              </svg>
+              Notifications
+            </div>
+            <button class="btn-mark-all" id="btnMarkAllRead">Mark all as read</button>
+          </div>
+          <div class="notif-list" id="notifList">
+            <div class="notif-empty">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+              </svg>
+              <p>No notifications yet.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
     </main>
   </div>
 
@@ -1280,7 +1454,10 @@
             <input type="text" id="payRef" class="form-control" placeholder="e.g. TXN-1092839">
           </div>
 
-          <button type="submit" class="btn-action btn-accent w-100" id="btnConfirmPayment">Disburse Payment</button>
+          <div style="display:flex; gap:10px;">
+            <button type="button" class="btn-action btn-cancel" id="btnCancelPayment" style="flex:1;">Cancel</button>
+            <button type="submit" class="btn-action btn-accent" id="btnConfirmPayment" style="flex:2;">Disburse Payment</button>
+          </div>
         </form>
       </div>
     </div>
@@ -1312,7 +1489,10 @@
               <input type="number" step="0.01" min="0.1" max="20" id="editSnf" class="form-control" required>
             </div>
           </div>
-          <button type="submit" class="btn-action btn-accent w-100" id="btnSaveQuality">Save Changes</button>
+          <div style="display:flex; gap:10px;">
+            <button type="button" class="btn-action btn-cancel" id="btnCancelQuality" style="flex:1;">Cancel</button>
+            <button type="submit" class="btn-action btn-accent" id="btnSaveQuality" style="flex:2;">Save Changes</button>
+          </div>
         </form>
       </div>
     </div>
@@ -1394,6 +1574,8 @@
             loadPaymentsTab();
           } else if (activeTab === 'reports') {
             loadReportsTab();
+          } else if (activeTab === 'notifications') {
+            loadNotifications();
           }
         });
       });
@@ -1404,9 +1586,8 @@
       document.getElementById('filterDate').value = todayString;
       document.getElementById('reportDate').value = todayString;
 
-      // ───────────────────────────────────────────────────────────────────────
       // INITIAL LOADS & DROPDOWNS
-      // ───────────────────────────────────────────────────────────────────────
+
       async function loadProfile() {
         try {
           const res = await fetch(`${API_BASE_URL}/profile/`, {
@@ -1451,9 +1632,9 @@
         }
       }
 
-      // ───────────────────────────────────────────────────────────────────────
+      
       // TAB 1: DASHBOARD
-      // ───────────────────────────────────────────────────────────────────────
+
       let dashboardChartObj = null;
 
       async function loadDashboardStats() {
@@ -1592,9 +1773,9 @@
       });
 
 
-      // ───────────────────────────────────────────────────────────────────────
+
       // TAB 2: LINK FARMERS
-      // ───────────────────────────────────────────────────────────────────────
+
       const searchFarmerForm = document.getElementById('searchFarmerForm');
       const searchResultArea = document.getElementById('searchResultArea');
       const searchCodeInput = document.getElementById('searchCode');
@@ -1612,16 +1793,26 @@
 
           if (res.ok) {
             searchResultArea.style.display = 'block';
-            let bankName = data.bank_details.bank_name || 'N/A';
-            let accNo = data.bank_details.account_number || 'N/A';
-            let holder = data.bank_details.account_holder_name || 'N/A';
+            const bd = data.bank_details;
+            let bankName = bd ? (bd.bank_name || 'N/A') : 'N/A';
+            let accNo = bd ? (bd.account_number || 'N/A') : 'N/A';
+            let holder = bd ? (bd.account_holder_name || 'N/A') : 'N/A';
+            let walletNo = bd ? (bd.wallet_number || 'N/A') : 'N/A';
             
             let btnHtml = '';
-            if (data.is_linked) {
-              btnHtml = `<span class="badge badge-paid">Connected to your Dairy</span>`;
-            } else {
-              btnHtml = `<button type="button" class="btn-action btn-accent w-100" id="btnLinkAction" data-code="${data.farmer_code}">Link to Kathmandu Central Dairy</button>`;
-            }
+if (data.is_linked) {
+  btnHtml = `<span class="badge badge-paid">Connected to your Dairy</span>`;
+} else {
+  btnHtml = `
+    <button
+      type="button"
+      class="btn-action btn-accent w-100"
+      id="btnLinkAction"
+      data-code="${data.farmer_code}">
+      Link to <span id="dairy-name">your dairy</span>
+    </button>
+  `;
+}
 
             searchResultArea.innerHTML = `
               <div class="profile-card">
@@ -1634,7 +1825,7 @@
                   <div class="profile-card-item"><strong>Bank Name:</strong> ${bankName}</div>
                   <div class="profile-card-item"><strong>Account Holder:</strong> ${holder}</div>
                   <div class="profile-card-item"><strong>Account Number:</strong> ${accNo}</div>
-                  <div class="profile-card-item"><strong>Wallet No:</strong> ${data.bank_details.wallet_number || 'N/A'}</div>
+                  <div class="profile-card-item"><strong>Wallet No:</strong> ${walletNo}</div>
                 </div>
                 <div style="margin-top:15px;">
                   ${btnHtml}
@@ -1735,7 +1926,8 @@
                     loadLinkedFarmers();
                     populateFarmerDropdowns();
                   } else {
-                    showToast("Unlinking failed.", "error");
+                    const errData = await res.json();
+                    showToast(errData.detail || "Unlinking failed.", "error");
                   }
                 } catch (err) {
                   showToast("Connection failed.", "error");
@@ -1749,9 +1941,9 @@
       }
 
 
-      // ───────────────────────────────────────────────────────────────────────
+
       // TAB 3: MILK INTAKE & QUALITY HISTORIES
-      // ───────────────────────────────────────────────────────────────────────
+      
       const fullCollectionForm = document.getElementById('fullCollectionForm');
       const qualityHistoryBody = document.getElementById('qualityHistoryBody');
       const filterDateInput = document.getElementById('filterDate');
@@ -1914,9 +2106,12 @@
       });
 
       // Close Quality edit Modal
-      document.getElementById('btnCloseQualityModal').addEventListener('click', () => {
+      function closeQualityModal() {
         document.getElementById('qualityModal').classList.remove('active');
-      });
+        document.getElementById('qualityModalForm').reset();
+      }
+      document.getElementById('btnCloseQualityModal').addEventListener('click', closeQualityModal);
+      document.getElementById('btnCancelQuality').addEventListener('click', closeQualityModal);
 
       // Submit Quality edits
       document.getElementById('qualityModalForm').addEventListener('submit', async (e) => {
@@ -1943,7 +2138,7 @@
           });
           if (res.ok) {
             showToast("Quality details and payout updated successfully!");
-            document.getElementById('qualityModal').classList.remove('active');
+            closeQualityModal();
             loadIntakeAndHistory();
           } else {
             showToast("Failed to save changes.", "error");
@@ -2044,6 +2239,15 @@
               document.getElementById('paymentModal').classList.add('active');
             });
           });
+
+          // Auto-open modal if navigated from notification
+          if (pendingAutoOpenFarmerId) {
+            const targetBtn = document.querySelector(`.btn-pay-now[data-id="${pendingAutoOpenFarmerId}"]`);
+            if (targetBtn && !targetBtn.disabled) {
+              targetBtn.click();
+            }
+            pendingAutoOpenFarmerId = null;
+          }
 
           // Bind SMS reminders
           document.querySelectorAll('.btn-sms-remind').forEach(btn => {
@@ -2154,9 +2358,12 @@
       }
 
       // Close Payment Modal
-      document.getElementById('btnClosePaymentModal').addEventListener('click', () => {
+      function closePaymentModal() {
         document.getElementById('paymentModal').classList.remove('active');
-      });
+        document.getElementById('paymentModalForm').reset();
+      }
+      document.getElementById('btnClosePaymentModal').addEventListener('click', closePaymentModal);
+      document.getElementById('btnCancelPayment').addEventListener('click', closePaymentModal);
 
       // Submit Payout modal form
       document.getElementById('paymentModalForm').addEventListener('submit', async (e) => {
@@ -2198,7 +2405,7 @@
           const data = await res.json();
           if (res.ok) {
             showToast("Payout successfully disbursed and logged! SMS alert dispatched.", "success");
-            document.getElementById('paymentModal').classList.remove('active');
+            closePaymentModal();
             loadPaymentsTab();
           } else {
             showToast(data.detail || "Payout processing failed.", "error");
@@ -2454,10 +2661,145 @@
       });
 
       // ───────────────────────────────────────────────────────────────────────
+      // NOTIFICATION SYSTEM
+      // ───────────────────────────────────────────────────────────────────────
+      const notifBadge = document.getElementById('notifBadge');
+      const notifList = document.getElementById('notifList');
+      const btnMarkAllRead = document.getElementById('btnMarkAllRead');
+
+      function notifIconSVG(type) {
+        if (type === 'payment_request') {
+          return `<svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>`;
+        }
+        if (type === 'payment_received') {
+          return `<svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`;
+        }
+        return `<svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`;
+      }
+
+      function timeAgo(dateStr) {
+        const now = new Date();
+        const d = new Date(dateStr);
+        const diff = Math.floor((now - d) / 1000);
+        if (diff < 60) return 'Just now';
+        if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+        if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+        return Math.floor(diff / 86400) + 'd ago';
+      }
+
+      let lastUnreadCount = 0;
+
+      async function loadNotifications() {
+        try {
+          const res = await fetch(`${API_BASE_URL}/notifications/`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (!res.ok) return;
+          const data = await res.json();
+
+          const currentUnread = data.unread_count || 0;
+          notifBadge.textContent = currentUnread || '';
+          notifBadge.setAttribute('data-count', currentUnread);
+
+          if (currentUnread > lastUnreadCount && lastUnreadCount > 0) {
+            const diff = currentUnread - lastUnreadCount;
+            showToast(`You have ${diff} new notification${diff > 1 ? 's' : ''}!`, 'success');
+          }
+          lastUnreadCount = currentUnread;
+
+          if (!data.notifications || data.notifications.length === 0) {
+            notifList.innerHTML = `
+              <div class="notif-empty">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+                <p>No notifications yet.</p>
+              </div>`;
+            return;
+          }
+
+          let html = '';
+          data.notifications.forEach(n => {
+            const unreadClass = n.is_read ? '' : 'unread';
+            html += `
+              <div class="notif-item ${unreadClass}" data-id="${n.id}" onclick="markSingleRead(${n.id})">
+                <div class="notif-icon ${n.notification_type}">
+                  ${notifIconSVG(n.notification_type)}
+                </div>
+                <div class="notif-body">
+                  <div class="notif-title">${n.title}</div>
+                  <div class="notif-message">${n.message}</div>
+                  <div class="notif-time">${timeAgo(n.created_at)}</div>
+                  ${n.notification_type === 'payment_request' && n.related_farmer_id ? `
+                    <div class="notif-actions">
+                      <button class="btn-action btn-accent" onclick="event.stopPropagation(); goToPayment(${n.related_farmer_id})">Process Payment</button>
+                    </div>` : ''}
+                </div>
+              </div>`;
+          });
+          notifList.innerHTML = html;
+        } catch (err) {
+          console.error('Failed to load notifications:', err);
+        }
+      }
+
+      async function markSingleRead(notifId) {
+        try {
+          await fetch(`${API_BASE_URL}/notifications/${notifId}/read/`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          const item = notifList.querySelector(`[data-id="${notifId}"]`);
+          if (item) item.classList.remove('unread');
+          const current = parseInt(notifBadge.getAttribute('data-count')) || 0;
+          if (current > 0) {
+            const next = current - 1;
+            notifBadge.textContent = next || '';
+            notifBadge.setAttribute('data-count', next);
+          }
+        } catch (err) {
+          console.error('Failed to mark notification read:', err);
+        }
+      }
+      window.markSingleRead = markSingleRead;
+
+      btnMarkAllRead.addEventListener('click', async () => {
+        try {
+          await fetch(`${API_BASE_URL}/notifications/read-all/`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          notifBadge.textContent = '';
+          notifBadge.setAttribute('data-count', 0);
+          document.querySelectorAll('.notif-item.unread').forEach(el => el.classList.remove('unread'));
+          showToast("All notifications marked as read.");
+        } catch (err) {
+          console.error('Failed to mark all read:', err);
+        }
+      });
+
+      let pendingAutoOpenFarmerId = null;
+
+      function goToPayment(farmerId) {
+        pendingAutoOpenFarmerId = farmerId;
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        const paymentsNav = document.querySelector('[data-tab="payments"]');
+        if (paymentsNav) paymentsNav.classList.add('active');
+        document.getElementById('panel-payments').classList.add('active');
+        loadPaymentsTab();
+      }
+      window.goToPayment = goToPayment;
+
+      // Poll notifications every 5 seconds for real-time feel
+      setInterval(loadNotifications, 5000);
+
+      // ───────────────────────────────────────────────────────────────────────
       // INITIAL SYSTEM LOADING
       // ───────────────────────────────────────────────────────────────────────
       loadProfile();
       loadDashboardStats();
+      loadNotifications();
       populateFarmerDropdowns();
     });
   </script>
