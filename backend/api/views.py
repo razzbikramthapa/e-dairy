@@ -263,11 +263,28 @@ def dairy_dashboard(request):
     # Linked farmers count
     linked_farmers_count = LinkedFarmer.objects.filter(dairy_operator=user, is_active=True).count()
     
-    # Pending payments sum
-    pending_payments = Payment.objects.filter(
-        dairy_operator=user,
-        payment_status='pending'
-    ).aggregate(total=Sum('pending_amount'))
+    # Pending payments: calculate actual outstanding balance across linked farmers
+    linked_farmer_ids = LinkedFarmer.objects.filter(
+        dairy_operator=user, is_active=True
+    ).values_list('farmer_id', flat=True)
+    
+    total_earned = MilkCollection.objects.filter(
+        farmer_id__in=linked_farmer_ids
+    ).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+    
+    total_paid = Payment.objects.filter(
+        farmer_id__in=linked_farmer_ids,
+        payment_status='paid'
+    ).aggregate(total=Sum('paid_amount'))['total'] or Decimal('0.00')
+    
+    total_deductions = Payment.objects.filter(
+        farmer_id__in=linked_farmer_ids,
+        payment_status='paid'
+    ).aggregate(total=Sum('deductions'))['total'] or Decimal('0.00')
+    
+    pending_balance = total_earned - total_paid - total_deductions
+    if pending_balance < 0:
+        pending_balance = Decimal('0.00')
     
     # Recent collections (last 5)
     recent_collections = MilkCollection.objects.filter(
@@ -279,7 +296,7 @@ def dairy_dashboard(request):
         'today_total_amount': float(today_collections['total_amount'] or 0),
         'today_total_payments': float(today_payments['total'] or 0),
         'linked_farmers': linked_farmers_count,
-        'pending_payments': float(pending_payments['total'] or 0),
+        'pending_payments': float(pending_balance),
         'recent_collections': MilkCollectionSerializer(recent_collections, many=True).data
     })
 
@@ -355,7 +372,7 @@ def deactivate_linked_farmer(request):
     ).exclude(pending_amount=0).exists()
 
     pending_requests = PaymentRequest.objects.filter(
-        farmer=farmer, status='pending'
+        farmer=farmer, dairy_operator=request.user, status='pending'
     ).exists()
 
     total_earned = MilkCollection.objects.filter(
@@ -387,10 +404,28 @@ def deactivate_linked_farmer(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_linked_farmers(request):
-    """Get all currently active linked farmers for the operator"""
+    """Get all currently active linked farmers for the operator with their pending balances"""
     linked = LinkedFarmer.objects.filter(dairy_operator=request.user, is_active=True)
     serializer = LinkedFarmerSerializer(linked, many=True)
-    return Response(serializer.data)
+    data = serializer.data
+
+    for lf in data:
+        farmer_id = lf['farmer']
+        total_earned = MilkCollection.objects.filter(
+            farmer_id=farmer_id, collected_by=request.user
+        ).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+        total_paid = Payment.objects.filter(
+            farmer_id=farmer_id, dairy_operator=request.user, payment_status='paid'
+        ).aggregate(total=Sum('paid_amount'))['total'] or Decimal('0.00')
+        total_deductions = Payment.objects.filter(
+            farmer_id=farmer_id, dairy_operator=request.user, payment_status='paid'
+        ).aggregate(total=Sum('deductions'))['total'] or Decimal('0.00')
+        pending = total_earned - total_paid - total_deductions
+        if pending < 0:
+            pending = Decimal('0.00')
+        lf['pending_balance'] = float(pending)
+
+    return Response(data)
 
 
 @api_view(['GET'])
@@ -532,7 +567,7 @@ def process_payment(request):
             if payment.payment_method == 'bank_transfer':
                 method_detail = f'via Bank Transfer to your primary account'
             elif payment.payment_method == 'wallet':
-                method_detail = f'via Demo Wallet'
+                method_detail = f'via Wallet'
             else:
                 method_detail = f'as Cash'
             Notification.objects.create(

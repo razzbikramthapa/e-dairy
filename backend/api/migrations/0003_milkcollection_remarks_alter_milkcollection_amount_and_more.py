@@ -76,7 +76,7 @@ class Migration(migrations.Migration):
                 ('pending_amount', models.DecimalField(decimal_places=2, default=Decimal('0.00'), max_digits=10)),
                 ('deductions', models.DecimalField(decimal_places=2, default=Decimal('0.00'), max_digits=10)),
                 ('payment_status', models.CharField(choices=[('pending', 'Pending'), ('paid', 'Paid'), ('failed', 'Failed')], default='pending', max_length=20)),
-                ('payment_method', models.CharField(choices=[('cash', 'Cash'), ('bank_transfer', 'Bank Transfer'), ('wallet', 'Demo Wallet')], default='cash', max_length=20)),
+                ('payment_method', models.CharField(choices=[('cash', 'Cash'), ('bank_transfer', 'Bank Transfer'), ('wallet', 'Wallet')], default='cash', max_length=20)),
                 ('transaction_reference', models.CharField(blank=True, max_length=100, null=True)),
                 ('payment_time', models.DateTimeField(auto_now_add=True)),
                 ('dairy_operator', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='payments_made', to=settings.AUTH_USER_MODEL)),

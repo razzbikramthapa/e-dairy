@@ -132,7 +132,7 @@ class Payment(models.Model):
     PAYMENT_METHOD = (
         ('cash', 'Cash'),
         ('bank_transfer', 'Bank Transfer'),
-        ('wallet', 'Demo Wallet'),
+        ('wallet', 'Wallet'),
     )
     
     farmer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='payments')
