@@ -13,10 +13,28 @@ class ProfileSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     profile = ProfileSerializer(read_only=True)
+    linked_collection_center = serializers.SerializerMethodField()
     
     class Meta:
         model = User
-        fields = ('id', 'username', 'email', 'first_name', 'last_name', 'profile')
+        fields = ('id', 'username', 'email', 'first_name', 'last_name', 'profile', 'linked_collection_center')
+
+    def get_linked_collection_center(self, obj):
+        try:
+            if hasattr(obj, 'profile') and obj.profile.role == 'farmer':
+                linked_qs = obj.dairy_links.filter(is_active=True)
+                centers = []
+                for linked in linked_qs:
+                    try:
+                        centers.append(linked.dairy_operator.dairy_operator.dairy_name)
+                    except Exception:
+                        name = linked.dairy_operator.get_full_name()
+                        centers.append(name if name else linked.dairy_operator.username)
+                centers.sort(key=str.lower)
+                return centers if centers else None
+        except Exception:
+            pass
+        return None
 
 class UserRegisterSerializer(serializers.ModelSerializer):
     role = serializers.ChoiceField(choices=Profile.ROLE_CHOICES, write_only=True)
@@ -126,11 +144,26 @@ class MilkCollectionSerializer(serializers.ModelSerializer):
     farmer_code = serializers.CharField(source='farmer.profile.farmer_code', read_only=True)
     farmer_name = serializers.CharField(source='farmer.get_full_name', read_only=True)
     collected_by_name = serializers.CharField(source='collected_by.get_full_name', read_only=True)
+    collection_centre = serializers.SerializerMethodField()
     
     class Meta:
         model = MilkCollection
-        fields = ('id', 'farmer', 'farmer_code', 'farmer_name', 'date', 'session', 'quantity', 'fat', 'snf', 'remarks', 'rate', 'amount', 'collected_by', 'collected_by_name')
+        fields = ('id', 'farmer', 'farmer_code', 'farmer_name', 'date', 'session', 'quantity', 'fat', 'snf', 'remarks', 'rate', 'amount', 'collected_by', 'collected_by_name', 'collection_centre')
         read_only_fields = ('collected_by', 'rate', 'amount')
+
+    def get_collection_centre(self, obj):
+        if obj.collected_by and hasattr(obj.collected_by, 'dairy_operator'):
+            return obj.collected_by.dairy_operator.dairy_name
+        
+        linked = obj.farmer.dairy_links.first()
+        if linked and hasattr(linked.dairy_operator, 'dairy_operator'):
+            return linked.dairy_operator.dairy_operator.dairy_name
+            
+        if obj.collected_by:
+            name = obj.collected_by.get_full_name()
+            return name if name else obj.collected_by.username
+            
+        return "System"
 
 
 class FarmerBankDetailsSerializer(serializers.ModelSerializer):
@@ -190,11 +223,17 @@ class QualityRecordSerializer(serializers.ModelSerializer):
 
 class PaymentRequestSerializer(serializers.ModelSerializer):
     farmer_name = serializers.CharField(source='farmer.get_full_name', read_only=True)
-    
+    dairy_operator_name = serializers.SerializerMethodField()
+
     class Meta:
         model = PaymentRequest
-        fields = ('id', 'farmer', 'farmer_name', 'amount_requested', 'request_date', 'status', 'remarks')
+        fields = ('id', 'farmer', 'farmer_name', 'dairy_operator', 'dairy_operator_name', 'amount_requested', 'request_date', 'status', 'remarks')
         read_only_fields = ('farmer', 'request_date', 'status')
+
+    def get_dairy_operator_name(self, obj):
+        if obj.dairy_operator:
+            return obj.dairy_operator.get_full_name() or obj.dairy_operator.username
+        return None
 
 
 class NotificationSerializer(serializers.ModelSerializer):

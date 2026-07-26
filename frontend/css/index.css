@@ -813,14 +813,220 @@ nav a.active::after {
   border: 1px solid #C8E6C9;
 }
 
-.Abt-Section-parent {
-  display: flex;
-  justify-content: space-between;
-  gap: 20px;
-  padding: 0px 200px;
-  background-color: var(--primary-light);
+/* About Us Section */
+#Abt-Sec {
+  padding: 80px 24px;
+  background: var(--primary-light);
 }
 
-.Abt-Section-right p{
+.about-container {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.about-header {
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.about-badge {
+  display: inline-block;
+  padding: 6px 18px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--primary);
+  background: rgba(82, 59, 139, 0.1);
+  border-radius: 50px;
+  margin-bottom: 16px;
+}
+
+.about-header h2 {
+  font-family: 'Outfit', sans-serif;
+  font-size: 32px;
   font-weight: 800;
+  color: var(--primary-dark);
+  letter-spacing: -1px;
+}
+
+.about-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 40px;
+  align-items: start;
+}
+
+.about-description p {
+  font-size: 15px;
+  color: var(--text-muted);
+  line-height: 1.75;
+  margin-bottom: 16px;
+}
+
+.about-description p strong {
+  color: var(--primary-dark);
+  font-weight: 700;
+}
+
+.about-features {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.about-feature {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: var(--white);
+  border-radius: 12px;
+  border: 1px solid rgba(82, 59, 139, 0.08);
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+}
+
+.about-feature:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.about-feature svg {
+  flex-shrink: 0;
+  color: var(--primary);
+}
+
+.about-feature span {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--primary-dark);
+}
+
+.About_Us_Section_Text_Dairy {
+  color: var(--accent);
+}
+
+/* Team Card */
+.about-team-card {
+  background: var(--white);
+  border-radius: 20px;
+  border: 1px solid rgba(82, 59, 139, 0.1);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+}
+
+.team-card-header {
+  padding: 24px 28px 16px;
+  border-bottom: 1px solid rgba(82, 59, 139, 0.06);
+}
+
+.team-card-header h4 {
+  font-family: 'Outfit', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--primary-dark);
+  margin-bottom: 2px;
+}
+
+.team-card-header p {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.team-list {
+  padding: 12px 28px 20px;
+}
+
+.team-list li {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(82, 59, 139, 0.05);
+}
+
+.team-list li:last-child {
+  border-bottom: none;
+}
+
+.team-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--primary), #7c52db);
+  color: var(--white);
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.team-info strong {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--primary-dark);
+}
+
+/* Footer */
+.site-footer {
+  background: var(--primary-dark);
+  padding: 32px 24px;
+}
+
+.footer-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.footer-logo {
+  font-family: 'Outfit', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--white);
+}
+
+.footer-logo span {
+  color: var(--accent);
+}
+
+.footer-brand p {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.footer-copy {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+/* About Section Responsive */
+@media (max-width: 900px) {
+  .about-grid {
+    grid-template-columns: 1fr;
+  }
+  .about-features {
+    grid-template-columns: 1fr;
+  }
+  .footer-container {
+    flex-direction: column;
+    gap: 16px;
+    text-align: center;
+  }
+  .footer-brand {
+    flex-direction: column;
+    gap: 4px;
+  }
 }

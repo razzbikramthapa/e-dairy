@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>e-Dairy - Central Collection Centre Dashboard</title>
+  <title>e-Dairy - Collection Centre Dashboard</title>
 
   <!-- Favicon -->
   <link rel="icon" type="image/svg+xml"
@@ -475,16 +475,14 @@
     }
 
     .btn-cancel {
-      background: var(--white);
-      color: var(--text-muted);
+      background: rgba(255, 42, 0, 0.664);
+      color: var(--white);
       border: 2px solid rgba(82, 59, 139, 0.15);
       box-shadow: none;
     }
     .btn-cancel:hover {
-      background: #f5f5f5;
-      border-color: rgba(82, 59, 139, 0.3);
+      background: rgba(255, 42, 0, 0.853);
       transform: translateY(-2px);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
     }
 
     .btn-secondary {
@@ -2124,16 +2122,16 @@ if (data.is_linked) {
         btn.disabled = true;
 
         try {
-          // Put update to quality endpoint
-          const res = await fetch(`${API_BASE_URL}/quality/${id}/`, {
+          // Patch update to collection endpoint (this automatically recalculates amount and syncs QualityRecord)
+          const res = await fetch(`${API_BASE_URL}/collection/${id}/`, {
             method: 'PATCH',
             headers: {
               'Content-Type': 'application/json',
               'Authorization': `Bearer ${token}`
             },
             body: JSON.stringify({
-              fat_percentage: fat,
-              snf_percentage: snf
+              fat: fat,
+              snf: snf
             })
           });
           if (res.ok) {
@@ -2197,10 +2195,10 @@ if (data.is_linked) {
                         data-name="${summary.farmer_name}" 
                         data-code="${summary.farmer_code}"
                         data-balance="${summary.pending_balance}"
-                        data-bank="${summary.bank_details.bank_name}"
-                        data-holder="${summary.bank_details.account_holder_name}"
-                        data-no="${summary.bank_details.account_number}"
-                        data-wallet="${summary.bank_details.wallet_number}"
+                        data-bank="${summary.bank_details ? summary.bank_details.bank_name : ''}"
+                        data-holder="${summary.bank_details ? summary.bank_details.account_holder_name : ''}"
+                        data-no="${summary.bank_details ? summary.bank_details.account_number : ''}"
+                        data-wallet="${summary.bank_details ? summary.bank_details.wallet_number : ''}"
                         ${summary.pending_balance <= 0 ? 'disabled' : ''}>Disburse Pay</button>
                       <button class="btn-table-sm btn-danger-outline btn-sms-remind" 
                         data-id="${summary.farmer_id}"
@@ -2235,6 +2233,17 @@ if (data.is_linked) {
               document.getElementById('payBankHolder').innerText = holder;
               document.getElementById('payBankNo').innerText = no;
               document.getElementById('payWallet').innerText = wallet;
+
+              const payMethod = document.getElementById('payMethod');
+              const hasBankDetails = bank !== 'N/A' && bank !== '' && bank !== null;
+              payMethod.querySelectorAll('option').forEach(opt => {
+                if (opt.value !== 'cash') {
+                  opt.disabled = !hasBankDetails;
+                }
+              });
+              if (!hasBankDetails) {
+                payMethod.value = 'cash';
+              }
 
               document.getElementById('paymentModal').classList.add('active');
             });

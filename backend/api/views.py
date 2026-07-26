@@ -108,6 +108,28 @@ class MilkCollectionViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(collected_by=self.request.user)
 
+    def perform_update(self, serializer):
+        instance = serializer.save()
+        if self.request.user != instance.farmer:
+            dairy_name = self.request.user.dairy_operator.dairy_name if hasattr(self.request.user, 'dairy_operator') else (self.request.user.get_full_name() or self.request.user.username)
+            Notification.objects.create(
+                recipient=instance.farmer,
+                notification_type='general',
+                title='Milk Details Updated',
+                message=f'Your {instance.session.capitalize()} milk collection details for {instance.date} have been updated by {dairy_name}.'
+            )
+
+    def perform_destroy(self, instance):
+        if self.request.user != instance.farmer:
+            dairy_name = self.request.user.dairy_operator.dairy_name if hasattr(self.request.user, 'dairy_operator') else (self.request.user.get_full_name() or self.request.user.username)
+            Notification.objects.create(
+                recipient=instance.farmer,
+                notification_type='general',
+                title='Milk Details Deleted',
+                message=f'Your {instance.session.capitalize()} milk collection details for {instance.date} ({instance.quantity}L) have been deleted by {dairy_name}.'
+            )
+        instance.delete()
+
 class DashboardStatsView(APIView):
     permission_classes = (IsAuthenticated,)
 
@@ -442,9 +464,9 @@ def farmer_payable_summary(request, farmer_id):
     except User.DoesNotExist:
         return Response({'detail': 'Farmer not found.'}, status=status.HTTP_404_NOT_FOUND)
         
-    total_earned = MilkCollection.objects.filter(farmer=farmer).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
-    total_paid = Payment.objects.filter(farmer=farmer, payment_status='paid').aggregate(total=Sum('paid_amount'))['total'] or Decimal('0.00')
-    total_deductions = Payment.objects.filter(farmer=farmer, payment_status='paid').aggregate(total=Sum('deductions'))['total'] or Decimal('0.00')
+    total_earned = MilkCollection.objects.filter(farmer=farmer, collected_by=request.user).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+    total_paid = Payment.objects.filter(farmer=farmer, dairy_operator=request.user, payment_status='paid').aggregate(total=Sum('paid_amount'))['total'] or Decimal('0.00')
+    total_deductions = Payment.objects.filter(farmer=farmer, dairy_operator=request.user, payment_status='paid').aggregate(total=Sum('deductions'))['total'] or Decimal('0.00')
     
     pending_balance = total_earned - total_paid - total_deductions
     if pending_balance < 0:
@@ -476,6 +498,20 @@ def farmer_payable_summary(request, farmer_id):
 @permission_classes([IsAuthenticated])
 def process_payment(request):
     """Process a payout transaction to a farmer and trigger SMS notification"""
+    payment_method = request.data.get('payment_method', 'cash')
+    farmer_id = request.data.get('farmer')
+
+    if payment_method in ('bank_transfer', 'wallet') and farmer_id:
+        try:
+            farmer_user = User.objects.get(id=farmer_id)
+            if not farmer_user.bank_details.exists():
+                return Response(
+                    {'detail': 'This farmer has no bank account details. Bank transfer and wallet payments cannot be processed. Please select Cash or ask the farmer to add bank details first.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        except User.DoesNotExist:
+            pass
+
     serializer = PaymentSerializer(data=request.data)
     if serializer.is_valid():
         payment = serializer.save(dairy_operator=request.user)
@@ -489,6 +525,22 @@ def process_payment(request):
                 send_sparrow_sms(phone, msg)
             except Exception as e:
                 logger.error(f"Failed to send payment SMS: {e}")
+                
+        if payment.payment_status == 'paid':
+            dairy_name = request.user.dairy_operator.dairy_name if hasattr(request.user, 'dairy_operator') else (request.user.get_full_name() or request.user.username)
+            method_display = payment.get_payment_method_display()
+            if payment.payment_method == 'bank_transfer':
+                method_detail = f'via Bank Transfer to your primary account'
+            elif payment.payment_method == 'wallet':
+                method_detail = f'via Demo Wallet'
+            else:
+                method_detail = f'as Cash'
+            Notification.objects.create(
+                recipient=farmer,
+                notification_type='payment_received',
+                title='Payment Received',
+                message=f'A payment of Rs. {payment.paid_amount:.2f} has been disbursed to you {method_detail} by {dairy_name}.'
+            )
                 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -519,9 +571,9 @@ def notify_pending_payment(request):
     except User.DoesNotExist:
         return Response({'detail': 'Farmer not found.'}, status=status.HTTP_404_NOT_FOUND)
         
-    total_earned = MilkCollection.objects.filter(farmer=farmer).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
-    total_paid = Payment.objects.filter(farmer=farmer, payment_status='paid').aggregate(total=Sum('paid_amount'))['total'] or Decimal('0.00')
-    total_deductions = Payment.objects.filter(farmer=farmer, payment_status='paid').aggregate(total=Sum('deductions'))['total'] or Decimal('0.00')
+    total_earned = MilkCollection.objects.filter(farmer=farmer, collected_by=request.user).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+    total_paid = Payment.objects.filter(farmer=farmer, dairy_operator=request.user, payment_status='paid').aggregate(total=Sum('paid_amount'))['total'] or Decimal('0.00')
+    total_deductions = Payment.objects.filter(farmer=farmer, dairy_operator=request.user, payment_status='paid').aggregate(total=Sum('deductions'))['total'] or Decimal('0.00')
     pending_balance = total_earned - total_paid - total_deductions
     if pending_balance < 0:
         pending_balance = Decimal('0.00')
@@ -683,9 +735,9 @@ def generate_report(request):
         records = []
         for lf in linked_farmers:
             farmer = lf.farmer
-            total_earned = MilkCollection.objects.filter(farmer=farmer).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
-            total_paid = Payment.objects.filter(farmer=farmer, payment_status='paid').aggregate(total=Sum('paid_amount'))['total'] or Decimal('0.00')
-            total_deductions = Payment.objects.filter(farmer=farmer, payment_status='paid').aggregate(total=Sum('deductions'))['total'] or Decimal('0.00')
+            total_earned = MilkCollection.objects.filter(farmer=farmer, collected_by=user).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+            total_paid = Payment.objects.filter(farmer=farmer, dairy_operator=user, payment_status='paid').aggregate(total=Sum('paid_amount'))['total'] or Decimal('0.00')
+            total_deductions = Payment.objects.filter(farmer=farmer, dairy_operator=user, payment_status='paid').aggregate(total=Sum('deductions'))['total'] or Decimal('0.00')
             pending_balance = total_earned - total_paid - total_deductions
             if pending_balance > 0:
                 records.append({
@@ -800,6 +852,15 @@ class PaymentViewSet(viewsets.ModelViewSet):
                 send_sparrow_sms(phone, msg)
             except Exception as e:
                 logger.error(f"Failed to send payment SMS: {e}")
+                
+        if payment.payment_status == 'paid':
+            dairy_name = self.request.user.dairy_operator.dairy_name if hasattr(self.request.user, 'dairy_operator') else 'Collection Center'
+            Notification.objects.create(
+                recipient=farmer,
+                notification_type='payment_received',
+                title='Payment Received',
+                message=f'A payment of Rs. {payment.paid_amount:.2f} has been disbursed to you by {dairy_name}.'
+            )
 
 
 class FarmerPaymentSummaryView(APIView):
@@ -821,6 +882,61 @@ class FarmerPaymentSummaryView(APIView):
             'total_paid': float(total_paid),
             'pending_balance': float(pending_balance)
         })
+
+
+class FarmerCollectionCenterSummaryView(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request):
+        user = request.user
+
+        linked_operator_ids = LinkedFarmer.objects.filter(
+            farmer=user, is_active=True
+        ).values_list('dairy_operator_id', flat=True)
+
+        results = []
+        for operator_id in linked_operator_ids:
+            try:
+                operator_user = User.objects.get(id=operator_id)
+            except User.DoesNotExist:
+                continue
+
+            dairy_name = ''
+            try:
+                dairy_name = operator_user.dairy_operator.dairy_name
+            except Exception:
+                dairy_name = operator_user.get_full_name() or operator_user.username
+
+            total_earned = MilkCollection.objects.filter(
+                farmer=user, collected_by=operator_user
+            ).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+
+            total_paid = Payment.objects.filter(
+                farmer=user, dairy_operator=operator_user, payment_status='paid'
+            ).aggregate(total=Sum('paid_amount'))['total'] or Decimal('0.00')
+
+            total_deductions = Payment.objects.filter(
+                farmer=user, dairy_operator=operator_user, payment_status='paid'
+            ).aggregate(total=Sum('deductions'))['total'] or Decimal('0.00')
+
+            pending_balance = total_earned - total_paid - total_deductions
+            if pending_balance < 0:
+                pending_balance = Decimal('0.00')
+
+            total_milk_litres = MilkCollection.objects.filter(
+                farmer=user, collected_by=operator_user
+            ).aggregate(total=Sum('quantity'))['total'] or Decimal('0.00')
+
+            results.append({
+                'operator_id': operator_id,
+                'dairy_name': dairy_name,
+                'total_earned': float(total_earned),
+                'total_paid': float(total_paid),
+                'pending_balance': float(pending_balance),
+                'total_milk_litres': float(total_milk_litres),
+            })
+
+        return Response(results)
 
 class FarmerBankDetailsView(APIView):
     permission_classes = (IsAuthenticated,)
@@ -890,16 +1006,33 @@ class RequestPaymentView(APIView):
     def post(self, request):
         amount = request.data.get('amount')
         remarks = request.data.get('remarks', '')
+        dairy_operator_id = request.data.get('dairy_operator_id')
         
         try:
             amount = Decimal(str(amount)) if amount else None
         except Exception:
             return Response({'detail': 'Invalid amount'}, status=status.HTTP_400_BAD_REQUEST)
         
+        if not amount or amount <= 0:
+            return Response({'detail': 'Please specify a valid amount.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not dairy_operator_id:
+            return Response({'detail': 'Please specify a collection center.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            operator_user = User.objects.get(id=dairy_operator_id)
+        except User.DoesNotExist:
+            return Response({'detail': 'Collection center not found.'}, status=status.HTTP_404_NOT_FOUND)
+
         farmer = request.user
+
+        if not LinkedFarmer.objects.filter(farmer=farmer, dairy_operator=operator_user, is_active=True).exists():
+            return Response({'detail': 'You are not linked to this collection center.'}, status=status.HTTP_400_BAD_REQUEST)
+
         try:
             pr = PaymentRequest.objects.create(
                 farmer=farmer,
+                dairy_operator=operator_user,
                 amount_requested=amount,
                 remarks=remarks
             )
@@ -910,25 +1043,20 @@ class RequestPaymentView(APIView):
         serializer = PaymentRequestSerializer(pr)
 
         try:
-            linked_operators = LinkedFarmer.objects.filter(
-                farmer=farmer, is_active=True
-            ).values_list('dairy_operator_id', flat=True)
-
             farmer_name = farmer.get_full_name() or farmer.username
-            amount_str = f"Rs. {amount:.2f}" if amount else "any amount"
+            amount_str = f"Rs. {amount:.2f}"
             title = f"Payment Request from {farmer_name}"
             message = f"{farmer_name} has requested a payment of {amount_str}."
             if remarks:
                 message += f" Note: {remarks}"
 
-            for operator_id in linked_operators:
-                Notification.objects.create(
-                    recipient_id=operator_id,
-                    notification_type='payment_request',
-                    title=title,
-                    message=message,
-                    related_farmer_id=farmer.id
-                )
+            Notification.objects.create(
+                recipient_id=operator_user.id,
+                notification_type='payment_request',
+                title=title,
+                message=message,
+                related_farmer_id=farmer.id
+            )
         except Exception as e:
             logger.error(f"Failed to create notification for payment request: {e}")
 

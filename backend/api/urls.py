@@ -26,6 +26,7 @@ from .views import (
     QualityRecordViewSet,
     PaymentViewSet,
     FarmerPaymentSummaryView,
+    FarmerCollectionCenterSummaryView,
     FarmerBankDetailsView,
     FarmerBankDetailsUpdateView,
     RequestPaymentView,
@@ -59,6 +60,7 @@ urlpatterns = [
 
     # Farmer Payment Endpoints
     path('farmer/payment-summary/', FarmerPaymentSummaryView.as_view(), name='farmer-payment-summary'),
+    path('farmer/collection-center-summary/', FarmerCollectionCenterSummaryView.as_view(), name='farmer-collection-center-summary'),
     path('farmer/bank-details/', FarmerBankDetailsView.as_view(), name='farmer-bank-details'),
     path('farmer/bank-details/<int:pk>/', FarmerBankDetailsUpdateView.as_view(), name='farmer-bank-details-update'),
     path('farmer/request-payment/', RequestPaymentView.as_view(), name='farmer-request-payment'),

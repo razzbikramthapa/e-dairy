@@ -621,6 +621,15 @@
           </svg>
           Payments
         </li>
+        <li id="navNotifications">
+          <svg fill="none" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9">
+            </path>
+          </svg>
+          Notifications
+          <span id="notifBadgeSidebar" style="display: none; background: #E53935; color: white; padding: 2px 6px; border-radius: 10px; font-size: 10px; font-weight: bold; margin-left: auto;">0</span>
+        </li>
       </ul>
 
       <!-- Sign Out -->
@@ -640,11 +649,18 @@
       <main class="dash-container content-section active" id="sectionDashboard">
 
         <!-- Welcome banner -->
-        <div class="welcome-banner">
+        <div class="welcome-banner" style="position: relative;">
           <div class="welcome-content">
             <h2 id="welcomeTitle">Welcome, Farmer!</h2>
             <p>Monitor your daily milk contributions, analyze milk quality indicators (FAT/SNF), and keep track of
               automated payouts.</p>
+          </div>
+          <!-- Notification Bell Icon -->
+          <div id="btnBannerNotif" style="position: absolute; top: 20px; right: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 2;">
+            <div style="position: relative;">
+              <svg style="width: 28px; height: 28px; stroke: white; filter: drop-shadow(0 1px 3px rgba(0,0,0,0.2));" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+              <span id="notifBadgeBanner" style="display: none; position: absolute; top: -6px; right: -8px; background: #E53935; color: white; padding: 1px 5px; border-radius: 10px; font-size: 10px; font-weight: bold; min-width: 16px; text-align: center;">0</span>
+            </div>
           </div>
         </div>
 
@@ -744,6 +760,10 @@
             <strong>Address:</strong>
             <span id="profAddress">-</span>
           </div>
+          <div class="profile-item">
+            <strong>Linked Collection Center:</strong>
+            <span id="profCollectionCenter">-</span>
+          </div>
           <div class="action-buttons">
             <button class="btn-secondary" id="btnSignOutProf">Sign Out</button>
             <button class="btn-danger" id="btnDeleteAccount">Delete Account</button>
@@ -757,46 +777,40 @@
           style="font-family: 'Outfit', sans-serif; font-size: 24px; color: var(--primary-dark); margin-bottom: 24px;">
           Payment Module</h2>
 
+        <h3 style="font-family:'Outfit',sans-serif; font-size:16px; font-weight:700; color:var(--primary-dark); margin-bottom:12px;">Overview</h3>
         <div class="stats-grid" style="margin-bottom: 32px;">
           <div class="stats-card">
             <div class="card-label">Total Earnings</div>
             <div class="card-value" id="valPayTotalEarnings">Rs. 0.00</div>
           </div>
           <div class="stats-card">
-            <div class="card-label">Amount Received</div>
+            <div class="card-label">Total Amount Received</div>
             <div class="card-value" id="valPayAmountReceived" style="color: var(--success);">Rs. 0.00</div>
           </div>
           <div class="stats-card">
-            <div class="card-label">Amount Left</div>
+            <div class="card-label">Total Amount Left</div>
             <div class="card-value" id="valPayAmountLeft" style="color: #E53935;">Rs. 0.00</div>
-            <button class="btn-secondary" style="margin-top: 12px; width: 100%;" id="btnRequestMoney">Request
-              Money</button>
           </div>
         </div>
 
+        <h3 style="font-family:'Outfit',sans-serif; font-size:16px; font-weight:700; color:var(--primary-dark); margin-bottom:12px;">Collection Centers</h3>
+        <div id="collectionCenterCards" class="stats-grid" style="margin-bottom: 32px;"></div>
+
+        <h3 style="font-family:'Outfit',sans-serif; font-size:16px; font-weight:700; color:var(--primary-dark); margin-bottom:12px;">Bank Accounts</h3>
         <div id="bankCardsContainer" class="stats-grid" style="margin-bottom: 24px;"></div>
 
         <div class="profile-card" style="margin: 0; max-width: 100%;">
-          <h3>Bank Details & QR Code</h3>
+          <h3>Add / Update Bank Details</h3>
           <form id="bankDetailsForm" style="display: flex; flex-direction: column; gap: 16px;">
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-              <div>
+              <div style="position: relative;">
                 <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px;">Bank Name</label>
-                <select id="bankName"
-                  style="width: 100%; padding: 10px; border: 1px solid rgba(82, 59, 139, 0.2); border-radius: 8px; background-color: white;">
-                  <option value="" disabled selected>Select Bank</option>
-                  <option value="Agricultural Development Bank Limited">Agricultural Development Bank Limited</option>
-                  <option value="Everest Bank Limited">Everest Bank Limited</option>
-                  <option value="Kumari Bank Limited">Kumari Bank Limited</option>
-                  <option value="Laxmi Sunrise Bank Limited">Laxmi Sunrise Bank Limited</option>
-                  <option value="NMB Bank Limited">NMB Bank Limited</option>
-                  <option value="Nabil Bank Limited">Nabil Bank Limited</option>
-                  <option value="Nepal Investment Mega Bank Limited">Nepal Investment Mega Bank Limited</option>
-                  <option value="NIC Asia Bank Limited">NIC Asia Bank Limited</option>
-                  <option value="Rastriya Banijya Bank">Rastriya Banijya Bank</option>
-                  <option value="Sanima Bank Limited">Sanima Bank Limited</option>
-                  <option value="Siddartha Bank Limited">Siddhartha Bank Limited</option>
-                </select>
+                <input type="text" id="bankSearchInput" placeholder="Search or select bank..." autocomplete="off"
+                  style="width: 100%; padding: 10px; border: 1px solid rgba(82, 59, 139, 0.2); border-radius: 8px; background-color: white; box-sizing: border-box;">
+                <input type="hidden" id="bankName" value="">
+                <div id="bankDropdownList"
+                  style="display: none; position: absolute; width: 100%; max-height: 200px; overflow-y: auto; background: white; border: 1px solid rgba(82, 59, 139, 0.2); border-radius: 8px; z-index: 10; margin-top: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                </div>
               </div>
               <div>
                 <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px;">Account Holder
@@ -825,8 +839,66 @@
 
         </form>
       </div>
+      </div>
+
+      <!-- Request Money Modal -->
+      <div id="requestMoneyModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(30,21,42,0.55); backdrop-filter:blur(6px); z-index:2000; align-items:center; justify-content:center;">
+        <div style="background:white; border-radius:20px; padding:32px; max-width:460px; width:90%; box-shadow: 0 20px 40px rgba(82,59,139,0.2); position:relative; max-height:90vh; overflow-y:auto;">
+          <button id="closeRequestModal" style="position:absolute; top:14px; right:18px; background:none; border:none; font-size:24px; color:var(--text-muted); cursor:pointer;">&times;</button>
+          <h3 style="font-family:'Outfit',sans-serif; font-size:20px; color:var(--primary-dark); margin-bottom:4px;">Request Money</h3>
+          <p id="reqModalCenterName" style="font-size:13px; color:var(--text-muted); margin-bottom:16px;"></p>
+
+          <div style="background:var(--primary-light); border-radius:12px; padding:16px; margin-bottom:16px;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+              <span style="font-size:13px; color:var(--text-muted);">Money Left</span>
+              <span id="reqModalPending" style="font-size:15px; font-weight:700; color:#E53935;"></span>
+            </div>
+            <div style="display:flex; justify-content:space-between;">
+              <span style="font-size:13px; color:var(--text-muted);">Total Milk Given</span>
+              <span id="reqModalMilk" style="font-size:15px; font-weight:700; color:var(--primary-dark);"></span>
+            </div>
+          </div>
+
+          <div id="reqBankSection" style="background:#FFFDE7; border:1px solid #FFF9C4; border-radius:12px; padding:16px; margin-bottom:16px;">
+            <div style="font-size:13px; font-weight:700; color:var(--primary-dark); margin-bottom:10px;">Is this your current primary account?</div>
+            <div id="reqBankDetails" style="font-size:13px; color:var(--text-muted); line-height:1.7;"></div>
+          </div>
+
+          <label style="display:block; font-size:13px; font-weight:600; margin-bottom:6px;">Amount to Request</label>
+          <input type="number" id="reqModalAmount" min="0" step="0.01" placeholder="Enter amount"
+            style="width:100%; padding:12px 14px; border:1px solid rgba(82,59,139,0.2); border-radius:10px; font-size:15px; font-weight:600; box-sizing:border-box; margin-bottom:12px;">
+
+          <label style="display:block; font-size:13px; font-weight:600; margin-bottom:6px;">Remarks (optional)</label>
+          <input type="text" id="reqModalRemarks" placeholder="e.g. Urgent need"
+            style="width:100%; padding:10px 14px; border:1px solid rgba(82,59,139,0.2); border-radius:10px; font-size:14px; box-sizing:border-box; margin-bottom:20px;">
+
+          <div style="display:flex; gap:12px;">
+            <button id="btnNoBankDetails" style="flex:1; padding:14px; background:white; color:var(--primary-dark); border:2px solid rgba(82,59,139,0.2); border-radius:30px; font-weight:700; font-size:14px; cursor:pointer; transition:all 0.2s;">No, Update Bank</button>
+            <button id="submitRequestMoney" style="flex:1.2; padding:14px; background:var(--primary); color:white; border:none; border-radius:30px; font-weight:700; font-size:14px; cursor:pointer; box-shadow:0 4px 12px rgba(82,59,139,0.2); transition:all 0.2s;">Yes, Send Request</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notifications Section (Full Page) -->
+      <div class="content-section" id="sectionNotifications" style="padding: 32px 24px; width: 100%; box-sizing: border-box;">
+        <div class="dash-panel" style="min-height: calc(100vh - 120px); display: flex; flex-direction: column;">
+          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(82, 59, 139, 0.06); padding-bottom: 16px; margin-bottom: 24px;">
+            <div style="display: flex; align-items: center; gap: 8px; color: var(--primary-dark);">
+              <svg style="width: 20px; height: 20px; stroke: currentColor;" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+              <h2 style="font-family: 'Outfit', sans-serif; font-size: 18px; font-weight: 700; margin: 0;">Notifications <span id="notifBadge" style="display: none; background: #E53935; color: white; padding: 2px 6px; border-radius: 10px; font-size: 12px; font-weight: bold; margin-left: 8px;">0</span></h2>
+            </div>
+            <button id="btnMarkAllRead" style="background: none; border: none; color: var(--primary-dark); font-size: 13px; font-weight: 700; cursor: pointer;">Mark all as read</button>
+          </div>
+          <div id="notificationsContainer" style="display: flex; flex-direction: column; gap: 16px; flex-grow: 1;">
+            <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 300px; opacity: 0.6;">
+              <svg style="width: 80px; height: 80px; stroke: rgba(82, 59, 139, 0.4); margin-bottom: 16px;" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+              <p style="color: var(--primary-dark); font-size: 16px; font-weight: 500; margin: 0;">Loading notifications...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
-  </div>
   </div>
 
   <script>
@@ -841,10 +913,15 @@
       const navDashboard = document.getElementById('navDashboard');
       const navProfile = document.getElementById('navProfile');
       const navPayment = document.getElementById('navPayment');
+      const navNotifications = document.getElementById('navNotifications');
       const sectionDashboard = document.getElementById('sectionDashboard');
       const sectionProfile = document.getElementById('sectionProfile');
       const sectionPayment = document.getElementById('sectionPayment');
+      const sectionNotifications = document.getElementById('sectionNotifications');
       const btnSidebarSignout = document.getElementById('btnSidebarSignout');
+      const notifBadge = document.getElementById('notifBadge');
+      const notifBadgeBanner = document.getElementById('notifBadgeBanner');
+      const btnBannerNotif = document.getElementById('btnBannerNotif');
 
       // Profile Section Elements
       const profFullName = document.getElementById('profFullName');
@@ -881,9 +958,11 @@
         navDashboard.classList.remove('active');
         navProfile.classList.remove('active');
         navPayment.classList.remove('active');
+        navNotifications.classList.remove('active');
         sectionDashboard.classList.remove('active');
         sectionProfile.classList.remove('active');
         sectionPayment.classList.remove('active');
+        sectionNotifications.classList.remove('active');
 
         if (tab === 'dashboard') {
           navDashboard.classList.add('active');
@@ -895,12 +974,18 @@
           navPayment.classList.add('active');
           sectionPayment.classList.add('active');
           loadPaymentData();
+        } else if (tab === 'notifications') {
+          navNotifications.classList.add('active');
+          sectionNotifications.classList.add('active');
+          loadNotifications();
         }
       }
 
       navDashboard.addEventListener('click', () => switchTab('dashboard'));
       navProfile.addEventListener('click', () => switchTab('profile'));
       navPayment.addEventListener('click', () => switchTab('payment'));
+      navNotifications.addEventListener('click', () => switchTab('notifications'));
+      btnBannerNotif.addEventListener('click', () => switchTab('notifications'));
 
       // Logout handler
       const handleLogout = () => {
@@ -966,6 +1051,17 @@
           profFarmName.innerText = profile.profile?.farm_name || 'N/A';
           profPhone.innerText = profile.profile?.phone || 'N/A';
           profAddress.innerText = profile.profile?.address || 'N/A';
+          
+          const profCollectionCenter = document.getElementById('profCollectionCenter');
+          if (profCollectionCenter) {
+              const centers = profile.linked_collection_center;
+              if (Array.isArray(centers) && centers.length > 0) {
+                  profCollectionCenter.innerHTML = centers.join('<br>');
+                  profCollectionCenter.style.textAlign = 'right';
+              } else {
+                  profCollectionCenter.innerText = centers || 'Not Linked';
+              }
+          }
 
           // Fetch Dashboard statistics
           const statsResponse = await fetch(`${API_BASE_URL}/dashboard/`, {
@@ -1033,7 +1129,7 @@
                   <td>${recSnf.toFixed(2)} %</td>
                   <td>Rs. ${parseFloat(rec.rate).toFixed(2)}</td>
                   <td style="color:var(--primary); font-weight:700;">Rs. ${recAmt.toFixed(2)}</td>
-                  <td>${rec.agent_name || rec.collected_by || 'System'}</td>
+                  <td>${rec.collection_centre || rec.agent_name || rec.collected_by_name || rec.collected_by || 'System'}</td>
                 </tr>
               `;
             });
@@ -1117,29 +1213,226 @@
         });
       }
 
+      // Notifications Logic
+      async function loadNotifications() {
+        try {
+          const res = await fetch(`${API_BASE_URL}/notifications/`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (res.ok) {
+            const data = await res.json();
+            updateNotificationBadge(data.unread_count);
+            renderNotifications(data.notifications);
+          }
+        } catch (error) {
+          console.error("Error loading notifications:", error);
+        }
+      }
+
+      function updateNotificationBadge(count) {
+        const notifBadgeSidebar = document.getElementById('notifBadgeSidebar');
+        if (count > 0) {
+          if (notifBadge) {
+            notifBadge.textContent = count;
+            notifBadge.style.display = 'inline-block';
+          }
+          if (notifBadgeBanner) {
+            notifBadgeBanner.textContent = count;
+            notifBadgeBanner.style.display = 'inline-block';
+          }
+          if (notifBadgeSidebar) {
+            notifBadgeSidebar.textContent = count;
+            notifBadgeSidebar.style.display = 'inline-block';
+          }
+        } else {
+          if (notifBadge) notifBadge.style.display = 'none';
+          if (notifBadgeBanner) notifBadgeBanner.style.display = 'none';
+          if (notifBadgeSidebar) notifBadgeSidebar.style.display = 'none';
+        }
+      }
+
+      function renderNotifications(notifications) {
+        const container = document.getElementById('notificationsContainer');
+        container.innerHTML = '';
+        if (notifications.length === 0) {
+          container.innerHTML = `
+            <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 300px; opacity: 0.6;">
+              <svg style="width: 80px; height: 80px; stroke: rgba(82, 59, 139, 0.4); margin-bottom: 16px;" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+              <p style="color: var(--primary-dark); font-size: 16px; font-weight: 500; margin: 0;">No notifications yet.</p>
+            </div>
+          `;
+          return;
+        }
+
+        notifications.forEach(notif => {
+          const card = document.createElement('div');
+          card.style.cssText = `
+            background: ${notif.is_read ? 'var(--white)' : '#FAF8FF'};
+            border: 1px solid ${notif.is_read ? 'rgba(82, 59, 139, 0.06)' : 'rgba(82, 59, 139, 0.2)'};
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            transition: all 0.2s;
+          `;
+
+          let icon = '<svg style="width: 24px; height: 24px; stroke: var(--primary);" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
+          if (notif.notification_type === 'payment_received') {
+            icon = '<svg style="width: 24px; height: 24px; stroke: var(--success);" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
+          }
+
+          card.innerHTML = `
+            <div style="flex-shrink: 0; margin-top: 2px;">${icon}</div>
+            <div style="flex-grow: 1;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <h4 style="margin: 0; font-family: 'Outfit', sans-serif; font-size: 15px; color: var(--primary-dark);">${notif.title}</h4>
+                <span style="font-size: 11px; color: var(--text-muted);">${new Date(notif.created_at).toLocaleString()}</span>
+              </div>
+              <p style="margin: 0; font-size: 13px; color: var(--text); opacity: 0.9;">${notif.message}</p>
+            </div>
+          `;
+
+          if (!notif.is_read) {
+            const btnMarkRead = document.createElement('button');
+            btnMarkRead.textContent = 'Mark Read';
+            btnMarkRead.className = 'btn-secondary';
+            btnMarkRead.style.cssText = 'padding: 4px 10px; font-size: 11px; height: fit-content; background: rgba(82, 59, 139, 0.1); color: var(--primary); border: none; align-self: center;';
+            btnMarkRead.onclick = async () => {
+              try {
+                const res = await fetch(`${API_BASE_URL}/notifications/${notif.id}/read/`, {
+                  method: 'POST',
+                  headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.ok) loadNotifications();
+              } catch (e) {
+                console.error(e);
+              }
+            };
+            card.appendChild(btnMarkRead);
+          }
+
+          container.appendChild(card);
+        });
+      }
+
+      document.getElementById('btnMarkAllRead')?.addEventListener('click', async () => {
+        try {
+          const res = await fetch(`${API_BASE_URL}/notifications/read-all/`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (res.ok) loadNotifications();
+        } catch (e) {
+          console.error(e);
+        }
+      });
+
       // Initial load
       loadDashboard();
+      loadNotifications();
 
       // ============================================
       // Payment Module Logic
       // ============================================
+      const collectionCenterCards = document.getElementById('collectionCenterCards');
       const valPayTotalEarnings = document.getElementById('valPayTotalEarnings');
       const valPayAmountReceived = document.getElementById('valPayAmountReceived');
       const valPayAmountLeft = document.getElementById('valPayAmountLeft');
-      const btnRequestMoney = document.getElementById('btnRequestMoney');
       const bankCardsContainer = document.getElementById('bankCardsContainer');
+      const requestMoneyModal = document.getElementById('requestMoneyModal');
+      const closeRequestModal = document.getElementById('closeRequestModal');
+      const reqModalCenterName = document.getElementById('reqModalCenterName');
+      const reqModalPending = document.getElementById('reqModalPending');
+      const reqModalMilk = document.getElementById('reqModalMilk');
+      const reqModalAmount = document.getElementById('reqModalAmount');
+      const reqModalRemarks = document.getElementById('reqModalRemarks');
+      const submitRequestMoney = document.getElementById('submitRequestMoney');
+      const btnNoBankDetails = document.getElementById('btnNoBankDetails');
+      const reqBankDetails = document.getElementById('reqBankDetails');
+      let selectedOperatorId = null;
+      let primaryBankData = null;
 
       const bankDetailsForm = document.getElementById('bankDetailsForm');
       const bankName = document.getElementById('bankName');
+      const bankSearchInput = document.getElementById('bankSearchInput');
+      const bankDropdownList = document.getElementById('bankDropdownList');
       const accHolderName = document.getElementById('accHolderName');
       const accNumber = document.getElementById('accNumber');
       const qrCode = document.getElementById('qrCode');
       const qrCodePreview = document.getElementById('qrCodePreview');
       let editingBankId = null;
 
+      // Bank Dropdown Logic
+      const availableBanks = [
+        "Agricultural Development Bank Limited",
+        "Everest Bank Limited",
+        "Kumari Bank Limited",
+        "Laxmi Sunrise Bank Limited",
+        "NMB Bank Limited",
+        "Nabil Bank Limited",
+        "Nepal Investment Mega Bank Limited",
+        "NIC Asia Bank Limited",
+        "Rastriya Banijya Bank",
+        "Sanima Bank Limited",
+        "Siddhartha Bank Limited"
+      ];
+
+      function renderBankList(filterText = '') {
+        bankDropdownList.innerHTML = '';
+        const filtered = availableBanks.filter(b => b.toLowerCase().includes(filterText.toLowerCase()));
+        
+        if (filtered.length === 0) {
+          bankDropdownList.innerHTML = '<div style="padding: 10px; color: var(--text-muted); font-size: 13px;">No banks found</div>';
+          return;
+        }
+
+        filtered.forEach(b => {
+          const item = document.createElement('div');
+          item.textContent = b;
+          item.style.cssText = 'padding: 10px; cursor: pointer; font-size: 13px; border-bottom: 1px solid rgba(0,0,0,0.05);';
+          item.addEventListener('mouseover', () => item.style.backgroundColor = 'var(--primary-light)');
+          item.addEventListener('mouseout', () => item.style.backgroundColor = 'white');
+          item.addEventListener('click', () => {
+            bankName.value = b;
+            bankSearchInput.value = b;
+            bankDropdownList.style.display = 'none';
+          });
+          bankDropdownList.appendChild(item);
+        });
+      }
+
+      if (bankSearchInput) {
+        bankSearchInput.addEventListener('focus', () => {
+          renderBankList(bankSearchInput.value);
+          bankDropdownList.style.display = 'block';
+        });
+
+        bankSearchInput.addEventListener('input', (e) => {
+          bankName.value = e.target.value; 
+          renderBankList(e.target.value);
+          bankDropdownList.style.display = 'block';
+        });
+
+        document.addEventListener('click', (e) => {
+          if (e.target !== bankSearchInput && e.target !== bankDropdownList && !bankDropdownList.contains(e.target)) {
+            bankDropdownList.style.display = 'none';
+            const matched = availableBanks.find(b => b.toLowerCase() === bankSearchInput.value.toLowerCase());
+            if (matched) {
+              bankName.value = matched;
+              bankSearchInput.value = matched;
+            } else {
+              bankName.value = bankSearchInput.value;
+            }
+          }
+        });
+      }
+
+
       window.editBank = function (id, name, holder, number) {
         editingBankId = id;
         bankName.value = name;
+        if(bankSearchInput) bankSearchInput.value = name;
         accHolderName.value = holder;
         accNumber.value = number;
         document.querySelector('#bankDetailsForm button[type="submit"]').textContent = 'Update Bank Details';
@@ -1191,24 +1484,94 @@
 
       async function loadPaymentData() {
         try {
-          // Fetch payment summary
-          const sumRes = await fetch(`${API_BASE_URL}/farmer/payment-summary/`, {
+          const ccRes = await fetch(`${API_BASE_URL}/farmer/collection-center-summary/`, {
             headers: { 'Authorization': `Bearer ${token}` }
           });
-          if (sumRes.ok) {
-            const sumData = await sumRes.json();
-            valPayTotalEarnings.textContent = `Rs. ${sumData.total_earned.toFixed(2)}`;
-            valPayAmountReceived.textContent = `Rs. ${sumData.total_paid.toFixed(2)}`;
-            valPayAmountLeft.textContent = `Rs. ${sumData.pending_balance.toFixed(2)}`;
+
+          if (ccRes.ok) {
+            const ccData = await ccRes.json();
+
+            let totalEarned = 0, totalPaid = 0, totalPending = 0;
+            ccData.forEach(cc => {
+              totalEarned += cc.total_earned;
+              totalPaid += cc.total_paid;
+              totalPending += cc.pending_balance;
+            });
+            valPayTotalEarnings.textContent = `Rs. ${totalEarned.toFixed(2)}`;
+            valPayAmountReceived.textContent = `Rs. ${totalPaid.toFixed(2)}`;
+            valPayAmountLeft.textContent = `Rs. ${totalPending.toFixed(2)}`;
+
+            collectionCenterCards.innerHTML = '';
+
+            if (ccData.length === 0) {
+              collectionCenterCards.innerHTML = '<div class="stats-card"><div class="card-label">No Collection Centers</div><div style="font-size:14px; color:var(--text-muted); margin-top:8px;">You are not linked to any collection center yet.</div></div>';
+            } else {
+              ccData.forEach(cc => {
+                const card = document.createElement('div');
+                card.className = 'stats-card';
+                card.style.cssText = 'padding: 24px;';
+
+                const hasPending = cc.pending_balance > 0;
+
+                card.innerHTML = `
+                  <div style="margin-bottom:16px;">
+                    <div style="font-family:'Outfit',sans-serif; font-size:16px; font-weight:700; color:var(--primary-dark);">${cc.dairy_name}</div>
+                    <div style="font-size:12px; color:var(--text-muted);">Collection Center</div>
+                  </div>
+                  <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px;">
+                    <div>
+                      <div style="font-size:11px; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:0.5px;">Total Earned</div>
+                      <div style="font-family:'Outfit',sans-serif; font-size:18px; font-weight:800; color:var(--primary-dark); margin-top:4px;">Rs. ${cc.total_earned.toFixed(2)}</div>
+                    </div>
+                    <div>
+                      <div style="font-size:11px; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:0.5px;">Money Left</div>
+                      <div style="font-family:'Outfit',sans-serif; font-size:18px; font-weight:800; color:${hasPending ? '#E53935' : 'var(--success)'}; margin-top:4px;">Rs. ${cc.pending_balance.toFixed(2)}</div>
+                    </div>
+                  </div>
+                  <button class="btn-secondary open-request-modal" 
+                    data-operator-id="${cc.operator_id}" 
+                    data-name="${cc.dairy_name}" 
+                    data-pending="${cc.pending_balance}" 
+                    data-milk="${cc.total_milk_litres}"
+                    ${!hasPending ? 'disabled style="width:100%; opacity:0.5; cursor:not-allowed;"' : 'style="width:100%; background:var(--primary); color:white;"'}
+                  >Request Money</button>
+                `;
+                collectionCenterCards.appendChild(card);
+              });
+
+              document.querySelectorAll('.open-request-modal').forEach(btn => {
+                btn.addEventListener('click', () => {
+                  selectedOperatorId = parseInt(btn.getAttribute('data-operator-id'));
+                  reqModalCenterName.textContent = btn.getAttribute('data-name');
+                  reqModalPending.textContent = `Rs. ${parseFloat(btn.getAttribute('data-pending')).toFixed(2)}`;
+                  reqModalMilk.textContent = `${parseFloat(btn.getAttribute('data-milk')).toFixed(1)} L`;
+                  reqModalAmount.max = btn.getAttribute('data-pending');
+                  reqModalAmount.value = '';
+                  reqModalRemarks.value = '';
+
+                  if (primaryBankData) {
+                    reqBankDetails.innerHTML = `
+                      <strong style="color:var(--primary-dark);">${primaryBankData.bank_name}</strong><br>
+                      A/C Holder: ${primaryBankData.account_holder_name}<br>
+                      A/C No: ${primaryBankData.account_number}
+                    `;
+                  } else {
+                    reqBankDetails.innerHTML = '<em style="color:#E53935;">No primary bank account found.</em>';
+                  }
+
+                  requestMoneyModal.style.display = 'flex';
+                });
+              });
+            }
           }
 
-          // Fetch bank details
           const bankRes = await fetch(`${API_BASE_URL}/farmer/bank-details/`, {
             headers: { 'Authorization': `Bearer ${token}` }
           });
           if (bankRes.ok) {
             const bankData = await bankRes.json();
             bankCardsContainer.innerHTML = '';
+            primaryBankData = bankData.find(b => b.is_primary) || null;
 
             bankData.forEach((bank, index) => {
               const card = document.createElement('div');
@@ -1251,7 +1614,39 @@
         }
       }
 
-      btnRequestMoney.addEventListener('click', async () => {
+      closeRequestModal.addEventListener('click', () => {
+        requestMoneyModal.style.display = 'none';
+        selectedOperatorId = null;
+      });
+
+      requestMoneyModal.addEventListener('click', (e) => {
+        if (e.target === requestMoneyModal) {
+          requestMoneyModal.style.display = 'none';
+          selectedOperatorId = null;
+        }
+      });
+
+      btnNoBankDetails.addEventListener('click', () => {
+        requestMoneyModal.style.display = 'none';
+        selectedOperatorId = null;
+        document.getElementById('bankCardsContainer').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+
+      submitRequestMoney.addEventListener('click', async () => {
+        const amount = parseFloat(reqModalAmount.value);
+        if (!amount || amount <= 0) {
+          alert('Please enter a valid amount.');
+          return;
+        }
+        const maxBal = parseFloat(reqModalAmount.max);
+        if (amount > maxBal) {
+          alert(`Amount cannot exceed Rs. ${maxBal.toFixed(2)}.`);
+          return;
+        }
+
+        submitRequestMoney.disabled = true;
+        submitRequestMoney.textContent = 'Sending...';
+
         try {
           const res = await fetch(`${API_BASE_URL}/farmer/request-payment/`, {
             method: 'POST',
@@ -1259,10 +1654,17 @@
               'Authorization': `Bearer ${token}`,
               'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ remarks: 'Requested via dashboard' })
+            body: JSON.stringify({
+              amount: amount,
+              dairy_operator_id: selectedOperatorId,
+              remarks: reqModalRemarks.value || ''
+            })
           });
           if (res.ok) {
             alert('Money request sent successfully!');
+            requestMoneyModal.style.display = 'none';
+            selectedOperatorId = null;
+            loadPaymentData();
           } else {
             const err = await res.json().catch(() => ({}));
             alert(err.detail || 'Error sending money request.');
@@ -1270,6 +1672,9 @@
         } catch (error) {
           console.error(error);
           alert('Network error sending money request.');
+        } finally {
+          submitRequestMoney.disabled = false;
+          submitRequestMoney.textContent = 'Send Request';
         }
       });
 
@@ -1302,6 +1707,8 @@
           if (res.ok) {
             alert(editingBankId ? 'Bank details updated successfully!' : 'Bank details added successfully!');
             bankDetailsForm.reset();
+            bankName.value = '';
+            if(bankSearchInput) bankSearchInput.value = '';
             qrCodePreview.style.display = 'none';
             editingBankId = null;
             document.querySelector('#bankDetailsForm button[type="submit"]').textContent = 'Add Bank Details';

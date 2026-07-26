@@ -1,0 +1,25 @@
+from django.conf import settings
+from django.db import migrations, models
+import django.db.models.deletion
+
+
+class Migration(migrations.Migration):
+
+    dependencies = [
+        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
+        ('api', '0007_notification'),
+    ]
+
+    operations = [
+        migrations.AddField(
+            model_name='paymentrequest',
+            name='dairy_operator',
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name='payment_requests_received',
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+    ]
