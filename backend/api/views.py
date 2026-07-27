@@ -155,11 +155,15 @@ class DashboardStatsView(APIView):
         stats = collections.aggregate(
             total_milk=Sum('quantity'),
             avg_fat=Avg('fat'),
+            avg_snf=Avg('snf'),
+            total_earned=Sum('amount'),
             total_collections=Count('id')
         )
         
         total_milk = stats['total_milk'] or Decimal('0.00')
         avg_fat = stats['avg_fat'] or Decimal('0.00')
+        avg_snf = stats['avg_snf'] or Decimal('0.00')
+        total_earned = stats['total_earned'] or Decimal('0.00')
         total_collections = stats['total_collections'] or 0
         
         # Active farmers count
@@ -189,6 +193,8 @@ class DashboardStatsView(APIView):
             "summary": {
                 "total_milk": float(total_milk),
                 "avg_fat": round(float(avg_fat), 2),
+                "avg_snf": round(float(avg_snf), 2),
+                "total_earned": float(total_earned),
                 "total_collections": total_collections,
                 "active_farmers": active_farmers_count,
                 "is_farmer": is_farmer,
@@ -712,7 +718,8 @@ def generate_report(request):
             'quantity': float(r.quantity),
             'fat': float(r.fat),
             'snf': float(r.snf),
-            'rate': float(r.rate)
+            'rate': float(r.rate),
+            'amount': float(r.amount)
         } for r in data]
         summary = data.aggregate(avg_fat=Avg('fat'), avg_snf=Avg('snf'), total_qty=Sum('quantity'))
         return Response({
