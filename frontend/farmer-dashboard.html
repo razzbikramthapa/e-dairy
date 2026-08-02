@@ -953,6 +953,13 @@
         return;
       }
 
+      function escapeHtml(str) {
+        if (str === null || str === undefined) return '';
+        const div = document.createElement('div');
+        div.appendChild(document.createTextNode(String(str)));
+        return div.innerHTML;
+      }
+
       // Navigation Logic
       function switchTab(tab) {
         navDashboard.classList.remove('active');
@@ -1056,7 +1063,7 @@
           if (profCollectionCenter) {
               const centers = profile.linked_collection_center;
               if (Array.isArray(centers) && centers.length > 0) {
-                  profCollectionCenter.innerHTML = centers.join('<br>');
+                  profCollectionCenter.innerHTML = centers.map(c => escapeHtml(c)).join('<br>');
                   profCollectionCenter.style.textAlign = 'right';
               } else {
                   profCollectionCenter.innerText = centers || 'Not Linked';
@@ -1073,6 +1080,8 @@
           // Populate Summary cards
           valTotalMilk.innerText = `${stats.summary.total_milk.toFixed(2)} L`;
           valAvgFat.innerText = `${stats.summary.avg_fat.toFixed(2)} %`;
+          valAvgSnf.innerText = `${stats.summary.avg_snf.toFixed(2)} %`;
+          valTotalEarnings.innerText = `Rs. ${stats.summary.total_earned.toFixed(2)}`;
 
           if (stats.summary.avg_fat >= 5.0) {
             lblAvgFatCompare.innerText = "Quality grade: Excellent (High Yield)";
@@ -1084,11 +1093,8 @@
             lblAvgFatCompare.innerText = "Quality grade: No records";
           }
 
-          // Populate recent records in table and calculate dynamic aggregates (e.g. SNF and Earnings)
+          // Populate recent records in table
           const records = stats.recent_records || [];
-          let totalEarnings = 0;
-          let sumSnf = 0;
-          let validSnfCount = 0;
 
           if (records.length === 0) {
             tableBody.innerHTML = `
@@ -1110,35 +1116,24 @@
             records.forEach(rec => {
               const recAmt = parseFloat(rec.amount) || 0;
               const recSnf = parseFloat(rec.snf) || 0;
-              totalEarnings += recAmt;
-
-              if (recSnf > 0) {
-                sumSnf += recSnf;
-                validSnfCount++;
-              }
 
               // format timestamp
               const recDate = rec.date || new Date(rec.timestamp).toLocaleDateString();
 
               trHtml += `
                 <tr>
-                  <td>${recDate}</td>
-                  <td><span class="badge-session ${rec.session}">${rec.session}</span></td>
+                  <td>${escapeHtml(recDate)}</td>
+                  <td><span class="badge-session ${rec.session}">${escapeHtml(rec.session)}</span></td>
                   <td>${parseFloat(rec.quantity).toFixed(2)} L</td>
                   <td>${parseFloat(rec.fat).toFixed(2)} %</td>
                   <td>${recSnf.toFixed(2)} %</td>
                   <td>Rs. ${parseFloat(rec.rate).toFixed(2)}</td>
                   <td style="color:var(--primary); font-weight:700;">Rs. ${recAmt.toFixed(2)}</td>
-                  <td>${rec.collection_centre || rec.agent_name || rec.collected_by_name || rec.collected_by || 'System'}</td>
+                  <td>${escapeHtml(rec.collection_centre || rec.collected_by_name || 'System')}</td>
                 </tr>
               `;
             });
             tableBody.innerHTML = trHtml;
-
-            // Average SNF calculation
-            const avgSnfVal = validSnfCount > 0 ? (sumSnf / validSnfCount) : 0;
-            valAvgSnf.innerText = `${avgSnfVal.toFixed(2)} %`;
-            valTotalEarnings.innerText = `Rs. ${totalEarnings.toFixed(2)}`;
           }
 
           // Build Chart
@@ -1286,10 +1281,10 @@
             <div style="flex-shrink: 0; margin-top: 2px;">${icon}</div>
             <div style="flex-grow: 1;">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                <h4 style="margin: 0; font-family: 'Outfit', sans-serif; font-size: 15px; color: var(--primary-dark);">${notif.title}</h4>
+                <h4 style="margin: 0; font-family: 'Outfit', sans-serif; font-size: 15px; color: var(--primary-dark);">${escapeHtml(notif.title)}</h4>
                 <span style="font-size: 11px; color: var(--text-muted);">${new Date(notif.created_at).toLocaleString()}</span>
               </div>
-              <p style="margin: 0; font-size: 13px; color: var(--text); opacity: 0.9;">${notif.message}</p>
+              <p style="margin: 0; font-size: 13px; color: var(--text); opacity: 0.9;">${escapeHtml(notif.message)}</p>
             </div>
           `;
 
@@ -1523,7 +1518,7 @@
 
                 card.innerHTML = `
                   <div style="margin-bottom:16px;">
-                    <div style="font-family:'Outfit',sans-serif; font-size:16px; font-weight:700; color:var(--primary-dark);">${cc.dairy_name}</div>
+                    <div style="font-family:'Outfit',sans-serif; font-size:16px; font-weight:700; color:var(--primary-dark);">${escapeHtml(cc.dairy_name)}</div>
                     <div style="font-size:12px; color:var(--text-muted);">Collection Center</div>
                   </div>
                   <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px;">
@@ -1538,7 +1533,7 @@
                   </div>
                   <button class="btn-secondary open-request-modal" 
                     data-operator-id="${cc.operator_id}" 
-                    data-name="${cc.dairy_name}" 
+                    data-name="${escapeHtml(cc.dairy_name)}" 
                     data-pending="${cc.pending_balance}" 
                     data-milk="${cc.total_milk_litres}"
                     ${!hasPending ? 'disabled style="width:100%; opacity:0.5; cursor:not-allowed;"' : 'style="width:100%; background:var(--primary); color:white;"'}
@@ -1559,9 +1554,9 @@
 
                   if (primaryBankData) {
                     reqBankDetails.innerHTML = `
-                      <strong style="color:var(--primary-dark);">${primaryBankData.bank_name}</strong><br>
-                      A/C Holder: ${primaryBankData.account_holder_name}<br>
-                      A/C No: ${primaryBankData.account_number}
+                      <strong style="color:var(--primary-dark);">${escapeHtml(primaryBankData.bank_name)}</strong><br>
+                      A/C Holder: ${escapeHtml(primaryBankData.account_holder_name)}<br>
+                      A/C No: ${escapeHtml(primaryBankData.account_number)}
                     `;
                   } else {
                     reqBankDetails.innerHTML = '<em style="color:#E53935;">No primary bank account found.</em>';
@@ -1603,18 +1598,28 @@
                   <div class="card-label">Bank ${index + 1}</div>
                   <div style="display: flex; gap: 8px;">
                     ${setPrimaryBtnHtml}
-                    <button class="btn-secondary" style="padding: 4px 12px; font-size: 12px; background: rgba(82, 59, 139, 0.1); color: var(--primary); border: none;" onclick="editBank(${bank.id}, '${bank.bank_name}', '${bank.account_holder_name}', '${bank.account_number}')">Edit</button>
+                    <button class="btn-secondary edit-bank-btn" style="padding: 4px 12px; font-size: 12px; background: rgba(82, 59, 139, 0.1); color: var(--primary); border: none;" data-bank-id="${bank.id}" data-bank-name="${escapeHtml(bank.bank_name)}" data-holder-name="${escapeHtml(bank.account_holder_name)}" data-account-number="${escapeHtml(bank.account_number)}">Edit</button>
                     <button class="btn-secondary" style="padding: 4px 12px; font-size: 12px; background: rgba(229, 57, 53, 0.1); color: #E53935; border: none;" onclick="deleteBank(${bank.id})">Remove</button>
                   </div>
                 </div>
-                <div class="card-value" style="font-size: 18px; margin-top: 8px;">${bank.bank_name}</div>
+                <div class="card-value" style="font-size: 18px; margin-top: 8px;">${escapeHtml(bank.bank_name)}</div>
                 <div class="card-footer-text" style="color: var(--text); font-weight: 500; font-size: 13px; margin-top: 8px; display: block;">
-                  A/C Name: ${bank.account_holder_name}<br>
-                  A/C No: ${bank.account_number}
+                  A/C Name: ${escapeHtml(bank.account_holder_name)}<br>
+                  A/C No: ${escapeHtml(bank.account_number)}
                 </div>
                 ${qrHtml}
               `;
               bankCardsContainer.appendChild(card);
+            });
+
+            document.querySelectorAll('.edit-bank-btn').forEach(btn => {
+              btn.addEventListener('click', () => {
+                const id = btn.getAttribute('data-bank-id');
+                const name = btn.getAttribute('data-bank-name');
+                const holder = btn.getAttribute('data-holder-name');
+                const number = btn.getAttribute('data-account-number');
+                editBank(id, name, holder, number);
+              });
             });
           }
         } catch (error) {

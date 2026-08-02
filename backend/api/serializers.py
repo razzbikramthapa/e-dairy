@@ -1,9 +1,11 @@
+import re
+
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from django.db import transaction
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from .models import Profile, MilkCollection, LinkedFarmer, FarmerBankDetails, Payment, QualityRecord, PaymentRequest, Notification
+from .models import Profile, DairyOperator, MilkCollection, LinkedFarmer, FarmerBankDetails, Payment, QualityRecord, PaymentRequest, Notification
 from .twilio_helper import verify_otp
 
 class ProfileSerializer(serializers.ModelSerializer):
@@ -14,10 +16,19 @@ class ProfileSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     profile = ProfileSerializer(read_only=True)
     linked_collection_center = serializers.SerializerMethodField()
+    dairy_name = serializers.SerializerMethodField()
     
     class Meta:
         model = User
-        fields = ('id', 'username', 'email', 'first_name', 'last_name', 'profile', 'linked_collection_center')
+        fields = ('id', 'username', 'email', 'first_name', 'last_name', 'profile', 'linked_collection_center', 'dairy_name')
+
+    def get_dairy_name(self, obj):
+        try:
+            if hasattr(obj, 'dairy_operator'):
+                return obj.dairy_operator.dairy_name
+        except Exception:
+            pass
+        return None
 
     def get_linked_collection_center(self, obj):
         try:
@@ -43,10 +54,11 @@ class UserRegisterSerializer(serializers.ModelSerializer):
     phone = serializers.CharField(max_length=15, required=False, allow_blank=True, allow_null=True, write_only=True)
     address = serializers.CharField(max_length=255, required=False, allow_blank=True, allow_null=True, write_only=True)
     password = serializers.CharField(write_only=True, style={'input_type': 'password'})
+    registration_no = serializers.CharField(max_length=100, required=False, allow_blank=True, allow_null=True, write_only=True)
 
     class Meta:
         model = User
-        fields = ('username', 'password', 'email', 'first_name', 'last_name', 'role', 'farmer_code', 'farm_name', 'phone', 'address')
+        fields = ('username', 'password', 'email', 'first_name', 'last_name', 'role', 'farmer_code', 'farm_name', 'phone', 'address', 'registration_no')
 
     def validate(self, attrs):
         phone = attrs.get('phone', '').strip()
@@ -54,6 +66,8 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         
         if not phone:
             raise serializers.ValidationError({"phone": "Phone number is required."})
+        if not re.fullmatch(r'[0-9]{10}', phone):
+            raise serializers.ValidationError({"phone": "Phone number must be exactly 10 digits."})
         if not otp:
             raise serializers.ValidationError({"password": "Verification code (OTP) is required."})
             
@@ -73,6 +87,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         farm_name = validated_data.pop('farm_name', '')
         phone = validated_data.pop('phone', '')
         address = validated_data.pop('address', '')
+        registration_no = validated_data.pop('registration_no', '')
         password = validated_data.pop('password')
 
         # Auto-generate farmer code if not provided
@@ -100,6 +115,16 @@ class UserRegisterSerializer(serializers.ModelSerializer):
                 phone=phone,
                 address=address
             )
+            # Create DairyOperator for agent role
+            if role == 'agent':
+                dairy_name = validated_data.get('first_name', '') or 'My Collection Centre'
+                DairyOperator.objects.create(
+                    user=user,
+                    dairy_name=dairy_name,
+                    registration_no=registration_no or '',
+                    phone=phone,
+                    address=address
+                )
         return user
 
 
@@ -232,6 +257,10 @@ class PaymentRequestSerializer(serializers.ModelSerializer):
 
     def get_dairy_operator_name(self, obj):
         if obj.dairy_operator:
+            try:
+                return obj.dairy_operator.dairy_operator.dairy_name
+            except Exception:
+                pass
             return obj.dairy_operator.get_full_name() or obj.dairy_operator.username
         return None
 

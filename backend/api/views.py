@@ -3,6 +3,7 @@ from rest_framework.decorators import permission_classes, api_view
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.exceptions import ValidationError
 from django.contrib.auth.models import User
 from django.db.models import Sum, Avg, Count, Q
 from django.utils import timezone
@@ -10,6 +11,7 @@ from datetime import timedelta
 from decimal import Decimal
 from rest_framework_simplejwt.views import TokenObtainPairView
 import logging
+import re
 
 from .models import Profile, MilkCollection, LinkedFarmer, Payment, FarmerBankDetails, QualityRecord, PaymentRequest, Notification
 from .serializers import (
@@ -80,9 +82,9 @@ class FarmerListView(generics.ListAPIView):
     permission_classes = (IsAuthenticated,)
     serializer_class = UserSerializer
 
-    def get_queryset(self):
-        queryset = User.objects.filter(profile__role='farmer').order_by('first_name', 'username')
-        search_query = self.request.query_params.get('search', '').strip()
+    def get_queryset(self):  #Which farmers should I return
+        queryset = User.objects.filter(profile__role='farmer').order_by('first_name', 'username')    #selects farmer role only and Sorts farmers alphabetically.
+        search_query = self.request.query_params.get('search', '').strip()        #Reads the search text from the URL.
         if search_query:
             queryset = queryset.filter(
                 Q(profile__farmer_code__icontains=search_query) |
@@ -97,14 +99,14 @@ class MilkCollectionViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticated,)
     serializer_class = MilkCollectionSerializer
 
-    def get_queryset(self):
+    def get_queryset(self):    #Which milk collection records should the logged-in user see
         user = self.request.user
         try:
             profile = user.profile
-            if profile.role == 'farmer':
+            if profile.role == 'farmer':   #   If the logged-in user is a farmer,only show his own milk records.
                 queryset = MilkCollection.objects.filter(farmer=user)
             else:
-                queryset = MilkCollection.objects.filter(collected_by=user)
+                queryset = MilkCollection.objects.filter(collected_by=user)   #dairyoperator
         except Profile.DoesNotExist:
             queryset = MilkCollection.objects.all()
             
@@ -118,10 +120,10 @@ class MilkCollectionViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(farmer_id=farmer_param)
             
         session_param = self.request.query_params.get('session')
-        if session_param:
+        if session_param:   #morning or evening
             queryset = queryset.filter(session=session_param)
             
-        return queryset.order_by('-timestamp')
+        return queryset.order_by('-timestamp') #newst record first, or in descending order
 
     def perform_create(self, serializer):
         serializer.save(collected_by=self.request.user)
@@ -138,6 +140,25 @@ class MilkCollectionViewSet(viewsets.ModelViewSet):
             )
 
     def perform_destroy(self, instance):
+        # A record whose value has already been paid out must not be deleted,
+        # otherwise the farmer would appear overpaid and pending balances break.
+        operator = instance.collected_by or self.request.user
+        total_earned = MilkCollection.objects.filter(
+            farmer=instance.farmer, collected_by=operator
+        ).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+        total_paid = Payment.objects.filter(
+            farmer=instance.farmer, dairy_operator=operator, payment_status='paid'
+        ).aggregate(total=Sum('paid_amount'))['total'] or Decimal('0.00')
+        total_deductions = Payment.objects.filter(
+            farmer=instance.farmer, dairy_operator=operator, payment_status='paid'
+        ).aggregate(total=Sum('deductions'))['total'] or Decimal('0.00')
+
+        earned_after_delete = total_earned - (instance.amount or Decimal('0.00'))
+        if total_paid + total_deductions > earned_after_delete:
+            raise ValidationError({
+                'detail': 'Cannot delete this milk record because its amount has already been paid out to the farmer. Paid records cannot be deleted.'
+            })
+
         if self.request.user != instance.farmer:
             dairy_name = self.request.user.dairy_operator.dairy_name if hasattr(self.request.user, 'dairy_operator') else (self.request.user.get_full_name() or self.request.user.username)
             Notification.objects.create(
@@ -232,6 +253,8 @@ class GenerateCodeView(APIView):
         
         if not phone:
             return Response({"detail": "Phone number is required."}, status=status.HTTP_400_BAD_REQUEST)
+        if not re.fullmatch(r'[0-9]{10}', phone):
+            return Response({"detail": "Phone number must be exactly 10 digits."}, status=status.HTTP_400_BAD_REQUEST)
         
         user_exists = User.objects.filter(username=phone).exists()
         
@@ -293,16 +316,19 @@ def dairy_dashboard(request):
     ).values_list('farmer_id', flat=True)
     
     total_earned = MilkCollection.objects.filter(
-        farmer_id__in=linked_farmer_ids
+        farmer_id__in=linked_farmer_ids,
+        collected_by=user
     ).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
     
     total_paid = Payment.objects.filter(
         farmer_id__in=linked_farmer_ids,
+        dairy_operator=user,
         payment_status='paid'
     ).aggregate(total=Sum('paid_amount'))['total'] or Decimal('0.00')
     
     total_deductions = Payment.objects.filter(
         farmer_id__in=linked_farmer_ids,
+        dairy_operator=user,
         payment_status='paid'
     ).aggregate(total=Sum('deductions'))['total'] or Decimal('0.00')
     
@@ -385,19 +411,16 @@ def deactivate_linked_farmer(request):
         return Response({'detail': 'Farmer ID is required.'}, status=status.HTTP_400_BAD_REQUEST)
 
     try:
+        farmer_id = int(farmer_id)
+    except (ValueError, TypeError):
+        return Response({'detail': 'Invalid Farmer ID.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
         link = LinkedFarmer.objects.get(dairy_operator=request.user, farmer_id=farmer_id)
     except LinkedFarmer.DoesNotExist:
         return Response({'detail': 'Link not found.'}, status=status.HTTP_404_NOT_FOUND)
 
     farmer = link.farmer
-
-    pending_payments = Payment.objects.filter(
-        dairy_operator=request.user, farmer=farmer, payment_status='pending'
-    ).exclude(pending_amount=0).exists()
-
-    pending_requests = PaymentRequest.objects.filter(
-        farmer=farmer, dairy_operator=request.user, status='pending'
-    ).exists()
 
     total_earned = MilkCollection.objects.filter(
         farmer=farmer, collected_by=request.user
@@ -412,13 +435,27 @@ def deactivate_linked_farmer(request):
     ).aggregate(total=Sum('deductions'))['total'] or Decimal('0.00')
 
     pending_balance = total_earned - total_paid - total_deductions
+    if pending_balance < 0:
+        pending_balance = Decimal('0.00')
 
-    if pending_payments or pending_requests or pending_balance > 0:
+    # A Payment recorded with status 'pending' represents money still owed to the
+    # farmer and is already included in the pending balance above.
+    unsettled_payments = Payment.objects.filter(
+        dairy_operator=request.user, farmer=farmer, payment_status='pending'
+    ).exclude(pending_amount=0).exists()
+
+    if unsettled_payments or pending_balance > 0:
         return Response({
             'detail': 'Cannot deactivate. There are unsettled transactions with this farmer. '
                        f'Pending balance: Rs. {pending_balance:.2f}. '
                        'Please settle all payments first.'
         }, status=status.HTTP_400_BAD_REQUEST)
+
+    # Balance is settled, so resolve any leftover pending payment requests so they
+    # never block this link again.
+    PaymentRequest.objects.filter(
+        farmer=farmer, dairy_operator=request.user, status='pending'
+    ).update(status='approved')
 
     link.is_active = False
     link.save()
@@ -446,8 +483,13 @@ def get_linked_farmers(request):
         ).aggregate(total=Sum('deductions'))['total'] or Decimal('0.00')
         pending = total_earned - total_paid - total_deductions
         if pending < 0:
-            pending = Decimal('0.00')
-        lf['pending_balance'] = float(pending)
+            lf['pending_balance'] = 0.0
+            lf['overpaid_amount'] = float(-pending)
+            lf['is_overpaid'] = True
+        else:
+            lf['pending_balance'] = float(pending)
+            lf['overpaid_amount'] = 0.0
+            lf['is_overpaid'] = False
 
     return Response(data)
 
@@ -455,17 +497,27 @@ def get_linked_farmers(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def search_farmer_by_code(request):
-    """Search farmer profile by Farmer Code before linking"""
+    """Search farmer profile by Farmer Code, name, or phone before linking"""
     code = request.query_params.get('farmer_code', '').strip()
     if not code:
         return Response({'detail': 'Farmer code is required.'}, status=status.HTTP_400_BAD_REQUEST)
         
-    try:
-        profile = Profile.objects.get(farmer_code=code, role='farmer')
-        user = profile.user
-    except Profile.DoesNotExist:
-        return Response({'detail': 'Farmer with this code does not exist.'}, status=status.HTTP_404_NOT_FOUND)
+    # Try exact code match first
+    profile = Profile.objects.filter(farmer_code=code, role='farmer').first()
+    
+    # If no exact match, try searching by name or phone
+    if not profile:
+        profile = Profile.objects.filter(role='farmer').filter(
+            Q(user__first_name__icontains=code) |
+            Q(user__last_name__icontains=code) |
+            Q(user__username__icontains=code) |
+            Q(phone__icontains=code)
+        ).first()
+    
+    if not profile:
+        return Response({'detail': 'Farmer with this code, name, or phone does not exist.'}, status=status.HTTP_404_NOT_FOUND)
         
+    user = profile.user
     bd = user.bank_details.filter(is_primary=True).first() or user.bank_details.first()
     bank_data = {
         'id': bd.id,
@@ -495,16 +547,10 @@ def search_farmer_by_code(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def record_milk_collection(request):
-    """Record a milk collection entry and trigger SMS notification"""
+    """Record a milk collection entry"""
     serializer = MilkCollectionSerializer(data=request.data)
     if serializer.is_valid():
-        collection = serializer.save(collected_by=request.user)
-        
-        # Trigger SMS Notification to farmer
-        farmer = collection.farmer
-        phone = farmer.profile.phone
-
-                
+        serializer.save(collected_by=request.user)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -523,7 +569,9 @@ def farmer_payable_summary(request, farmer_id):
     total_deductions = Payment.objects.filter(farmer=farmer, dairy_operator=request.user, payment_status='paid').aggregate(total=Sum('deductions'))['total'] or Decimal('0.00')
     
     pending_balance = total_earned - total_paid - total_deductions
+    overpaid_amount = Decimal('0.00')
     if pending_balance < 0:
+        overpaid_amount = -pending_balance
         pending_balance = Decimal('0.00')
         
     bd = farmer.bank_details.filter(is_primary=True).first() or farmer.bank_details.first()
@@ -544,6 +592,8 @@ def farmer_payable_summary(request, farmer_id):
         'total_paid': float(total_paid),
         'total_deductions': float(total_deductions),
         'pending_balance': float(pending_balance),
+        'overpaid_amount': float(overpaid_amount),
+        'is_overpaid': overpaid_amount > 0,
         'bank_details': bank_data
     })
 
@@ -551,7 +601,7 @@ def farmer_payable_summary(request, farmer_id):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def process_payment(request):
-    """Process a payout transaction to a farmer and trigger SMS notification"""
+    """Process a payout transaction to a farmer"""
     payment_method = request.data.get('payment_method', 'cash')
     farmer_id = request.data.get('farmer')
 
@@ -570,16 +620,11 @@ def process_payment(request):
     if serializer.is_valid():
         payment = serializer.save(dairy_operator=request.user)
         
-        # Trigger SMS Notification to farmer
-        farmer = payment.farmer
-        
         # Mark pending payment requests as approved
         PaymentRequest.objects.filter(
-            farmer=farmer, dairy_operator=request.user, status='pending'
+            farmer=payment.farmer, dairy_operator=request.user, status='pending'
         ).update(status='approved')
 
-
-                
         if payment.payment_status == 'paid':
             dairy_name = request.user.dairy_operator.dairy_name if hasattr(request.user, 'dairy_operator') else (request.user.get_full_name() or request.user.username)
             method_display = payment.get_payment_method_display()
@@ -590,7 +635,7 @@ def process_payment(request):
             else:
                 method_detail = f'as Cash'
             Notification.objects.create(
-                recipient=farmer,
+                recipient=payment.farmer,
                 notification_type='payment_received',
                 title='Payment Received',
                 message=f'A payment of Rs. {payment.paid_amount:.2f} has been disbursed to you {method_detail} by {dairy_name}.'
@@ -897,13 +942,14 @@ class PaymentViewSet(viewsets.ModelViewSet):
         
     def perform_create(self, serializer):
         payment = serializer.save(dairy_operator=self.request.user)
-        
-        farmer = payment.farmer
                 
         if payment.payment_status == 'paid':
+            PaymentRequest.objects.filter(
+                farmer=payment.farmer, dairy_operator=self.request.user, status='pending'
+            ).update(status='approved')
             dairy_name = self.request.user.dairy_operator.dairy_name if hasattr(self.request.user, 'dairy_operator') else 'Collection Center'
             Notification.objects.create(
-                recipient=farmer,
+                recipient=payment.farmer,
                 notification_type='payment_received',
                 title='Payment Received',
                 message=f'A payment of Rs. {payment.paid_amount:.2f} has been disbursed to you by {dairy_name}.'

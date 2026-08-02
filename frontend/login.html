@@ -77,7 +77,7 @@
             <p class="form-desc" id="loginFormDesc">Access your milk yield, FAT analysis, and payments</p>
 
             <div class="form-group">
-              <input type="text" id="loginUser" placeholder="Mobile Number" required>
+              <input type="text" id="loginUser" placeholder="Mobile Number" required maxlength="10">
             </div>
 
             <div class="form-group">
@@ -114,7 +114,7 @@
               </div>
             </div>
 
-            <!-- Agent-only fields: Collection Centre Name -->
+            <!-- Collection centre-only fields: Collection Centre Name -->
             <div id="agentFields" class="role-fields" style="display:none;">
               <div class="form-group">
                 <input type="text" id="regCentreName" placeholder="Collection Centre Name">
@@ -127,7 +127,7 @@
 
             <!-- Phone Number & Get Code Row -->
             <div class="form-group-row phone-row">
-              <input type="tel" id="regPhone" placeholder="Mobile Number *" required>
+              <input type="tel" id="regPhone" placeholder="Mobile Number *" required maxlength="10">
               <button type="button" class="get-code-btn" id="btnGetCode">Get Code</button>
             </div>
 

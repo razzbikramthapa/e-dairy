@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // State Variables
   let currentTab = 'login'; // 'login' or 'register'
-  let currentRole = 'farmer'; // 'farmer' or 'agent'
+  let currentRole = 'farmer'; // 'farmer' or 'agent' (DB role value for collection centre)
   let lastGeneratedOTP = ''; // Stores generated OTP in memory for simulation/validation
   let targetOTPPhone = ''; // Keeps track of which phone requested the code
 
@@ -40,6 +40,11 @@ document.addEventListener('DOMContentLoaded', () => {
     authAlert.innerText = '';
     authAlert.className = 'modal-alert';
     authAlert.style.display = 'none';
+  }
+
+  // Mobile number must be exactly 10 digits
+  function isValidPhone(phone) {
+    return /^[0-9]{10}$/.test(phone);
   }
 
   // UI Updates based on selected Tab (Login vs Register)
@@ -120,7 +125,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loginFormTitle.innerText = `${roleLabel} Sign In`;
     loginFormDesc.innerText = currentRole === 'farmer'
       ? 'Access your milk yield, FAT analysis, and payments ledger'
-      : 'Open milk collection agent panel and weigh scales interface';
+      : 'Open collection centre panel and weigh scales interface';
 
     registerFormTitle.innerText = `${roleLabel} Registration`;
 
@@ -150,6 +155,11 @@ document.addEventListener('DOMContentLoaded', () => {
     
     if (!phone) {
       showAlert('Please enter your mobile phone number first.');
+      return;
+    }
+
+    if (!isValidPhone(phone)) {
+      showAlert('Mobile number must be exactly 10 digits.');
       return;
     }
 
@@ -207,6 +217,11 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
+      if (!isValidPhone(phone)) {
+        showAlert('Mobile number must be exactly 10 digits.');
+        return;
+      }
+
       btnForgotOTP.disabled = true;
       btnForgotOTP.innerText = 'Sending OTP...';
 
@@ -259,6 +274,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!username || !password) {
       showAlert('Mobile Number and OTP Code are required.');
+      return;
+    }
+
+    if (!isValidPhone(username)) {
+      showAlert('Mobile number must be exactly 10 digits.');
       return;
     }
 
@@ -365,6 +385,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (!/^[0-9]+$/.test(phone)) {
       messages.push('Phone Number can only contain numbers.');
+    } else if (!isValidPhone(phone)) {
+      messages.push('Phone Number must be exactly 10 digits.');
     }
     if (!/^[0-9]+$/.test(otp)) {
       messages.push('Verification Code can only contain numbers.');
@@ -399,7 +421,12 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // Validate character types for farmer/agent fields
+    if (!isValidPhone(phone)) {
+      showAlert('Phone number must be exactly 10 digits.');
+      return;
+    }
+
+    // Validate character types for farmer/collection centre fields
     const validationMessages = validateFarmerFields();
     if (validationMessages.length > 0) {
       showAlert(validationMessages.join(' '));
@@ -427,7 +454,7 @@ document.addEventListener('DOMContentLoaded', () => {
       payload.last_name = last_name;
       payload.farm_name = farm_name;
     } else {
-      // For collection centre, we only need first_name (centre name)
+      payload.registration_no = document.getElementById('regCentreName').value.trim();
     }
 
     try {

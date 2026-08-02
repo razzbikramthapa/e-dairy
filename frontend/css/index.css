@@ -307,10 +307,10 @@ nav a.active::after {
   align-items: center;
   gap: 10px;
   padding: 12px 24px;
-  background: #110B1C;
+  background: #2a4e67;
   color: var(--white);
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(114, 43, 43, 0.15);
   box-shadow: var(--shadow-sm);
   text-align: left;
 }

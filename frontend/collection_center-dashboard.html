@@ -958,17 +958,24 @@
 
     <!-- Main Content Panel wrapper -->
     <main class="main-content">
-      
-      <!-- HEADER BANNER -->
-      <div class="welcome-banner">
-        <div class="welcome-content">
-          <h2 id="welcomeBannerTitle">Welcome, central operator!</h2>
-          <p>Streamline collections, verify SNF/FAT ratios, configure bank disbursements, and generate comprehensive reports.</p>
-        </div>
-      </div>
 
       <!-- TAB 1: DASHBOARD -->
       <section class="tab-panel active" id="panel-dashboard">
+        <!-- Welcome banner (dashboard only) -->
+        <div class="welcome-banner" style="position: relative; margin-bottom: 32px;">
+          <div class="welcome-content">
+            <h2 id="welcomeBannerTitle">Welcome, central operator!</h2>
+            <p>Streamline collections, verify SNF/FAT ratios, configure bank disbursements, and generate comprehensive reports.</p>
+          </div>
+          <!-- Quick access: notification bell -->
+          <div id="btnBannerNotif" style="position: absolute; top: 20px; right: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 2;">
+            <div style="position: relative;">
+              <svg style="width: 28px; height: 28px; stroke: white; filter: drop-shadow(0 1px 3px rgba(0,0,0,0.2));" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+              <span id="notifBadgeBanner" style="display: none; position: absolute; top: -6px; right: -8px; background: #E53935; color: white; padding: 1px 5px; border-radius: 10px; font-size: 10px; font-weight: bold; min-width: 16px; text-align: center;">0</span>
+            </div>
+          </div>
+        </div>
+
         <div class="stats-grid">
           <div class="stats-card">
             <div class="card-label">Today's Milk Collection</div>
@@ -1078,13 +1085,13 @@
           <!-- Search & Link -->
           <div class="dash-panel" style="margin-bottom:0">
             <div class="panel-title">Search & Link Farmer</div>
-            <p style="font-size:12px; color:var(--text-muted); margin-top:4px; margin-bottom:20px;">Link farmers to Kathmandu Central Dairy using their unique Farmer Code.</p>
+            <p style="font-size:12px; color:var(--text-muted); margin-top:4px; margin-bottom:20px;">Link farmers to your dairy using their Farmer Code, name, or phone number.</p>
             
             <form id="searchFarmerForm" class="mb-4">
               <div class="form-group">
-                <label for="searchCode">Farmer Code *</label>
+                <label for="searchCode">Farmer Code / Name / Phone *</label>
                 <div style="display:flex; gap:10px;">
-                  <input type="text" id="searchCode" class="form-control" placeholder="e.g. F1001" required>
+                  <input type="text" id="searchCode" class="form-control" placeholder="e.g. F1001, Ram, 9841234567" required>
                   <button type="submit" class="btn-action">Search</button>
                 </div>
               </div>
@@ -1110,12 +1117,13 @@
                     <th>Phone</th>
                     <th>Address</th>
                     <th>Bank details</th>
+                    <th>Balance</th>
                     <th>Action</th>
                   </tr>
                 </thead>
                 <tbody id="linkedFarmersBody">
                   <tr>
-                    <td colspan="6" class="text-center py-4" style="color:var(--text-muted)">No farmers linked yet. Search and link above.</td>
+                    <td colspan="7" class="text-center py-4" style="color:var(--text-muted)">No farmers linked yet. Search and link above.</td>
                   </tr>
                 </tbody>
               </table>
@@ -1429,7 +1437,7 @@
           <div class="form-row-2col">
             <div class="form-group">
               <label for="payAmount">Payout Amount (Rs.) *</label>
-              <input type="number" step="0.01" min="1" id="payAmount" class="form-control" placeholder="0.00" required>
+              <input type="number" step="0.01" min="0.01" id="payAmount" class="form-control" placeholder="0.00" required>
             </div>
             <div class="form-group">
               <label for="payDeductions">Deductions (Rs.)</label>
@@ -1442,14 +1450,15 @@
             <select id="payMethod" class="form-select" required>
               <option value="cash">Cash</option>
               <option value="bank_transfer">Bank Transfer</option>
-              <option value="wallet">Demo Wallet</option>
+              <option value="wallet">Wallet</option>
             </select>
           </div>
 
-          <div class="form-group">
-            <label for="payRef">Transaction Reference (Optional)</label>
+          <div class="form-group" id="payRefGroup" style="display:none;">
+            <label for="payRef">Transaction Reference *</label>
             <input type="text" id="payRef" class="form-control" placeholder="e.g. TXN-1092839">
           </div>
+          
 
           <div style="display:flex; gap:10px;">
             <button type="button" class="btn-action btn-cancel" id="btnCancelPayment" style="flex:1;">Cancel</button>
@@ -1510,6 +1519,13 @@
 
       const API_BASE_URL = window.location.origin + '/api';
 
+      function escapeHtml(str) {
+        if (str === null || str === undefined) return '';
+        const div = document.createElement('div');
+        div.appendChild(document.createTextNode(String(str)));
+        return div.innerHTML;
+      }
+
       // Load Session Profiling info
       let activeLinkedFarmers = [];
       let lastReportGeneratedData = null;
@@ -1531,7 +1547,7 @@
           <svg fill="none" viewBox="0 0 24 24" stroke="${strokeColor}" style="width:20px; height:20px;">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          <span>${msg}</span>
+          <span>${escapeHtml(msg)}</span>
         `;
         toastContainer.appendChild(toast);
         setTimeout(() => {
@@ -1621,8 +1637,11 @@
         });
       });
 
-      // Global Date defaults to Today
-      const todayString = new Date().toISOString().split('T')[0];
+      // Global Date defaults to Today (Nepal timezone)
+      const todayString = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Asia/Kathmandu'
+      }).format(new Date());
+
       document.getElementById('collDate').value = todayString;
       document.getElementById('filterDate').value = todayString;
       document.getElementById('reportDate').value = todayString;
@@ -1637,10 +1656,10 @@
           if (!res.ok) throw new Error("Verification failed.");
           const profile = await res.json();
           
-          const fullName = `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || profile.username;
-          sidebarName.innerText = fullName;
-          welcomeBannerTitle.innerText = `Welcome, ${fullName}!`;
-          sidebarAvatar.innerText = (profile.first_name || profile.username || 'A').charAt(0).toUpperCase();
+          const displayName = profile.dairy_name || profile.first_name || profile.username;
+          sidebarName.innerText = displayName;
+          welcomeBannerTitle.innerText = `Welcome, ${displayName}!`;
+          sidebarAvatar.innerText = (profile.dairy_name || profile.first_name || profile.username || 'A').charAt(0).toUpperCase();
         } catch (err) {
           console.error(err);
           showToast("Failed to load user profile session.", "error");
@@ -1703,10 +1722,10 @@
             recentLogs.forEach(r => {
               trs += `
                 <tr>
-                  <td>${r.date}</td>
-                  <td>${r.farmer_name}</td>
-                  <td><code>${r.farmer_code}</code></td>
-                  <td><span class="badge ${r.session === 'morning' ? 'badge-pending' : 'badge-paid'}">${r.session}</span></td>
+                  <td>${escapeHtml(r.date)}</td>
+                  <td>${escapeHtml(r.farmer_name)}</td>
+                  <td><code>${escapeHtml(r.farmer_code)}</code></td>
+                  <td><span class="badge ${r.session === 'morning' ? 'badge-pending' : 'badge-paid'}">${escapeHtml(r.session)}</span></td>
                   <td>${parseFloat(r.quantity).toFixed(2)} L</td>
                   <td>${parseFloat(r.fat).toFixed(2)} %</td>
                   <td>${parseFloat(r.snf).toFixed(2)} %</td>
@@ -1864,15 +1883,15 @@ if (data.is_linked) {
             searchResultArea.innerHTML = `
               <div class="profile-card">
                 <div class="profile-card-title">
-                  <span>${data.first_name} ${data.last_name} (${data.farmer_code})</span>
+                  <span>${escapeHtml(data.first_name)} ${escapeHtml(data.last_name)} (${escapeHtml(data.farmer_code)})</span>
                 </div>
                 <div class="profile-card-grid">
-                  <div class="profile-card-item"><strong>Phone:</strong> ${data.phone || 'N/A'}</div>
-                  <div class="profile-card-item"><strong>Address:</strong> ${data.address || 'N/A'}</div>
-                  <div class="profile-card-item"><strong>Bank Name:</strong> ${bankName}</div>
-                  <div class="profile-card-item"><strong>Account Holder:</strong> ${holder}</div>
-                  <div class="profile-card-item"><strong>Account Number:</strong> ${accNo}</div>
-                  <div class="profile-card-item"><strong>Wallet No:</strong> ${walletNo}</div>
+                  <div class="profile-card-item"><strong>Phone:</strong> ${escapeHtml(data.phone) || 'N/A'}</div>
+                  <div class="profile-card-item"><strong>Address:</strong> ${escapeHtml(data.address) || 'N/A'}</div>
+                  <div class="profile-card-item"><strong>Bank Name:</strong> ${escapeHtml(bankName)}</div>
+                  <div class="profile-card-item"><strong>Account Holder:</strong> ${escapeHtml(holder)}</div>
+                  <div class="profile-card-item"><strong>Account Number:</strong> ${escapeHtml(accNo)}</div>
+                  <div class="profile-card-item"><strong>Wallet No:</strong> ${escapeHtml(walletNo)}</div>
                 </div>
                 <div style="margin-top:15px;">
                   ${btnHtml}
@@ -1909,7 +1928,7 @@ if (data.is_linked) {
             }
           } else {
             searchResultArea.style.display = 'block';
-            searchResultArea.innerHTML = `<div class="alert-box error">${data.detail || "Farmer not found."}</div>`;
+            searchResultArea.innerHTML = `<div class="alert-box error">${escapeHtml(data.detail) || "Farmer not found."}</div>`;
           }
         } catch (err) {
           showToast("Network searching connection failure.", "error");
@@ -1940,13 +1959,16 @@ if (data.is_linked) {
 
               trs += `
                 <tr>
-                  <td><code>${lf.farmer_code}</code></td>
-                  <td style="font-weight:600; color:var(--primary-dark)">${lf.farmer_name}</td>
-                  <td>${lf.farmer_phone || 'N/A'}</td>
-                  <td>${lf.farmer_address || 'N/A'}</td>
+                  <td><code>${escapeHtml(lf.farmer_code)}</code></td>
+                  <td style="font-weight:600; color:var(--primary-dark)">${escapeHtml(lf.farmer_name)}</td>
+                  <td>${escapeHtml(lf.farmer_phone) || 'N/A'}</td>
+                  <td>${escapeHtml(lf.farmer_address) || 'N/A'}</td>
                   <td>${bankInfo}</td>
+                  <td style="font-weight:700; color:${lf.is_overpaid ? 'var(--danger)' : (lf.pending_balance > 0 ? 'var(--accent-hover)' : 'var(--success)')}">
+                    ${lf.is_overpaid ? `Overpaid Rs. ${lf.overpaid_amount.toFixed(2)}` : `Rs. ${lf.pending_balance.toFixed(2)}`}
+                  </td>
                   <td>
-                    <button class="btn-danger-outline btn-unlink" data-id="${lf.farmer}">Deactivate Link</button>
+                    <button class="btn-danger-outline btn-unlink" data-id="${lf.farmer}" ${lf.pending_balance > 0 ? 'disabled title="Settle outstanding balance first"' : ''}>Deactivate Link</button>
                   </td>
                 </tr>
               `;
@@ -2023,9 +2045,9 @@ if (data.is_linked) {
             records.forEach(r => {
               trs += `
                 <tr>
-                  <td>${r.date}</td>
-                  <td style="font-weight:600; color:var(--primary-dark)">${r.farmer_name} (${r.farmer_code})</td>
-                  <td><span class="badge ${r.session === 'morning' ? 'badge-pending' : 'badge-paid'}">${r.session}</span></td>
+                  <td>${escapeHtml(r.date)}</td>
+                  <td style="font-weight:600; color:var(--primary-dark)">${escapeHtml(r.farmer_name)} (${escapeHtml(r.farmer_code)})</td>
+                  <td><span class="badge ${r.session === 'morning' ? 'badge-pending' : 'badge-paid'}">${escapeHtml(r.session)}</span></td>
                   <td>${parseFloat(r.quantity).toFixed(2)} L</td>
                   <td>${parseFloat(r.fat).toFixed(2)} %</td>
                   <td>${parseFloat(r.snf).toFixed(2)} %</td>
@@ -2035,8 +2057,8 @@ if (data.is_linked) {
                     <div style="display:flex; gap:6px;">
                       <button class="btn-table-sm btn-table-primary btn-edit-quality" 
                         data-id="${r.id}" 
-                        data-farmer="${r.farmer_name}" 
-                        data-date="${r.date}" 
+                        data-farmer="${escapeHtml(r.farmer_name)}" 
+                        data-date="${escapeHtml(r.date)}" 
                         data-qty="${r.quantity}"
                         data-fat="${r.fat}" 
                         data-snf="${r.snf}">Edit</button>
@@ -2062,8 +2084,8 @@ if (data.is_linked) {
                 document.getElementById('editFat').value = fat;
                 document.getElementById('editSnf').value = snf;
                 document.getElementById('editQualityLabel').innerHTML = `
-                  Farmer: <strong>${farmer}</strong><br>
-                  Date: <strong>${date}</strong> | Intake: <strong>${parseFloat(qty).toFixed(2)} Litres</strong>
+                  Farmer: <strong>${escapeHtml(farmer)}</strong><br>
+                  Date: <strong>${escapeHtml(date)}</strong> | Intake: <strong>${parseFloat(qty).toFixed(2)} Litres</strong>
                 `;
                 
                 document.getElementById('qualityModal').classList.add('active');
@@ -2216,46 +2238,59 @@ if (data.is_linked) {
           }
 
           let trs = '';
+          let hasOutstanding = false;
           for (let lf of activeLinkedFarmers) {
             const summaryRes = await fetch(`${API_BASE_URL}/dairy/farmer-payable-summary/${lf.farmer}/`, {
               headers: { 'Authorization': `Bearer ${token}` }
             });
             if (summaryRes.ok) {
               const summary = await summaryRes.json();
+
+              const isOverpaid = summary.is_overpaid || summary.overpaid_amount > 0;
+              if (summary.pending_balance <= 0 && !isOverpaid) continue;
+
+              hasOutstanding = true;
               let bankInfo = 'N/A';
               if (summary.bank_details && summary.bank_details.bank_name) {
                 bankInfo = `${summary.bank_details.bank_name}<br><small>${summary.bank_details.account_number}</small>`;
               }
 
+              let balanceCell, actionsCell;
+              if (isOverpaid) {
+                balanceCell = `<span style="font-weight:700; color:var(--danger)">Overpaid Rs. ${summary.overpaid_amount.toFixed(2)}</span>`;
+                actionsCell = '<span class="badge badge-pending">Credit on account</span>';
+              } else {
+                balanceCell = `<span style="font-weight:700; color:var(--accent-hover)">Rs. ${summary.pending_balance.toFixed(2)}</span>`;
+                actionsCell = `
+                  <button class="btn-table-sm btn-table-primary btn-pay-now"
+                    data-id="${summary.farmer_id}"
+                    data-name="${escapeHtml(summary.farmer_name)}"
+                    data-code="${escapeHtml(summary.farmer_code)}"
+                    data-balance="${summary.pending_balance}"
+                    data-bank="${summary.bank_details ? escapeHtml(summary.bank_details.bank_name) : ''}"
+                    data-holder="${summary.bank_details ? escapeHtml(summary.bank_details.account_holder_name) : ''}"
+                    data-no="${summary.bank_details ? escapeHtml(summary.bank_details.account_number) : ''}"
+                    data-wallet="${summary.bank_details ? escapeHtml(summary.bank_details.wallet_number) : ''}">Disburse Pay</button>`;
+              }
+
               trs += `
                 <tr>
-                  <td><code>${summary.farmer_code}</code></td>
-                  <td style="font-weight:600; color:var(--primary-dark)">${summary.farmer_name}</td>
+                  <td><code>${escapeHtml(summary.farmer_code)}</code></td>
+                  <td style="font-weight:600; color:var(--primary-dark)">${escapeHtml(summary.farmer_name)}</td>
                   <td>Rs. ${summary.total_earned.toFixed(2)}</td>
                   <td>Rs. ${summary.total_paid.toFixed(2)}</td>
-                  <td style="font-weight:700; color:${summary.pending_balance > 0 ? 'var(--accent-hover)' : 'var(--success)'}">
-                    Rs. ${summary.pending_balance.toFixed(2)}
-                  </td>
+                  <td>${balanceCell}</td>
                   <td>${bankInfo}</td>
-                  <td>
-                    <div style="display:flex; gap:6px;">
-                      <button class="btn-table-sm btn-table-primary btn-pay-now" 
-                        data-id="${summary.farmer_id}" 
-                        data-name="${summary.farmer_name}" 
-                        data-code="${summary.farmer_code}"
-                        data-balance="${summary.pending_balance}"
-                        data-bank="${summary.bank_details ? summary.bank_details.bank_name : ''}"
-                        data-holder="${summary.bank_details ? summary.bank_details.account_holder_name : ''}"
-                        data-no="${summary.bank_details ? summary.bank_details.account_number : ''}"
-                        data-wallet="${summary.bank_details ? summary.bank_details.wallet_number : ''}"
-                        ${summary.pending_balance <= 0 ? 'disabled' : ''}>Disburse Pay</button>
-                    </div>
-                  </td>
+                  <td>${actionsCell}</td>
                 </tr>
               `;
             }
           }
-          body.innerHTML = trs;
+          if (!hasOutstanding) {
+            body.innerHTML = '<tr><td colspan="7" class="text-center">All farmers are fully settled. No outstanding balances.</td></tr>';
+          } else {
+            body.innerHTML = trs;
+          }
 
           // Bind payout dialog triggers
           document.querySelectorAll('.btn-pay-now').forEach(btn => {
@@ -2272,7 +2307,7 @@ if (data.is_linked) {
               document.getElementById('payFarmerId').value = id;
               document.getElementById('payFarmerName').innerText = `${name} (${code})`;
               document.getElementById('payOutstandingLabel').innerText = balance.toFixed(2);
-              document.getElementById('payAmount').value = balance.toFixed(2);
+              document.getElementById('payAmount').value = '0.00';
               document.getElementById('payAmount').max = balance;
               document.getElementById('payDeductions').value = '0.00';
               document.getElementById('payBankAcc').innerText = bank;
@@ -2281,6 +2316,8 @@ if (data.is_linked) {
               document.getElementById('payWallet').innerText = wallet;
 
               const payMethod = document.getElementById('payMethod');
+              const payRefGroup = document.getElementById('payRefGroup');
+              const payRef = document.getElementById('payRef');
               const hasBankDetails = bank !== 'N/A' && bank !== '' && bank !== null;
               payMethod.querySelectorAll('option').forEach(opt => {
                 if (opt.value !== 'cash') {
@@ -2289,6 +2326,16 @@ if (data.is_linked) {
               });
               if (!hasBankDetails) {
                 payMethod.value = 'cash';
+              }
+
+              // Toggle transaction reference visibility based on payment method
+              if (payMethod.value === 'cash') {
+                payRefGroup.style.display = 'none';
+                payRef.removeAttribute('required');
+                payRef.value = '';
+              } else {
+                payRefGroup.style.display = 'block';
+                payRef.setAttribute('required', 'required');
               }
 
               document.getElementById('paymentModal').classList.add('active');
@@ -2303,8 +2350,6 @@ if (data.is_linked) {
             }
             pendingAutoOpenFarmerId = null;
           }
-
-
         } catch (err) {
           showToast("Failed to fetch outstanding balances list.", "error");
         }
@@ -2331,14 +2376,14 @@ if (data.is_linked) {
               trs += `
                 <tr>
                   <td>${new Date(h.payment_time).toLocaleString()}</td>
-                  <td style="font-weight:600; color:var(--primary-dark)">${h.farmer_name} (${h.farmer_code})</td>
-                  <td>${h.payment_method.toUpperCase()}</td>
+                  <td style="font-weight:600; color:var(--primary-dark)">${escapeHtml(h.farmer_name)} (${escapeHtml(h.farmer_code)})</td>
+                  <td>${escapeHtml(h.payment_method.toUpperCase())}</td>
                   <td>Rs. ${parseFloat(h.total_amount).toFixed(2)}</td>
                   <td style="font-weight:700; color:var(--success)">Rs. ${parseFloat(h.paid_amount).toFixed(2)}</td>
                   <td>Rs. ${parseFloat(h.deductions).toFixed(2)}</td>
                   <td>Rs. ${parseFloat(h.pending_amount).toFixed(2)}</td>
                   <td>${statusBadge}</td>
-                  <td><code>${h.transaction_reference || 'N/A'}</code></td>
+                  <td><code>${escapeHtml(h.transaction_reference) || 'N/A'}</code></td>
                 </tr>
               `;
             });
@@ -2357,6 +2402,20 @@ if (data.is_linked) {
       document.getElementById('btnClosePaymentModal').addEventListener('click', closePaymentModal);
       document.getElementById('btnCancelPayment').addEventListener('click', closePaymentModal);
 
+      // Toggle transaction reference based on payment method
+      document.getElementById('payMethod').addEventListener('change', function() {
+        const payRefGroup = document.getElementById('payRefGroup');
+        const payRef = document.getElementById('payRef');
+        if (this.value === 'cash') {
+          payRefGroup.style.display = 'none';
+          payRef.removeAttribute('required');
+          payRef.value = '';
+        } else {
+          payRefGroup.style.display = 'block';
+          payRef.setAttribute('required', 'required');
+        }
+      });
+
       // Submit Payout modal form
       document.getElementById('paymentModalForm').addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -2367,8 +2426,18 @@ if (data.is_linked) {
         const method = document.getElementById('payMethod').value;
         const ref = document.getElementById('payRef').value;
 
+        if (!amount || amount <= 0) {
+          showToast("Please enter a valid payout amount.", "error");
+          return;
+        }
+
         if (amount + deductions > total) {
           showToast("Sum of payout and deductions exceeds outstanding balance!", "error");
+          return;
+        }
+
+        if (method !== 'cash' && !ref.trim()) {
+          showToast("Transaction reference is required for bank and wallet payments.", "error");
           return;
         }
 
@@ -2534,7 +2603,44 @@ if (data.is_linked) {
         let trs = '';
         const records = data.records || [];
 
-        if (data.report_type.includes('collection') || data.report_type === 'quality_report') {
+        if (data.report_type === 'dairy_collection') {
+          head.innerHTML = `
+            <tr>
+              <th>Date</th>
+              <th>Total Qty (L)</th>
+              <th>Total Amount (Rs.)</th>
+              <th>Records</th>
+            </tr>
+          `;
+
+          if (records.length === 0) {
+            body.innerHTML = '<tr><td colspan="4" class="text-center py-4">No collections found for this period.</td></tr>';
+          } else {
+            let totalQty = 0, totalAmt = 0, totalRecs = 0;
+            records.forEach(r => {
+              totalQty += parseFloat(r.total_qty || 0);
+              totalAmt += parseFloat(r.total_amt || 0);
+              totalRecs += parseInt(r.records_count || 0);
+              trs += `
+                <tr>
+                  <td>${r.date}</td>
+                  <td>${parseFloat(r.total_qty).toFixed(2)}</td>
+                  <td>Rs. ${parseFloat(r.total_amt).toFixed(2)}</td>
+                  <td>${r.records_count}</td>
+                </tr>
+              `;
+            });
+            trs += `
+              <tr style="font-weight:700;background:var(--bg-primary)">
+                <td>TOTAL</td>
+                <td>${totalQty.toFixed(2)}</td>
+                <td>Rs. ${totalAmt.toFixed(2)}</td>
+                <td>${totalRecs}</td>
+              </tr>
+            `;
+            body.innerHTML = trs;
+          }
+        } else if (data.report_type.includes('collection') || data.report_type === 'quality_report') {
           head.innerHTML = `
             <tr>
               <th>Date</th>
@@ -2555,10 +2661,10 @@ if (data.is_linked) {
             records.forEach(r => {
               trs += `
                 <tr>
-                  <td>${r.date}</td>
-                  <td><code>${r.farmer_code}</code></td>
-                  <td>${r.farmer_name}</td>
-                  <td>${r.session}</td>
+                  <td>${escapeHtml(r.date)}</td>
+                  <td><code>${escapeHtml(r.farmer_code) || '-'}</code></td>
+                  <td>${escapeHtml(r.farmer_name) || '-'}</td>
+                  <td>${escapeHtml(r.session) || '-'}</td>
                   <td>${parseFloat(r.quantity).toFixed(2)}</td>
                   <td>${parseFloat(r.fat).toFixed(2)}</td>
                   <td>${parseFloat(r.snf).toFixed(2)}</td>
@@ -2567,6 +2673,39 @@ if (data.is_linked) {
                 </tr>
               `;
             });
+            body.innerHTML = trs;
+          }
+        } else if (data.report_type === 'pending_payment') {
+          head.innerHTML = `
+            <tr>
+              <th>Farmer Code</th>
+              <th>Farmer Name</th>
+              <th>Phone</th>
+              <th>Pending Balance (Rs.)</th>
+            </tr>
+          `;
+
+          if (records.length === 0) {
+            body.innerHTML = '<tr><td colspan="4" class="text-center py-4">No pending balances — all farmers are fully settled.</td></tr>';
+          } else {
+            let totalPending = 0;
+            records.forEach(r => {
+              totalPending += parseFloat(r.pending_balance || 0);
+              trs += `
+                <tr>
+                  <td><code>${escapeHtml(r.farmer_code) || '-'}</code></td>
+                  <td>${escapeHtml(r.farmer_name) || '-'}</td>
+                  <td>${escapeHtml(r.phone) || '-'}</td>
+                  <td style="font-weight:700;color:var(--danger)">Rs. ${parseFloat(r.pending_balance).toFixed(2)}</td>
+                </tr>
+              `;
+            });
+            trs += `
+              <tr style="font-weight:700;background:var(--bg-primary)">
+                <td colspan="3">TOTAL PENDING</td>
+                <td style="color:var(--danger)">Rs. ${totalPending.toFixed(2)}</td>
+              </tr>
+            `;
             body.innerHTML = trs;
           }
         } else if (data.report_type.includes('payment')) {
@@ -2597,15 +2736,15 @@ if (data.is_linked) {
               trs += `
                 <tr>
                   <td>${r.payment_time ? new Date(r.payment_time).toLocaleString() : r.payment_date}</td>
-                  <td><code>${r.farmer_code}</code></td>
-                  <td>${r.farmer_name}</td>
-                  <td>${(r.payment_method || 'CASH').toUpperCase()}</td>
+                  <td><code>${escapeHtml(r.farmer_code)}</code></td>
+                  <td>${escapeHtml(r.farmer_name)}</td>
+                  <td>${escapeHtml((r.payment_method || 'CASH').toUpperCase())}</td>
                   <td>Rs. ${parseFloat(r.total_amount).toFixed(2)}</td>
                   <td style="color:var(--success)">Rs. ${parseFloat(r.paid_amount).toFixed(2)}</td>
                   <td>Rs. ${parseFloat(r.deductions || 0).toFixed(2)}</td>
                   <td>Rs. ${parseFloat(balanceLabel).toFixed(2)}</td>
-                  <td><span class="badge badge-paid">${r.payment_status || 'Paid'}</span></td>
-                  <td><code>${r.transaction_reference || 'N/A'}</code></td>
+                  <td><span class="badge badge-paid">${escapeHtml(r.payment_status || 'Paid')}</span></td>
+                  <td><code>${escapeHtml(r.transaction_reference) || 'N/A'}</code></td>
                 </tr>
               `;
             });
@@ -2693,6 +2832,17 @@ if (data.is_linked) {
           notifBadge.textContent = currentUnread || '';
           notifBadge.setAttribute('data-count', currentUnread);
 
+          // Sync banner bell badge
+          const bannerBadge = document.getElementById('notifBadgeBanner');
+          if (bannerBadge) {
+            if (currentUnread > 0) {
+              bannerBadge.style.display = 'inline';
+              bannerBadge.textContent = currentUnread;
+            } else {
+              bannerBadge.style.display = 'none';
+            }
+          }
+
           if (currentUnread > lastUnreadCount && lastUnreadCount > 0) {
             const diff = currentUnread - lastUnreadCount;
             showToast(`You have ${diff} new notification${diff > 1 ? 's' : ''}!`, 'success');
@@ -2715,12 +2865,12 @@ if (data.is_linked) {
             const unreadClass = n.is_read ? '' : 'unread';
             html += `
               <div class="notif-item ${unreadClass}" data-id="${n.id}" onclick="markSingleRead(${n.id})">
-                <div class="notif-icon ${n.notification_type}">
+                <div class="notif-icon ${escapeHtml(n.notification_type)}">
                   ${notifIconSVG(n.notification_type)}
                 </div>
                 <div class="notif-body">
-                  <div class="notif-title">${n.title}</div>
-                  <div class="notif-message">${n.message}</div>
+                  <div class="notif-title">${escapeHtml(n.title)}</div>
+                  <div class="notif-message">${escapeHtml(n.message)}</div>
                   <div class="notif-time">${timeAgo(n.created_at)}</div>
                   ${n.notification_type === 'payment_request' && n.related_farmer_id ? `
                     <div class="notif-actions">
@@ -2793,6 +2943,11 @@ if (data.is_linked) {
       loadDashboardStats();
       loadNotifications();
       populateFarmerDropdowns();
+
+      // Banner bell -> navigate to Notifications tab
+      document.getElementById('btnBannerNotif').addEventListener('click', () => {
+        document.querySelector('[data-tab="notifications"]').click();
+      });
     });
   </script>
 </body>

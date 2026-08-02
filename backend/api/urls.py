@@ -68,7 +68,7 @@ urlpatterns = [
     # Custom Dairy Operator Actions
     path('dairy/dashboard/', dairy_dashboard, name='dairy_dashboard'),
     path('dairy/link-farmer/', link_farmer, name='link_farmer'),
-    path('me/', current_profile, name='api_current_profile'),
+    path('current_profile/', current_profile, name='api_current_profile'),
     path('dairy/deactivate-farmer/', deactivate_linked_farmer, name='deactivate_linked_farmer'),
     path('dairy/linked-farmers/', get_linked_farmers, name='get_linked_farmers'),
     path('dairy/search-farmer/', search_farmer_by_code, name='search_farmer_by_code'),
