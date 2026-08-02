@@ -871,8 +871,8 @@
     }
     .notif-header-row .btn-mark-all {
       font-size: 13px;
-      color: var(--primary);
-      background: none;
+      color: #C62828;
+      background: #FFEBEE;
       border: none;
       cursor: pointer;
       font-weight: 600;
@@ -881,7 +881,7 @@
       transition: background 0.2s;
     }
     .notif-header-row .btn-mark-all:hover {
-      background: rgba(82, 59, 139, 0.05);
+      background: #FFCDD2;
     }
   </style>
 </head>
@@ -1022,11 +1022,11 @@
               <div class="form-row-2col">
                 <div class="form-group">
                   <label for="quickFat">FAT (%) *</label>
-                  <input type="number" step="0.01" min="0.1" max="25" id="quickFat" class="form-control" placeholder="0.0" required>
+                  <input type="number" step="0.01" min="0.1" max="8" id="quickFat" class="form-control" placeholder="0.00" required>
                 </div>
                 <div class="form-group">
                   <label for="quickSnf">SNF (%) *</label>
-                  <input type="number" step="0.01" min="0.1" max="20" id="quickSnf" class="form-control" placeholder="0.0" required>
+                  <input type="number" step="0.01" min="0.1" max="9.5" id="quickSnf" class="form-control" placeholder="0.00" required>
                 </div>
               </div>
               <button type="submit" class="btn-action btn-accent w-100" id="btnQuickSubmit">Submit Record</button>
@@ -1155,11 +1155,11 @@
               <div class="form-row-2col">
                 <div class="form-group">
                   <label for="collFatInput">FAT (%) *</label>
-                  <input type="number" step="0.01" min="0.1" max="25" id="collFatInput" class="form-control" placeholder="0.0" required>
+                  <input type="number" step="0.01" min="0.1" max="8" id="collFatInput" class="form-control" placeholder="0.00" required>
                 </div>
                 <div class="form-group">
                   <label for="collSnfInput">SNF (%) *</label>
-                  <input type="number" step="0.01" min="0.1" max="20" id="collSnfInput" class="form-control" placeholder="0.0" required>
+                  <input type="number" step="0.01" min="0.1" max="9.5" id="collSnfInput" class="form-control" placeholder="0.00" required>
                 </div>
               </div>
               <div class="form-group">
@@ -1254,12 +1254,11 @@
                   <th>Pending Left</th>
                   <th>Status</th>
                   <th>Ref Number</th>
-                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody id="paymentsHistoryBody">
                 <tr>
-                  <td colspan="10" class="text-center py-4" style="color:var(--text-muted)">No payouts logged yet.</td>
+                  <td colspan="9" class="text-center py-4" style="color:var(--text-muted)">No payouts logged yet.</td>
                 </tr>
               </tbody>
             </table>
@@ -1480,11 +1479,11 @@
           <div class="form-row-2col">
             <div class="form-group">
               <label for="editFat">FAT (%) *</label>
-              <input type="number" step="0.01" min="0.1" max="25" id="editFat" class="form-control" required>
+              <input type="number" step="0.01" min="0.1" max="8" id="editFat" class="form-control" required>
             </div>
             <div class="form-group">
               <label for="editSnf">SNF (%) *</label>
-              <input type="number" step="0.01" min="0.1" max="20" id="editSnf" class="form-control" required>
+              <input type="number" step="0.01" min="0.1" max="9.5" id="editSnf" class="form-control" required>
             </div>
           </div>
           <div style="display:flex; gap:10px;">
@@ -1547,6 +1546,50 @@
         localStorage.clear();
         window.location.href = 'login.html';
       });
+
+      // Restrict quantity/fat/snf inputs to numbers only (allow a single decimal point)
+      function restrictNumericInput(el, maxDecimals = null) {
+        if (!el) return;
+        el.addEventListener('keydown', (e) => {
+          if (['e', 'E', '+', '-'].includes(e.key)) {
+            e.preventDefault();
+          }
+          if (e.key === '.' && el.value.includes('.')) {
+            e.preventDefault();
+          }
+        });
+        el.addEventListener('input', () => {
+          let value = el.value.replace(/[^0-9.]/g, '');
+          const parts = value.split('.');
+          if (parts.length > 2) value = parts[0] + '.' + parts.slice(1).join('');
+          if (parts[1] && maxDecimals !== null && parts[1].length > maxDecimals) {
+            value = parts[0] + '.' + parts[1].slice(0, maxDecimals);
+          }
+          if (value !== el.value) el.value = value;
+        });
+      }
+      ['quickQty', 'quickFat', 'quickSnf', 'collQtyInput', 'collFatInput', 'collSnfInput', 'editFat', 'editSnf']
+        .forEach(id => restrictNumericInput(document.getElementById(id), (id.includes('Fat') || id.includes('Snf')) ? 2 : null));
+
+      // Clamp fat to 8 and snf to 9.5 while typing
+      function clampInput(el, max) {
+        if (!el) return;
+        el.addEventListener('input', () => {
+          const num = parseFloat(el.value);
+          if (!isNaN(num) && num > max) el.value = String(max);
+        });
+      }
+      ['quickFat', 'collFatInput', 'editFat'].forEach(id => clampInput(document.getElementById(id), 8));
+      ['quickSnf', 'collSnfInput', 'editSnf'].forEach(id => clampInput(document.getElementById(id), 9.5));
+
+      // Restrict transaction reference input to alphanumeric characters only
+      const payRef = document.getElementById('payRef');
+      if (payRef) {
+        payRef.addEventListener('input', () => {
+          const cleaned = payRef.value.replace(/[^A-Za-z0-9]/g, '');
+          if (cleaned !== payRef.value) payRef.value = cleaned;
+        });
+      }
 
       // Tab Management
       const navItems = document.querySelectorAll('.nav-item');
@@ -1777,6 +1820,12 @@
       const searchFarmerForm = document.getElementById('searchFarmerForm');
       const searchResultArea = document.getElementById('searchResultArea');
       const searchCodeInput = document.getElementById('searchCode');
+
+      // Restrict farmer code input to alphanumeric characters only
+      searchCodeInput.addEventListener('input', () => {
+        const cleaned = searchCodeInput.value.replace(/[^A-Za-z0-9]/g, '');
+        if (cleaned !== searchCodeInput.value) searchCodeInput.value = cleaned;
+      });
 
       searchFarmerForm.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -2086,7 +2135,7 @@ if (data.is_linked) {
           });
           const data = await res.json();
           if (res.ok) {
-            showToast("Milk intake collection logged and SMS notification dispatched!", "success");
+            showToast("Milk intake collection logged successfully!", "success");
             // Clear inputs
             document.getElementById('collQtyInput').value = '';
             document.getElementById('collFatInput').value = '';
@@ -2200,9 +2249,6 @@ if (data.is_linked) {
                         data-no="${summary.bank_details ? summary.bank_details.account_number : ''}"
                         data-wallet="${summary.bank_details ? summary.bank_details.wallet_number : ''}"
                         ${summary.pending_balance <= 0 ? 'disabled' : ''}>Disburse Pay</button>
-                      <button class="btn-table-sm btn-danger-outline btn-sms-remind" 
-                        data-id="${summary.farmer_id}"
-                        ${summary.pending_balance <= 0 ? 'disabled' : ''}>SMS Balance</button>
                     </div>
                   </td>
                 </tr>
@@ -2258,35 +2304,7 @@ if (data.is_linked) {
             pendingAutoOpenFarmerId = null;
           }
 
-          // Bind SMS reminders
-          document.querySelectorAll('.btn-sms-remind').forEach(btn => {
-            btn.addEventListener('click', async () => {
-              const id = btn.getAttribute('data-id');
-              btn.disabled = true;
-              btn.innerText = 'Sending...';
 
-              try {
-                const res = await fetch(`${API_BASE_URL}/dairy/notify-pending-payment/`, {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                  },
-                  body: JSON.stringify({ farmer_id: parseInt(id) })
-                });
-                if (res.ok) {
-                  showToast("Pending balance SMS reminder dispatched!");
-                } else {
-                  showToast("Failed to send reminder SMS.", "error");
-                }
-              } catch (err) {
-                showToast("Network notification error.", "error");
-              } finally {
-                btn.disabled = false;
-                btn.innerText = 'SMS Balance';
-              }
-            });
-          });
         } catch (err) {
           showToast("Failed to fetch outstanding balances list.", "error");
         }
@@ -2301,7 +2319,7 @@ if (data.is_linked) {
           const history = await res.json();
 
           if (history.length === 0) {
-            body.innerHTML = '<tr><td colspan="10" class="text-center">No disbursements logged yet.</td></tr>';
+            body.innerHTML = '<tr><td colspan="9" class="text-center">No disbursements logged yet.</td></tr>';
           } else {
             let trs = '';
             history.forEach(h => {
@@ -2321,45 +2339,10 @@ if (data.is_linked) {
                   <td>Rs. ${parseFloat(h.pending_amount).toFixed(2)}</td>
                   <td>${statusBadge}</td>
                   <td><code>${h.transaction_reference || 'N/A'}</code></td>
-                  <td>
-                    <button class="btn-danger-outline btn-payment-sms" data-id="${h.id}">SMS Alert</button>
-                  </td>
                 </tr>
               `;
             });
             body.innerHTML = trs;
-
-            // Bind transaction SMS trigger
-            document.querySelectorAll('.btn-payment-sms').forEach(btn => {
-              btn.addEventListener('click', async () => {
-                const payId = btn.getAttribute('data-id');
-                btn.disabled = true;
-                try {
-                  const res = await fetch(`${API_BASE_URL}/payments/${payId}/`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                  });
-                  const paymentData = await res.json();
-                  // Re-notify via endpoint
-                  const notifyRes = await fetch(`${API_BASE_URL}/dairy/notify-pending-payment/`, {
-                    method: 'POST',
-                    headers: {
-                      'Content-Type': 'application/json',
-                      'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({ farmer_id: paymentData.farmer })
-                  });
-                  if (notifyRes.ok) {
-                    showToast("SMS details dispatched successfully!");
-                  } else {
-                    showToast("Disbursement alert failure.", "error");
-                  }
-                } catch (err) {
-                  showToast("Network notification issue.", "error");
-                } finally {
-                  btn.disabled = false;
-                }
-              });
-            });
           }
         } catch (err) {
           showToast("Failed to fetch payment log lists.", "error");
@@ -2413,7 +2396,7 @@ if (data.is_linked) {
           });
           const data = await res.json();
           if (res.ok) {
-            showToast("Payout successfully disbursed and logged! SMS alert dispatched.", "success");
+            showToast("Payout successfully disbursed and logged!", "success");
             closePaymentModal();
             loadPaymentsTab();
           } else {

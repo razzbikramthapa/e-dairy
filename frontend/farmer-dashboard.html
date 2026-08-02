@@ -887,7 +887,7 @@
               <svg style="width: 20px; height: 20px; stroke: currentColor;" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
               <h2 style="font-family: 'Outfit', sans-serif; font-size: 18px; font-weight: 700; margin: 0;">Notifications <span id="notifBadge" style="display: none; background: #E53935; color: white; padding: 2px 6px; border-radius: 10px; font-size: 12px; font-weight: bold; margin-left: 8px;">0</span></h2>
             </div>
-            <button id="btnMarkAllRead" style="background: none; border: none; color: var(--primary-dark); font-size: 13px; font-weight: 700; cursor: pointer;">Mark all as read</button>
+            <button id="btnMarkAllRead" style="background: #FFEBEE; border: none; color: #C62828; font-size: 13px; font-weight: 700; cursor: pointer; padding: 6px 12px; border-radius: 8px;">Mark all as read</button>
           </div>
           <div id="notificationsContainer" style="display: flex; flex-direction: column; gap: 16px; flex-grow: 1;">
             <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 300px; opacity: 0.6;">
@@ -1363,6 +1363,14 @@
       const qrCodePreview = document.getElementById('qrCodePreview');
       let editingBankId = null;
 
+      // Restrict bank account inputs: holder name alphabets only, account number digits only
+      accHolderName.addEventListener('input', () => {
+        accHolderName.value = accHolderName.value.replace(/[^A-Za-z ]/g, '');
+      });
+      accNumber.addEventListener('input', () => {
+        accNumber.value = accNumber.value.replace(/[^0-9]/g, '');
+      });
+
       // Bank Dropdown Logic
       const availableBanks = [
         "Agricultural Development Bank Limited",
@@ -1680,6 +1688,15 @@
 
       bankDetailsForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+
+        if (!/^[A-Za-z ]+$/.test(accHolderName.value.trim())) {
+          alert('Account Holder Name can only contain alphabets.');
+          return;
+        }
+        if (!/^[0-9]+$/.test(accNumber.value.trim())) {
+          alert('Account Number can only contain numbers.');
+          return;
+        }
 
         const formData = new FormData();
         formData.append('bank_name', bankName.value);

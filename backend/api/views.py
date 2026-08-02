@@ -23,7 +23,7 @@ from .serializers import (
     QualityRecordSerializer,
     NotificationSerializer
 )
-from .twilio_helper import send_otp, send_sparrow_sms
+from .twilio_helper import send_otp
 
 logger = logging.getLogger(__name__)
 
@@ -32,6 +32,24 @@ class DeleteAccountView(APIView):
 
     def delete(self, request):
         user = request.user
+        
+        try:
+            profile = user.profile
+            if profile.role == 'farmer':
+                total_earned = MilkCollection.objects.filter(farmer=user).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+                total_paid = Payment.objects.filter(farmer=user, payment_status='paid').aggregate(total=Sum('paid_amount'))['total'] or Decimal('0.00')
+                total_deductions = Payment.objects.filter(farmer=user, payment_status='paid').aggregate(total=Sum('deductions'))['total'] or Decimal('0.00')
+                
+                pending_balance = total_earned - total_paid - total_deductions
+                
+                if pending_balance > Decimal('0.00'):
+                    return Response(
+                        {"detail": f"You have Uncleared payments of Rs. {pending_balance:.2f}. Please receive your money from collection center before deleting your profile."}, 
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+        except Profile.DoesNotExist:
+            pass
+
         user.delete()
         return Response({"detail": "Account deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
 
@@ -224,7 +242,7 @@ class GenerateCodeView(APIView):
             if not user_exists:
                 return Response({"detail": "This mobile number is not registered."}, status=status.HTTP_400_BAD_REQUEST)
         
-        # Trigger sending the SMS code via Twilio/NepalOTP
+        # Trigger sending the SMS code via Twilio
         try:
             res = send_otp(phone)
             response_data = {
@@ -485,12 +503,7 @@ def record_milk_collection(request):
         # Trigger SMS Notification to farmer
         farmer = collection.farmer
         phone = farmer.profile.phone
-        if phone:
-            msg = f"Dear {farmer.get_full_name() or farmer.username}, milk collection recorded: {collection.quantity:.2f}L (FAT: {collection.fat:.2f}%, SNF: {collection.snf:.2f}%) on {collection.date} ({collection.session.capitalize()}). Rate: Rs. {collection.rate:.2f}/L. Total: Rs. {collection.amount:.2f}. Thank you!"
-            try:
-                send_sparrow_sms(phone, msg)
-            except Exception as e:
-                logger.error(f"Failed to send collection SMS: {e}")
+
                 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -559,13 +572,13 @@ def process_payment(request):
         
         # Trigger SMS Notification to farmer
         farmer = payment.farmer
-        phone = farmer.profile.phone
-        if phone and payment.payment_status == 'paid':
-            msg = f"Dear {farmer.get_full_name() or farmer.username}, payment of Rs. {payment.paid_amount:.2f} processed via {payment.get_payment_method_display()} on {payment.payment_date}. Deductions: Rs. {payment.deductions:.2f}. Remaining balance: Rs. {payment.pending_amount:.2f}."
-            try:
-                send_sparrow_sms(phone, msg)
-            except Exception as e:
-                logger.error(f"Failed to send payment SMS: {e}")
+        
+        # Mark pending payment requests as approved
+        PaymentRequest.objects.filter(
+            farmer=farmer, dairy_operator=request.user, status='pending'
+        ).update(status='approved')
+
+
                 
         if payment.payment_status == 'paid':
             dairy_name = request.user.dairy_operator.dairy_name if hasattr(request.user, 'dairy_operator') else (request.user.get_full_name() or request.user.username)
@@ -602,7 +615,7 @@ def get_farmer_payment_history(request, farmer_id):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def notify_pending_payment(request):
-    """Notify farmer about pending balance via Sparrow SMS"""
+    """Notify farmer about pending balance via in-app notification"""
     farmer_id = request.data.get('farmer_id')
     if not farmer_id:
         return Response({'detail': 'Farmer ID is required.'}, status=status.HTTP_400_BAD_REQUEST)
@@ -619,18 +632,18 @@ def notify_pending_payment(request):
     if pending_balance < 0:
         pending_balance = Decimal('0.00')
         
-    phone = farmer.profile.phone
-    if not phone:
-        return Response({'detail': 'Farmer does not have a registered phone number.'}, status=status.HTTP_400_BAD_REQUEST)
-        
-    msg = f"Dear {farmer.get_full_name() or farmer.username}, this is a reminder that you have a pending payment balance of Rs. {pending_balance:.2f} for your milk supplies. Please visit the Collection Centre."
-    res = send_sparrow_sms(phone, msg)
+    dairy_name = request.user.dairy_operator.dairy_name if hasattr(request.user, 'dairy_operator') else (request.user.get_full_name() or request.user.username)
+    msg = f"Dear {farmer.get_full_name() or farmer.username}, this is a reminder that you have a pending payment balance of Rs. {pending_balance:.2f} for your milk supplies. Please visit {dairy_name}."
+    
+    Notification.objects.create(
+        recipient=farmer,
+        notification_type='general',
+        title='Pending Payment Reminder',
+        message=msg
+    )
     
     return Response({
-        'detail': 'Notification sent successfully.',
-        'sms_status': res.get('status'),
-        'sms_message': res.get('message'),
-        'sms_text': res.get('text')
+        'detail': 'Notification sent successfully.'
     })
 
 
@@ -885,15 +898,7 @@ class PaymentViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         payment = serializer.save(dairy_operator=self.request.user)
         
-        # Trigger SMS Notification to farmer
         farmer = payment.farmer
-        phone = farmer.profile.phone
-        if phone and payment.payment_status == 'paid':
-            msg = f"Dear {farmer.get_full_name() or farmer.username}, payment of Rs. {payment.paid_amount:.2f} processed via {payment.get_payment_method_display()} on {payment.payment_date}. Deductions: Rs. {payment.deductions:.2f}. Remaining balance: Rs. {payment.pending_amount:.2f}."
-            try:
-                send_sparrow_sms(phone, msg)
-            except Exception as e:
-                logger.error(f"Failed to send payment SMS: {e}")
                 
         if payment.payment_status == 'paid':
             dairy_name = self.request.user.dairy_operator.dairy_name if hasattr(self.request.user, 'dairy_operator') else 'Collection Center'
@@ -915,7 +920,9 @@ class FarmerPaymentSummaryView(APIView):
         total_paid = Payment.objects.filter(farmer=user, payment_status='paid').aggregate(total=Sum('paid_amount'))['total'] or Decimal('0.00')
         total_deductions = Payment.objects.filter(farmer=user, payment_status='paid').aggregate(total=Sum('deductions'))['total'] or Decimal('0.00')
         
-        pending_balance = total_earned - total_paid - total_deductions
+        pending_requests = PaymentRequest.objects.filter(farmer=user, status='pending').aggregate(total=Sum('amount_requested'))['total'] or Decimal('0.00')
+        
+        pending_balance = total_earned - total_paid - total_deductions - pending_requests
         if pending_balance < 0:
             pending_balance = Decimal('0.00')
             
@@ -961,7 +968,11 @@ class FarmerCollectionCenterSummaryView(APIView):
                 farmer=user, dairy_operator=operator_user, payment_status='paid'
             ).aggregate(total=Sum('deductions'))['total'] or Decimal('0.00')
 
-            pending_balance = total_earned - total_paid - total_deductions
+            pending_requests = PaymentRequest.objects.filter(
+                farmer=user, dairy_operator=operator_user, status='pending'
+            ).aggregate(total=Sum('amount_requested'))['total'] or Decimal('0.00')
+
+            pending_balance = total_earned - total_paid - total_deductions - pending_requests
             if pending_balance < 0:
                 pending_balance = Decimal('0.00')
 

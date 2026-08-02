@@ -127,8 +127,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const registerFormDesc = document.getElementById('registerFormDesc');
     if (registerFormDesc) {
       registerFormDesc.innerText = currentRole === 'farmer'
-        ? 'Create a new farmer account on the e-Dairy network'
-        : 'Register your collection centre on the e-Dairy network';
+        ? 'Create a new farmer account on e-Dairy'
+        : 'Register your collection centre on e-Dairy';
     }
   }
 
@@ -301,7 +301,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (actualRole === 'farmer') {
               window.location.href = 'farmer-dashboard.html';
             } else {
-              window.location.href = 'agent-dashboard.html';
+              window.location.href = 'collection_center-dashboard.html';
             }
           }, 1000);
         } else {
@@ -316,6 +316,61 @@ document.addEventListener('DOMContentLoaded', () => {
       showAlert('Failed to connect to authentication server.');
     }
   });
+
+  // Restrict typed input to allowed character sets
+  function restrictInput(el, pattern) {
+    if (!el) return;
+    el.addEventListener('input', () => {
+      const cleaned = el.value.replace(pattern, '');
+      if (cleaned !== el.value) el.value = cleaned;
+    });
+  }
+
+  restrictInput(document.getElementById('regFirst'), /[^A-Za-z]/g);
+  restrictInput(document.getElementById('regLast'), /[^A-Za-z]/g);
+  restrictInput(document.getElementById('regFarmName'), /[^A-Za-z0-9 ]/g);
+  restrictInput(document.getElementById('regCentreName'), /[^A-Za-z0-9 ]/g);
+  restrictInput(document.getElementById('regAddr'), /[^A-Za-z0-9 ]/g);
+  restrictInput(regPhoneInput, /[^0-9]/g);
+  restrictInput(regPassInput, /[^0-9]/g);
+  restrictInput(document.getElementById('loginUser'), /[^0-9]/g);
+  restrictInput(document.getElementById('loginPass'), /[^0-9]/g);
+
+  // Validate farmer registration fields
+  function validateFarmerFields() {
+    const first = document.getElementById('regFirst').value.trim();
+    const last = document.getElementById('regLast').value.trim();
+    const farm = document.getElementById('regFarmName').value.trim();
+    const centre = document.getElementById('regCentreName').value.trim();
+    const addr = document.getElementById('regAddr').value.trim();
+    const phone = regPhoneInput.value.trim();
+    const otp = regPassInput.value.trim();
+
+    const messages = [];
+    if (currentRole === 'farmer') {
+      if (!/^[A-Za-z]+$/.test(first)) {
+        messages.push('First Name can only contain alphabets.');
+      }
+      if (!/^[A-Za-z]+$/.test(last)) {
+        messages.push('Last Name can only contain alphabets.');
+      }
+      if (!/^[A-Za-z0-9 ]+$/.test(farm)) {
+        messages.push('Farm Name can only contain letters and numbers.');
+      }
+    } else if (!/^[A-Za-z0-9 ]+$/.test(centre)) {
+      messages.push('Collection Centre Name can only contain letters and numbers.');
+    }
+    if (!/^[A-Za-z0-9 ]+$/.test(addr)) {
+      messages.push('Address can only contain letters and numbers.');
+    }
+    if (!/^[0-9]+$/.test(phone)) {
+      messages.push('Phone Number can only contain numbers.');
+    }
+    if (!/^[0-9]+$/.test(otp)) {
+      messages.push('Verification Code can only contain numbers.');
+    }
+    return messages;
+  }
 
   // Handle Form Submission: REGISTRATION
   registerForm.addEventListener('submit', async (e) => {
@@ -341,6 +396,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!phone) {
       showAlert('Phone number is required.');
+      return;
+    }
+
+    // Validate character types for farmer/agent fields
+    const validationMessages = validateFarmerFields();
+    if (validationMessages.length > 0) {
+      showAlert(validationMessages.join(' '));
       return;
     }
 
@@ -423,7 +485,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (existingRole === 'farmer') {
         window.location.href = 'farmer-dashboard.html';
       } else {
-        window.location.href = 'agent-dashboard.html';
+        window.location.href = 'collection_center-dashboard.html';
       }
     }, 1500);
   }

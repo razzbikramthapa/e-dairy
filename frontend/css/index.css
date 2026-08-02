@@ -333,19 +333,6 @@ nav a.active::after {
   font-weight: 700;
 }
 
-/* .cta-footer {
-  display: flex;
-  gap: 24px;
-  font-size: 12px;
-  color: var(--text-muted);
-}
-
-.cta-footer span {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-} */
-
 /* Hero Visuals & Mockups */
 .hero-visual-wrapper {
   position: relative;
