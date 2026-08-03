@@ -5,9 +5,9 @@ A comprehensive digital platform that streamlines milk collection, quality track
 ## Features
 
 ### Authentication & Roles
-- OTP-based registration and login using the mobile number as username (NepalOTP / Twilio / simulated mode).
+- OTP-based registration and login using the mobile number as username (Twilio as OTP Service Provider).
 - Two roles: **Farmer** and **Collection Centre Operator**.
-- Automatic farmer code generation (`F1`, `F2`, ...) on farmer registration.
+- Automatic farmer code generation (`F__`) on farmer registration.
 
 ### Milk Collection & Quality
 - Record morning/evening milk intake with quantity, FAT, and SNF.
@@ -22,6 +22,7 @@ A comprehensive digital platform that streamlines milk collection, quality track
 
 ### Payments & Payouts
 - Disburse payments via **Cash**, **Bank Transfer**, or **Wallet** with optional deductions and transaction references.
+- If the farmer hasn't added bank details, collection center can only choose cash as payment mode with Bank Transfer and eWallet disabled automatically
 - SMS alerts and in-app notifications sent to the farmer on each payout.
 - Farmers can request payments from their linked collection centre.
 - Farmer bank details management (up to 3 accounts, one primary) with QR codes.
@@ -33,7 +34,6 @@ A comprehensive digital platform that streamlines milk collection, quality track
 
 ### Notifications & SMS
 - In-app notification centre (payment requests, payment received, milk updates).
-- SMS via Sparrow SMS for collections and payouts, with a local `sms_logs.txt` sandbox.
 
 ## Tech Stack
 
@@ -42,7 +42,7 @@ A comprehensive digital platform that streamlines milk collection, quality track
 | Backend     | Django 6.0, Django REST Framework 3.17                            |
 | Auth        | SimpleJWT (JWT Bearer tokens)                                     |
 | Database    | MySQL (configurable via `.env`, SQLite also supported)            |
-| SMS/OTP     | NepalOTP (primary), Twilio Verify (fallback), Sparrow SMS (notify)|
+| SMS/OTP     | Twilio Verify                                          |
 | Frontend    | Static HTML/CSS/JS served directly by Django                      |
 
 ## Project Structure
@@ -125,18 +125,14 @@ DB_HOST=localhost
 DB_PORT=3306
 
 # OTP / SMS (optional - falls back to simulation with code 123456)
-NEPALOTP_API_KEY=notp_sandbox_xxxx   # primary OTP provider
-TWILIO_ACCOUNT_SID=your-account-sid  # fallback OTP provider
+TWILIO_ACCOUNT_SID=your-account-sid 
 TWILIO_AUTH_TOKEN=your-auth-token
 TWILIO_VERIFY_SERVICE_SID=your-service-sid
 TWILIO_DEFAULT_COUNTRY_CODE=+977
-SPARROW_SMS_TOKEN=your-sparrow-token # payout/collection SMS
-SPARROW_SMS_SENDER=EDairy
 ```
 
 **Provider behaviour:**
-- OTP is sent via **NepalOTP** when a valid key is present, otherwise **Twilio**, otherwise a simulated code `123456`.
-- Payout/collection SMS use **Sparrow SMS**; when no token is configured, messages are written to `backend/sms_logs.txt` instead.
+- OTP is sent via **Twilio** when a valid key is present.
 
 ## Usage Flow
 
